@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADR 0007: Omniscient AI sponsors TickerNet, which lives in its own GitHub organization</title>
+<meta name="description" content="Omniscient AI sponsors and stewards TickerNet; the repository lives in its own tickernet GitHub organization.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="../contributing.html">Contributing</a></li>
+        <li><a href="../governance.html">Governance</a></li>
+        <li><a href="index.html" aria-current="page">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>ADR 0007</h2>
+    <ol><li><a href="#context"><span class="n">01</span><span>Context</span></a></li><li><a href="#decision"><span class="n">02</span><span>Decision</span></a></li><li><a href="#alternatives"><span class="n">03</span><span>Alternatives considered</span></a></li><li><a href="#consequences"><span class="n">04</span><span>Consequences</span></a></li><li><a href="#where"><span class="n">05</span><span>Where it lives</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol>
+    <p class="rail-back"><a href="index.html">← All decisions</a></p>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">ADR 0007 · Origin and license</p>
+      <h1>Omniscient AI sponsors TickerNet, which lives in its own GitHub organization</h1>
+      <p class="lede">Omniscient AI sponsors and stewards TickerNet. The repository is <code>TickerNet/TickerNet</code>, in an organization of its own, so the whole project can be handed over in one step.</p>
+      <dl class="adr-meta">
+        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Decided</dt><dd>2026-11-23</dd></div>
+        <div><dt>Affects</dt><dd><code>GOVERNANCE.md</code>, <code>NOTICE</code>, <code>LICENSE</code>, <code>Directory.Build.props</code></dd></div>
+      </dl>
+      <p class="adr-related">Related: <a href="0003-license-pledge-no-cla.html">ADR 0003</a> License MIT OR Apache-2.0 with an open-source pledge and no CLA, <a href="0008-docs-site-github-pages.html">ADR 0008</a> Publish the docs as a static site on GitHub Pages, with an ADR log</p>
+    </header>
+    <section class="step" id="context">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
+      <div class="prose"><p>Someone has to fund maintenance and hold the project's name, GitHub organization, docs site and NuGet package IDs. The pledge in <code>GOVERNANCE.md</code> says these must be transferable, as a set, to an open-source foundation or to the active maintainers.</p></div>
+    </section>
+    <section class="step" id="decision">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Decision</h2></div>
+      <div class="prose"><ul><li><a href="https://omniscient.to">Omniscient AI</a> (Omniscient AI Private Limited) sponsors TickerNet and is its steward, as <code>GOVERNANCE.md</code> describes.</li><li>The README and every page of this site show Omniscient AI's logo and a "Sponsored by Omniscient AI" credit. The logo files in <code>site/assets/sponsor/</code> come from Omniscient AI's brand assets; <code>NOTICE</code> and <code>TRADEMARKS.md</code> say they are Omniscient AI's trademarks and are not covered by the project license.</li><li>The repository lives at <code>TickerNet/TickerNet</code>, in its own <code>TickerNet</code> GitHub organization, separate from the sponsor's own repositories, so it can move to a foundation as a whole.</li><li>New work carries the copyright line "Omniscient AI Private Limited and the TickerNet contributors". Arcenox LLC's notices for the original work stay in <code>LICENSE</code> and <code>NOTICE</code>.</li><li>Package metadata: authors "Omniscient AI and the TickerNet contributors", company "Omniscient AI Private Limited", repository <code>https://github.com/TickerNet/TickerNet</code>, project site <code>https://tickernet.github.io/TickerNet/</code>.</li></ul></div>
+    </section>
+    <section class="step" id="alternatives">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Alternatives considered</h2></div>
+      <div class="prose"><p>Not recorded.</p></div>
+    </section>
+    <section class="step" id="consequences">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
+      <div class="prose"><ul><li>A handover under pledge item 4 is one organization transfer plus the NuGet IDs.</li><li>Contributors keep the copyright in their work. The steward holds the name and package IDs for the project.</li><li>The sponsor credit is the name and a link to https://omniscient.to, nothing more (<code>AGENTS.md</code>, Sponsor privacy).</li></ul></div>
+    </section>
+    <section class="step" id="where">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
+      <div class="prose"><ul><li><code>GOVERNANCE.md</code></li><li><code>NOTICE</code></li><li><code>LICENSE</code></li><li><code>Directory.Build.props</code> and <code>src/Directory.Build.props</code></li><li><code>AGENTS.md</code></li></ul></div>
+    </section>
+    <section class="step" id="sources">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
+      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/blob/main/GOVERNANCE.md"><code>GOVERNANCE.md</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/NOTICE"><code>NOTICE</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/LICENSE"><code>LICENSE</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/Directory.Build.props"><code>Directory.Build.props</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/src/Directory.Build.props"><code>src/Directory.Build.props</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/AGENTS.md"><code>AGENTS.md</code></a></li></ul></div>
+    </section>
+    <nav class="pager" aria-label="Decisions"><a href="0006-version-independently-dotnet-10.html"><small>Previous</small>ADR 0006: Version independently and target .NET 10 only</a><a class="next" href="0008-docs-site-github-pages.html"><small>Next</small>ADR 0008: Publish the docs as a static site on GitHub Pages, with an ADR log</a></nav>
+    <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="../assets/site.js"></script>
+</body>
+</html>

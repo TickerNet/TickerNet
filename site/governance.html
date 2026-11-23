@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Governance · TickerNet docs</title>
+<meta name="description" content="Who looks after TickerNet, the irrevocable pledge that every release stays open source, what the pledge does not limit, how the name may be used, and how decisions are made.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="getting-started.html">Getting started</a></li>
+        <li><a href="migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+        <li><a href="governance.html" aria-current="page">Governance</a></li>
+        <li><a href="decisions/index.html">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>On this page</h2>
+    <ol>
+      <li><a href="#steward"><span class="n">01</span><span>Sponsor and steward</span></a></li>
+      <li><a href="#freedom"><span class="n">02</span><span>Your freedom to build on it</span></a></li>
+      <li><a href="#pledge"><span class="n">03</span><span>Open source, forever</span></a></li>
+      <li><a href="#name"><span class="n">04</span><span>The name</span></a></li>
+      <li><a href="#decisions"><span class="n">05</span><span>How decisions are made</span></a></li>
+      <li><a href="#security"><span class="n">06</span><span>Security reports</span></a></li>
+    </ol>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">TickerNet · project rules</p>
+      <h1>Governance</h1>
+      <p class="lede">TickerNet exists because the scheduler it came from moved from an open-source license to a commercial one. These rules make sure TickerNet itself can never take that step, while leaving everyone free to build what they like on top of it. The source of truth is <a href="https://github.com/TickerNet/TickerNet/blob/main/GOVERNANCE.md"><code>GOVERNANCE.md</code></a> and <a href="https://github.com/TickerNet/TickerNet/blob/main/TRADEMARKS.md"><code>TRADEMARKS.md</code></a> in the repository.</p>
+      <div class="promises" role="group" aria-label="TickerNet's two promises">
+        <div class="promise"><span class="tag">Build anything on it</span><b>Derivatives welcome, proprietary ones too</b><p>Use, change and redistribute TickerNet under MIT or Apache-2.0, whichever you choose. Fork it, build closed-source or commercial products on it, and keep your changes private. <a href="#freedom">Your freedom to build on it</a>.</p></div>
+        <div class="promise"><span class="tag">Open source, forever</span><b>TickerNet itself never goes commercial</b><p>Every TickerNet release stays MIT OR Apache-2.0: no paid edition, no source-available version, no license keys and no CLA. <a href="#pledge">The irrevocable pledge</a>.</p></div>
+      </div>
+      <div class="sponsor-band">
+        <span class="label">Maintained and sponsored by</span>
+        <a class="logo" href="https://omniscient.to"><picture><source srcset="assets/sponsor/omniscient-logo-horizontal-dark-bg.svg" media="(prefers-color-scheme: dark)"><img src="assets/sponsor/omniscient-logo-horizontal-light-bg.svg" alt="Omniscient AI" width="168" height="36"></picture></a>
+        <p>Omniscient AI set up the TickerNet fork, maintains it and funds its development, and makes these promises as the project's steward.</p>
+      </div>
+      <details class="mobile-toc">
+        <summary>On this page</summary>
+        <ol>
+          <li><a href="#steward">Sponsor and steward</a></li>
+          <li><a href="#freedom">Your freedom to build on it</a></li>
+          <li><a href="#pledge">Open source, forever</a></li>
+          <li><a href="#name">The name</a></li>
+          <li><a href="#decisions">How decisions are made</a></li>
+          <li><a href="#security">Security reports</a></li>
+        </ol>
+      </details>
+    </header>
+
+    <section class="step" id="steward">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Sponsor and steward</h2></div>
+      <div class="prose">
+        <p><a href="https://omniscient.to">Omniscient AI</a> (Omniscient AI Private Limited) set up the TickerNet fork, maintains it and sponsors it. As steward it:</p>
+        <ul>
+          <li>funds maintainer time and the project's running costs;</li>
+          <li>holds the project's name, the <code>TickerNet</code> GitHub organization, the docs site and the <code>TickerNet</code> package IDs on NuGet, on behalf of the project and its users, under the pledge below.</li>
+        </ul>
+        <p>The steward does not own contributors' work. Contributors keep the copyright in what they write and license it to everyone under the project license, MIT OR Apache-2.0 (<a href="contributing.html#rules">Contributing</a>). <a href="decisions/0007-sponsor-and-home.html">ADR 0007</a> records the arrangement.</p>
+      </div>
+    </section>
+
+    <section class="step" id="freedom">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Your freedom to build on TickerNet</h2>
+        <p class="step-sub">The project license is MIT OR Apache-2.0, at your option. Under either one you may:</p></div>
+      <div class="prose">
+        <ul>
+          <li>use TickerNet in any product, open source or proprietary, free or paid;</li>
+          <li>fork it, change it and publish your own version under a different name;</li>
+          <li>build derivative works and license them on any terms the license you chose allows, including proprietary terms;</li>
+          <li>keep your changes to yourself.</li>
+        </ul>
+        <p>What the license asks in return is small: keep the copyright and license notices (and, if you choose Apache-2.0, follow its notice and change-marking terms), and accept that the software comes without warranty. The pledge below is a promise TickerNet makes about itself. It adds no conditions to the license, and no future change to <code>GOVERNANCE.md</code> can take these freedoms away from code already released.</p>
+        <p>The only limit outside the license is the name: products built on TickerNet can't be published as "TickerNet". The <a href="#name">name rules</a> are below.</p>
+      </div>
+    </section>
+
+    <section class="step" id="pledge">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Open source, forever: the pledge</h2>
+        <p class="step-sub">Made by Omniscient AI, as steward, and every maintainer, to TickerNet's users and contributors. It is irrevocable. Quoted from <code>GOVERNANCE.md</code>:</p></div>
+      <blockquote class="policy">
+        <ol>
+          <li><strong>Every release stays open source.</strong> Every version of TickerNet published from this repository, or under a <code>TickerNet</code> package ID on NuGet, is licensed under MIT OR Apache-2.0, with complete source code in this repository.</li>
+          <li><strong>No commercial edition under the TickerNet name.</strong> There will be no source-available, "community edition", paid-only, license-key, revenue-threshold or usage-limited version of TickerNet. Features will not be held back from the open-source release to sell them separately.</li>
+          <li><strong>No license changes by assignment.</strong> TickerNet does not use a contributor license agreement. Contributions are accepted under the project license with a <a href="https://developercertificate.org/">Developer Certificate of Origin</a> sign-off, so no single party collects the rights to relicense everyone's work.</li>
+          <li><strong>A handover keeps the pledge.</strong> If the steward stops supporting TickerNet, it will transfer the name, the GitHub organization, the docs site and the NuGet package IDs to an open-source foundation or to the active maintainers. It will not sell or transfer them to anyone who does not take on this pledge.</li>
+        </ol>
+      </blockquote>
+      <div class="prose">
+        <p>Paid services around TickerNet, such as support, consulting or hosting, are fine. They never change TickerNet's license or decide which features TickerNet gets.</p>
+        <p>The pledge and the freedoms above can be added to or made clearer, never weakened. <a href="decisions/0003-license-pledge-no-cla.html">ADR 0003</a> explains why TickerNet chose this license, this pledge and no CLA.</p>
+      </div>
+    </section>
+
+    <section class="step" id="name">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">The name</h2>
+        <p class="step-sub">The TickerNet name and logo mean one thing: the open-source project in this repository, released under the pledge.</p></div>
+      <div class="tbl-wrap"><table class="wrap">
+        <thead><tr><th>You may</th><th>You may not</th></tr></thead>
+        <tbody>
+          <tr><td>Say that your product uses, is built on, or is compatible with TickerNet.</td><td>Publish a fork or modified version under the TickerNet name or logo. Give it its own name; you may say it is "based on TickerNet".</td></tr>
+          <tr><td>Use the name in articles, talks, tutorials and courses about TickerNet.</td><td>Publish a proprietary, source-available or paid product under the TickerNet name.</td></tr>
+          <tr><td>Use the name for an unchanged copy of a TickerNet release.</td><td>Publish packages whose IDs start with <code>TickerNet.</code> unless they come from this project.</td></tr>
+          <tr><td>Name packages that extend TickerNet <code>&lt;YourName&gt;.TickerNet.&lt;Something&gt;</code>, as long as the description makes clear they are not part of the TickerNet project.</td><td>Suggest that the TickerNet project or Omniscient AI endorses your product when it doesn't.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="prose">
+        <p><strong>TickerQ.</strong> TickerNet is a fork of TickerQ by Arcenox LLC, and TickerQ is Arcenox LLC's name. TickerNet uses it only to describe where TickerNet came from and how to move to it from TickerQ, and does not use TickerQ's logo. TickerNet is not affiliated with, sponsored by or endorsed by Arcenox LLC.</p>
+      </div>
+    </section>
+
+    <section class="step" id="decisions">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">How decisions are made</h2></div>
+      <ul class="tasks">
+        <li><b>Pull requests.</b> Maintainers review and merge pull requests. A change goes in when a maintainer approves it and nobody with a good reason objects. Pull requests are merged with squash and merge.</li>
+        <li><b>Architecture decision records.</b> Decisions that pick between real alternatives, add or remove a package or public interface, or set a rule other changes must follow get an ADR in the <a href="decisions/index.html">decision log</a>.</li>
+        <li><b>Changing these rules.</b> <code>GOVERNANCE.md</code> changes only through a pull request with an ADR. Changes may add to the pledge or make it clearer. They may never weaken it.</li>
+      </ul>
+    </section>
+
+    <section class="step" id="security">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Security reports</h2></div>
+      <div class="prose">
+        <p>Don't report security problems in a public issue. Use GitHub's private vulnerability reporting: open the repository's <strong>Security</strong> tab and choose <strong>Report a vulnerability</strong> (<a href="https://github.com/TickerNet/TickerNet/security/advisories/new">direct link</a>). Say what the problem is, how to reproduce it, and what an attacker could do with it.</p>
+        <p>TickerNet is in preview, so security fixes go into the latest release only. <a href="https://github.com/TickerNet/TickerNet/blob/main/SECURITY.md"><code>SECURITY.md</code></a> has the details.</p>
+      </div>
+    </section>
+    <nav class="pager" aria-label="Pages"><a href="contributing.html"><small>Previous</small>Contributing</a><a class="next" href="decisions/index.html"><small>Next</small>Architecture decisions</a></nav>
+    <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="assets/site.js"></script>
+</body>
+</html>

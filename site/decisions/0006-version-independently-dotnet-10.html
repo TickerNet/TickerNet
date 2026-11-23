@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADR 0006: Version independently and target .NET 10 only</title>
+<meta name="description" content="TickerNet versions on its own from 1.0.0-preview.1 and targets .NET 10 only, with no branches per .NET version.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="../contributing.html">Contributing</a></li>
+        <li><a href="../governance.html">Governance</a></li>
+        <li><a href="index.html" aria-current="page">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>ADR 0006</h2>
+    <ol><li><a href="#context"><span class="n">01</span><span>Context</span></a></li><li><a href="#decision"><span class="n">02</span><span>Decision</span></a></li><li><a href="#alternatives"><span class="n">03</span><span>Alternatives considered</span></a></li><li><a href="#consequences"><span class="n">04</span><span>Consequences</span></a></li><li><a href="#where"><span class="n">05</span><span>Where it lives</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol>
+    <p class="rail-back"><a href="index.html">← All decisions</a></p>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">ADR 0006 · Code and packages</p>
+      <h1>Version independently and target .NET 10 only</h1>
+      <p class="lede">TickerNet starts at <code>1.0.0-preview.1</code> with its own Semantic Versioning, and every package targets .NET 10 only, with no branches per .NET version.</p>
+      <dl class="adr-meta">
+        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Decided</dt><dd>2026-11-23</dd></div>
+        <div><dt>Affects</dt><dd><code>src/Directory.Build.props</code></dd></div>
+      </dl>
+      <p class="adr-related">Related: <a href="0005-drop-tickerq-hub.html">ADR 0005</a> Drop the TickerQ Hub integration</p>
+    </header>
+    <section class="step" id="context">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
+      <div class="prose"><p>Upstream used the .NET major version as its own major version: <code>src/Directory.Build.props</code> at the fork point has <code>Version</code> 10.4.0 and <code>TargetFramework</code> <code>net10.0</code>. It kept <code>net8</code> and <code>net9</code> branches in step with a sync workflow and the <code>.sync-exclude</code> and <code>.sync-overrides</code> lists, because some EF Core 10 APIs don't exist in EF Core 8 and 9. Commit <code>08b7fff</code> removed the workflow and both lists.</p></div>
+    </section>
+    <section class="step" id="decision">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Decision</h2></div>
+      <div class="prose"><ul><li>Version <code>1.0.0-preview.1</code>, set once in <code>src/Directory.Build.props</code> and shared by every package, following Semantic Versioning.</li><li>Target <code>net10.0</code> only. Microsoft.Extensions and EF Core references are limited to <code>[10.0.0,11.0.0)</code>.</li><li>No branches per .NET version.</li></ul></div>
+    </section>
+    <section class="step" id="alternatives">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Alternatives considered</h2></div>
+      <div class="prose"><ul><li><strong>Keep TickerQ's scheme</strong> (major version = .NET version). Rejected: it needs a branch per .NET version kept in sync, and version numbers would read like TickerQ releases.</li></ul></div>
+    </section>
+    <section class="step" id="consequences">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
+      <div class="prose"><ul><li>Users on .NET 8 or 9 stay on TickerQ's open-source 8.x and 9.x releases (those before 8.5.0 and 9.5.0) until TickerNet adds targets.</li><li>A TickerNet version number says nothing about TickerQ's.</li><li>One branch, <code>main</code>, and one build.</li></ul></div>
+    </section>
+    <section class="step" id="where">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
+      <div class="prose"><ul><li><code>src/Directory.Build.props</code></li></ul></div>
+    </section>
+    <section class="step" id="sources">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
+      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/blob/main/src/Directory.Build.props"><code>src/Directory.Build.props</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/3acd0f314a351817a3159d7d29a3798c8612a263/src/Directory.Build.props"><code>src/Directory.Build.props</code> at <code>3acd0f31</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/3acd0f314a351817a3159d7d29a3798c8612a263/.sync-exclude"><code>.sync-exclude</code> at <code>3acd0f31</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/commit/08b7fff"><code>08b7fff</code></a> Remove TickerQ Hub, upstream CI, CLA and caches</li></ul></div>
+    </section>
+    <nav class="pager" aria-label="Decisions"><a href="0005-drop-tickerq-hub.html"><small>Previous</small>ADR 0005: Drop the TickerQ Hub integration</a><a class="next" href="0007-sponsor-and-home.html"><small>Next</small>ADR 0007: Omniscient AI sponsors TickerNet, which lives in its own GitHub organization</a></nav>
+    <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="../assets/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TickerNet docs</title>
+<meta name="description" content="TickerNet is an open-source background job scheduler for .NET: time and cron jobs, source-generated registration, EF Core, Redis or MongoDB storage, and a live dashboard.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="index.html" aria-current="page">Home</a></li>
+        <li><a href="getting-started.html">Getting started</a></li>
+        <li><a href="migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+        <li><a href="governance.html">Governance</a></li>
+        <li><a href="decisions/index.html">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>On this page</h2>
+    <ol>
+      <li><a href="#start"><span class="n">→</span><span>Start here</span></a></li>
+      <li><a href="#what"><span class="n">01</span><span>What TickerNet does</span></a></li>
+      <li><a href="#why"><span class="n">02</span><span>Why it exists</span></a></li>
+      <li><a href="#packages"><span class="n">03</span><span>Packages</span></a></li>
+      <li><a href="#quick-start"><span class="n">04</span><span>Quick start</span></a></li>
+      <li><a href="#sponsor"><span class="n">05</span><span>Sponsor</span></a></li>
+    </ol>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">TickerNet · open-source job scheduler for .NET</p>
+      <h1>Background jobs for .NET, open source for good</h1>
+      <p class="lede">TickerNet runs one-off and recurring jobs inside your .NET app. A job is a plain method with a <code>[TickerFunction]</code> attribute. A source generator registers it at compile time. Jobs can be kept in memory, in your EF Core database, in Redis or in MongoDB, and a built-in dashboard shows them live.</p>
+      <dl class="adr-meta" aria-label="Project facts">
+        <div><dt>Version</dt><dd><code>1.0.0-preview.1</code></dd></div>
+        <div><dt>Runs on</dt><dd>.NET 10</dd></div>
+        <div><dt>License</dt><dd>MIT OR Apache-2.0</dd></div>
+        <div><dt>NuGet</dt><dd>Not yet published</dd></div>
+      </dl>
+      <div class="promises" role="group" aria-label="TickerNet's two promises">
+        <div class="promise"><span class="tag">Build anything on it</span><b>Derivatives welcome, proprietary ones too</b><p>Use, change and redistribute TickerNet under MIT or Apache-2.0, whichever you choose. Fork it, build closed-source or commercial products on it, and keep your changes private. Nothing in TickerNet's governance adds conditions to that.</p></div>
+        <div class="promise"><span class="tag">Open source, forever</span><b>TickerNet itself never goes commercial</b><p>Every TickerNet release stays MIT OR Apache-2.0: no paid edition, no source-available version, no license keys and no CLA. Omniscient AI has made this an irrevocable <a href="governance.html#pledge">pledge</a>.</p></div>
+      </div>
+      <div class="sponsor-band">
+        <span class="label">Maintained and sponsored by</span>
+        <a class="logo" href="https://omniscient.to"><picture><source srcset="assets/sponsor/omniscient-logo-horizontal-dark-bg.svg" media="(prefers-color-scheme: dark)"><img src="assets/sponsor/omniscient-logo-horizontal-light-bg.svg" alt="Omniscient AI" width="168" height="36"></picture></a>
+        <p>Omniscient AI set up the TickerNet fork, maintains it and funds its development. It holds the TickerNet name for the community under the pledge.</p>
+      </div>
+      <details class="mobile-toc">
+        <summary>On this page</summary>
+        <ol>
+          <li><a href="#start">Start here</a></li>
+          <li><a href="#what">What TickerNet does</a></li>
+          <li><a href="#why">Why it exists</a></li>
+          <li><a href="#packages">Packages</a></li>
+          <li><a href="#quick-start">Quick start</a></li>
+          <li><a href="#sponsor">Sponsor</a></li>
+        </ol>
+      </details>
+    </header>
+
+    <section class="step" id="start">
+      <div class="step-head"><span class="step-num">→</span><h2 class="step-title">Start here</h2>
+        <p class="step-sub">Pick the page that matches what you came to do.</p></div>
+      <div class="cards">
+        <a class="card" href="getting-started.html"><span class="tagline">Use it</span><b>Getting started</b><span>Add TickerNet to an app, write a job, schedule time and cron jobs, pick a store, and turn on the dashboard and tracing.</span></a>
+        <a class="card" href="migrating-from-tickerq.html"><span class="tagline">Coming from TickerQ</span><b>Migrating from TickerQ</b><span>Package IDs, namespaces and renamed API, diagnostic IDs, and every stored or external name that changed, with what stays the same.</span></a>
+        <a class="card" href="contributing.html"><span class="tagline">Change it</span><b>Contributing</b><span>Set up, build and test, then follow one job through the code from the source generator to the dashboard. The DCO and clean-room rules.</span></a>
+        <a class="card" href="governance.html"><span class="tagline">Trust it</span><b>Governance</b><span>Who looks after TickerNet, the pledge that keeps every release open source, and how the name may be used.</span></a>
+        <a class="card" href="decisions/index.html"><span class="tagline">Why it's built this way</span><b>Architecture decisions</b><span>One record per decision: the fork point, the name, the license and pledge, the clean-room rule, versioning and this site.</span></a>
+      </div>
+    </section>
+
+    <section class="step" id="what">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">What TickerNet does</h2>
+        <p class="step-sub">Everything listed here is in the code on <code>main</code> today.</p></div>
+      <div class="prose">
+        <ul>
+          <li><strong>Time jobs and cron jobs.</strong> A <em>time ticker</em> runs a function once at a set time. A <em>cron ticker</em> runs it on a six-field cron schedule (seconds first), evaluated in the scheduler's time zone.</li>
+          <li><strong>Jobs are methods.</strong> Mark a method with <code>[TickerFunction("Name")]</code>. The source generator in the core package finds it at compile time and registers it from a module initializer, so there is no reflection scan at startup. You can also register jobs in code with <code>MapTicker</code>.</li>
+          <li><strong>Retries, payloads and chains.</strong> Each job can carry a JSON request payload, a retry count and retry intervals in seconds (30 seconds when none are set). Time tickers can have child jobs that run when the parent succeeds, fails, is cancelled or finishes, or alongside it.</li>
+          <li><strong>Limits per function.</strong> Set a priority and a maximum number of concurrent runs per function. <code>LongRunning</code> jobs get their own thread instead of the shared worker pool.</li>
+          <li><strong>Your choice of store.</strong> Jobs live in memory unless you add a store: Entity Framework Core (with TickerNet's own <code>DbContext</code> or yours), Redis, or MongoDB.</li>
+          <li><strong>Several nodes.</strong> Each node locks the jobs it takes. With Redis added, nodes send heartbeats and the jobs of a node that stops are released for the others.</li>
+          <li><strong>Live dashboard.</strong> <code>TickerNet.Dashboard</code> serves a web UI and HTTP API from your ASP.NET Core app, updated over SignalR, with basic, API key, host or custom sign-in.</li>
+          <li><strong>Logs and traces.</strong> Job events always go to <code>ILogger</code>. Turn on the <code>TickerNet</code> ActivitySource to get OpenTelemetry spans.</li>
+          <li><strong>Trimming and AOT.</strong> The core, Utilities, Redis and Dashboard packages are marked AOT-compatible, and request payloads can use a source-generated JSON context.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step" id="why">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Why it exists</h2>
+        <p class="step-sub">TickerNet is a fork of TickerQ by Arcenox LLC.</p></div>
+      <div class="prose">
+        <p>TickerQ was open source under MIT OR Apache-2.0 up to its 10.4.0 package and its main-branch commit <code>3acd0f31</code> (5 July 2026). On 19 October 2026 its main branch moved to a commercial, source-available license, and TickerQ 10.5.0 (25 October 2026) shipped under the TickerQ Software License Agreement v1.0. That agreement is free for organizations under US$5 million in annual revenue and paid above it. TickerNet continues from <code>3acd0f31</code> under the same dual license, with a <a href="governance.html#pledge">pledge</a> that it stays open source.</p>
+        <p>TickerNet is not affiliated with Arcenox LLC. The original authors keep their credit: the full TickerQ history up to the fork point is in the repository, and the Arcenox LLC copyright notices are kept. <a href="decisions/0001-fork-at-last-open-source-commit.html">ADR 0001</a> records the fork point.</p>
+      </div>
+    </section>
+
+    <section class="step" id="packages">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Packages</h2>
+        <p class="step-sub">All packages share one version, set in <code>src/Directory.Build.props</code>. None are on NuGet yet; build them from source as <a href="getting-started.html#packages">Getting started</a> shows.</p></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Package ID</th><th>Description (from the <code>.csproj</code>)</th><th>Packed</th></tr></thead>
+        <tbody>
+          <tr><td><code>TickerNet</code></td><td>A lightweight, developer-friendly library for queuing and executing cron and time-based jobs in the background.</td><td>Yes. Also carries the source generator.</td></tr>
+          <tr><td><code>TickerNet.Utilities</code></td><td>Simple utilities for queuing and executing cron/time-based jobs in the background.</td><td>Yes. Every other package depends on it.</td></tr>
+          <tr><td><code>TickerNet.EntityFrameworkCore</code></td><td>Entity Framework Core integration for scheduling and persisting cron/time-based jobs using TickerNet.</td><td>Yes</td></tr>
+          <tr><td><code>TickerNet.Caching.StackExchangeRedis</code></td><td>Redis caching and distributed synchronization provider for TickerNet job scheduler using StackExchange.Redis</td><td>Yes</td></tr>
+          <tr><td><code>TickerNet.MongoDB</code></td><td>MongoDB persistence provider for TickerNet. Uses the official MongoDB.Driver — no EF Core, no ODM.</td><td>Yes</td></tr>
+          <tr><td><code>TickerNet.Dashboard</code></td><td>Dashboard UI for visualizing and monitoring TickerNet scheduled jobs.</td><td>Yes</td></tr>
+          <tr><td><code>TickerNet.Instrumentation.OpenTelemetry</code></td><td>OpenTelemetry instrumentation package for TickerNet job scheduler with distributed tracing support</td><td>Yes</td></tr>
+          <tr><td><code>TickerNet.SourceGenerator</code></td><td>No package ID or description. The Roslyn source generator and analyzer for <code>[TickerFunction]</code> methods.</td><td>No. Its DLL is packed into <code>TickerNet</code> under <code>analyzers/dotnet/cs</code>.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="step" id="quick-start">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Quick start</h2>
+        <p class="step-sub">A web app that keeps jobs in memory. It follows <code>samples/TickerNet.Sample.WebApi</code> without the database.</p></div>
+      <div class="code"><div class="code-head"><span class="path">Program.cs</span><span>ASP.NET Core, .NET 10</span></div>
+<pre><code class="language-csharp">using TickerNet.DependencyInjection;
+using TickerNet.Utilities.Base;
+using TickerNet.Utilities.Entities;
+using TickerNet.Utilities.Interfaces.Managers;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddTickerNet();          // in-memory store by default
+
+var app = builder.Build();
+app.UseTickerNet();                       // starts the scheduler with the host
+
+app.MapPost("/hello", async (ITimeTickerManager&lt;TimeTickerEntity&gt; manager) =&gt;
+{
+    var result = await manager.AddAsync(new TimeTickerEntity
+    {
+        Function = "HelloWorld",
+        ExecutionTime = DateTime.UtcNow.AddSeconds(5)
+    });
+
+    return result.IsSucceeded
+        ? Results.Ok(new { result.Result.Id })
+        : Results.Problem(result.Exception?.Message);
+});
+
+app.Run();
+
+public class HelloJobs
+{
+    [TickerFunction("HelloWorld")]
+    public Task HelloAsync(TickerFunctionContext context, CancellationToken cancellationToken)
+    {
+        Console.WriteLine($"Hello from TickerNet. Id={context.Id}, ScheduledFor={context.ScheduledFor:O}");
+        return Task.CompletedTask;
+    }
+}</code></pre></div>
+      <div class="prose"><p>Post to <code>/hello</code> and the job runs about five seconds later. <a href="getting-started.html">Getting started</a> covers stores, cron jobs, options and the dashboard.</p></div>
+    </section>
+
+    <section class="step" id="sponsor">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Sponsor</h2></div>
+      <div class="sponsor-band">
+        <a class="logo" href="https://omniscient.to"><picture><source srcset="assets/sponsor/omniscient-logo-horizontal-dark-bg.svg" media="(prefers-color-scheme: dark)"><img src="assets/sponsor/omniscient-logo-horizontal-light-bg.svg" alt="Omniscient AI" width="168" height="36"></picture></a>
+        <p><a href="https://omniscient.to">Omniscient AI</a> (Omniscient AI Private Limited) set up the TickerNet fork, maintains it, and funds maintainer time and the project's running costs. As steward it holds the TickerNet name, GitHub organization, docs site and NuGet package IDs for the community, under the <a href="governance.html#pledge">open-source pledge</a>.</p>
+      </div>
+    </section>
+    <nav class="pager" aria-label="Pages"><a class="next" href="getting-started.html"><small>Next</small>Getting started</a></nav>
+    <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>

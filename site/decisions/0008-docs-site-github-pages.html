@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADR 0008: Publish the docs as a static site on GitHub Pages, with an ADR log</title>
+<meta name="description" content="The docs are plain HTML in site/, published to GitHub Pages with no build step, with an ADR log in site/decisions/.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="../contributing.html">Contributing</a></li>
+        <li><a href="../governance.html">Governance</a></li>
+        <li><a href="index.html" aria-current="page">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>ADR 0008</h2>
+    <ol><li><a href="#context"><span class="n">01</span><span>Context</span></a></li><li><a href="#decision"><span class="n">02</span><span>Decision</span></a></li><li><a href="#alternatives"><span class="n">03</span><span>Alternatives considered</span></a></li><li><a href="#consequences"><span class="n">04</span><span>Consequences</span></a></li><li><a href="#where"><span class="n">05</span><span>Where it lives</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol>
+    <p class="rail-back"><a href="index.html">← All decisions</a></p>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">ADR 0008 · Docs and process</p>
+      <h1>Publish the docs as a static site on GitHub Pages, with an ADR log</h1>
+      <p class="lede">The docs are plain HTML in <code>site/</code>, uploaded to GitHub Pages with no build step. Architecture decisions are recorded in <code>site/decisions/</code>.</p>
+      <dl class="adr-meta">
+        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Decided</dt><dd>2026-11-23</dd></div>
+        <div><dt>Affects</dt><dd><code>site/</code>, <code>.github/workflows/pages.yaml</code></dd></div>
+      </dl>
+      <p class="adr-related">Related: <a href="0007-sponsor-and-home.html">ADR 0007</a> Omniscient AI sponsors TickerNet, which lives in its own GitHub organization</p>
+    </header>
+    <section class="step" id="context">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
+      <div class="prose"><p>TickerNet needs docs for users and contributors, and a record of why it is built the way it is. Both should live next to the code and change in the same pull requests.</p></div>
+    </section>
+    <section class="step" id="decision">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Decision</h2></div>
+      <div class="prose"><ul><li>Docs are static HTML in <code>site/</code>, with no build step. <code>.github/workflows/pages.yaml</code> uploads <code>site/</code> to GitHub Pages on pushes to <code>main</code> that touch <code>site/</code> or the workflow, and on manual runs.</li><li>The site is a project site at <code>https://tickernet.github.io/TickerNet/</code>, so pages link to each other with relative links only.</li><li>Architecture decision records live in <code>site/decisions/</code>, with a template and an index.</li><li>The layout follows a pattern the sponsor uses for its own docs. Shared styles and scripts are in <code>site/assets/</code>. The only outside resources are Google Fonts and highlight.js from cdnjs.</li><li>Every page says when it was written and which branch it was checked against.</li></ul></div>
+    </section>
+    <section class="step" id="alternatives">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Alternatives considered</h2></div>
+      <div class="prose"><p>Not recorded.</p></div>
+    </section>
+    <section class="step" id="consequences">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
+      <div class="prose"><ul><li>Docs changes are ordinary pull requests, reviewed with the code (<code>CONTRIBUTING.md</code>, items 4 and 5).</li><li>Nothing generates or checks the pages. Accuracy is kept by hand: a change that makes a page wrong fixes it in the same pull request, and <code>AGENTS.md</code> has a link check to run before pushing.</li></ul></div>
+    </section>
+    <section class="step" id="where">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
+      <div class="prose"><ul><li><code>site/</code></li><li><code>site/decisions/</code></li><li><code>site/assets/</code></li><li><code>.github/workflows/pages.yaml</code></li></ul></div>
+    </section>
+    <section class="step" id="sources">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
+      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/blob/main/.github/workflows/pages.yaml"><code>.github/workflows/pages.yaml</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/tree/main/site"><code>site/</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/AGENTS.md"><code>AGENTS.md</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/CONTRIBUTING.md"><code>CONTRIBUTING.md</code></a></li></ul></div>
+    </section>
+    <nav class="pager" aria-label="Decisions"><a href="0007-sponsor-and-home.html"><small>Previous</small>ADR 0007: Omniscient AI sponsors TickerNet, which lives in its own GitHub organization</a><a class="next" href="index.html"><small>Back</small>All decisions</a></nav>
+    <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="../assets/site.js"></script>
+</body>
+</html>

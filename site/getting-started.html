@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Getting started · TickerNet docs</title>
+<meta name="description" content="Add TickerNet to a .NET 10 app: register services, write a job with [TickerFunction], schedule time and cron jobs, pick a store, and turn on the dashboard and tracing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="getting-started.html" aria-current="page">Getting started</a></li>
+        <li><a href="migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+        <li><a href="governance.html">Governance</a></li>
+        <li><a href="decisions/index.html">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>On this page</h2>
+    <ol>
+      <li><a href="#requirements"><span class="n">01</span><span>Requirements</span></a></li>
+      <li><a href="#packages"><span class="n">02</span><span>Add the packages</span></a></li>
+      <li><a href="#register"><span class="n">03</span><span>Register TickerNet</span></a></li>
+      <li><a href="#jobs"><span class="n">04</span><span>Write a job</span></a></li>
+      <li><a href="#schedule"><span class="n">05</span><span>Schedule jobs</span></a></li>
+      <li><a href="#stores"><span class="n">06</span><span>Choose a store</span></a></li>
+      <li><a href="#dashboard"><span class="n">07</span><span>Dashboard</span></a></li>
+      <li><a href="#telemetry"><span class="n">08</span><span>Logs and tracing</span></a></li>
+    </ol>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">TickerNet · using it</p>
+      <h1>Getting started</h1>
+      <p class="lede">From an empty .NET 10 app to scheduled jobs, a database store and a live dashboard. Every API name, option and default on this page comes from the code in <code>src/</code> and <code>samples/</code>.</p>
+      <details class="mobile-toc">
+        <summary>On this page</summary>
+        <ol>
+          <li><a href="#requirements">Requirements</a></li>
+          <li><a href="#packages">Add the packages</a></li>
+          <li><a href="#register">Register TickerNet</a></li>
+          <li><a href="#jobs">Write a job</a></li>
+          <li><a href="#schedule">Schedule jobs</a></li>
+          <li><a href="#stores">Choose a store</a></li>
+          <li><a href="#dashboard">Dashboard</a></li>
+          <li><a href="#telemetry">Logs and tracing</a></li>
+        </ol>
+      </details>
+    </header>
+
+    <section class="step" id="requirements">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Requirements</h2></div>
+      <div class="prose">
+        <ul>
+          <li><strong>.NET 10.</strong> Every package targets <code>net10.0</code> only, and its Microsoft.Extensions and EF Core references are limited to <code>[10.0.0,11.0.0)</code>.</li>
+          <li><strong>ASP.NET Core, for the dashboard.</strong> <code>TickerNet.Dashboard</code> references the <code>Microsoft.AspNetCore.App</code> framework. The scheduler itself also runs in a console app or worker service.</li>
+          <li><strong>A store, if jobs must survive a restart.</strong> An EF Core relational database provider (the samples and tests use SQLite), Redis, or MongoDB.</li>
+          <li><strong>Node.js LTS, only to build the dashboard from source.</strong> Its web app is built into <code>wwwroot/dist</code> and embedded in the assembly.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step" id="packages">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Add the packages</h2>
+        <p class="step-sub">The packages are not yet on NuGet. Until the first release, build from source and use project references, as the samples do.</p></div>
+      <ol class="tasks">
+        <li><b>Clone and build.</b> The core package takes the source generator from the generator's <code>bin/</code> folder, so build the generator first. Build the dashboard's web app too if you want the dashboard.
+<div class="code"><div class="code-head"><span class="path">shell</span><span>from CONTRIBUTING.md</span></div>
+<pre><code class="language-bash">git clone https://github.com/TickerNet/TickerNet.git
+cd TickerNet
+(cd src/TickerNet.Dashboard/wwwroot &amp;&amp; npm ci &amp;&amp; npm run build)
+dotnet build src/TickerNet.SourceGenerator/TickerNet.SourceGenerator.csproj -c Release
+dotnet build TickerNet.slnx -c Release</code></pre></div></li>
+        <li><b>Reference the projects.</b> A project reference to <code>TickerNet</code> does not bring the source generator with it (the generator DLL is only added when the package is packed), so reference the generator as an analyzer too. Add only the store and dashboard projects you use.
+<div class="code"><div class="code-head"><span class="path">YourApp.csproj</span><span>pattern from samples/*/*.csproj</span></div>
+<pre><code class="language-xml">&lt;ItemGroup&gt;
+  &lt;ProjectReference Include="..\TickerNet\src\TickerNet\TickerNet.csproj" /&gt;
+  &lt;ProjectReference Include="..\TickerNet\src\TickerNet.SourceGenerator\TickerNet.SourceGenerator.csproj"
+                    OutputItemType="Analyzer" ReferenceOutputAssembly="false" /&gt;
+
+  &lt;!-- Optional --&gt;
+  &lt;ProjectReference Include="..\TickerNet\src\TickerNet.EntityFrameworkCore\TickerNet.EntityFrameworkCore.csproj" /&gt;
+  &lt;ProjectReference Include="..\TickerNet\src\TickerNet.Dashboard\TickerNet.Dashboard.csproj" /&gt;
+&lt;/ItemGroup&gt;</code></pre></div>
+          Building <code>src/</code> also writes <code>.nupkg</code> files, because <code>src/Directory.Build.props</code> sets <code>GeneratePackageOnBuild</code>. You can put those in a local NuGet feed instead.</li>
+        <li><b>From the first release.</b> Once <code>1.0.0</code> packages are published, this will be the way to add them. These commands do not work yet.
+<div class="code"><div class="code-head"><span class="path">shell</span><span>for the first release, not yet on NuGet</span></div>
+<pre><code class="language-bash">dotnet add package TickerNet --prerelease
+dotnet add package TickerNet.EntityFrameworkCore --prerelease   # or .Caching.StackExchangeRedis, .MongoDB
+dotnet add package TickerNet.Dashboard --prerelease</code></pre></div></li>
+      </ol>
+    </section>
+
+    <section class="step" id="register">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Register TickerNet</h2>
+        <p class="step-sub">Two calls: <code>AddTickerNet</code> on the service collection and <code>UseTickerNet</code> on the built host.</p></div>
+      <div class="code"><div class="code-head"><span class="path">src/TickerNet/DependencyInjection/TickerNetServiceExtensions.cs</span><span>signatures</span></div>
+<pre><code class="language-csharp">public static IServiceCollection AddTickerNet(this IServiceCollection services,
+    Action&lt;TickerOptionsBuilder&lt;TimeTickerEntity, CronTickerEntity&gt;&gt; optionsBuilder = null)
+
+public static IServiceCollection AddTickerNet&lt;TTimeTicker, TCronTicker&gt;(this IServiceCollection services,
+    Action&lt;TickerOptionsBuilder&lt;TTimeTicker, TCronTicker&gt;&gt; optionsBuilder = null)
+    where TTimeTicker : TimeTickerEntity&lt;TTimeTicker&gt;, new()
+    where TCronTicker : CronTickerEntity, new()
+
+public static IHost UseTickerNet(this IHost host, TickerNetStartMode qStartMode = TickerNetStartMode.Immediate)</code></pre></div>
+      <div class="prose">
+        <p>Use the generic form when you derive your own entity types from <code>TimeTickerEntity&lt;T&gt;</code> and <code>CronTickerEntity</code>. <code>WebApplication</code> is an <code>IHost</code>, so web apps call <code>app.UseTickerNet()</code>; worker services call <code>host.UseTickerNet()</code>.</p>
+        <p>Call <code>UseTickerNet()</code> before the host runs. It tells TickerNet to start up when the host starts: build the function list, seed cron jobs, run your seeders, and run the store's startup step. Tools that build the host without starting it, such as EF Core migrations, trigger none of this. If you forget the call, startup is skipped and TickerNet logs a warning that starts <code>TickerNet — UseTickerNet() was not called.</code></p>
+        <p>With <code>TickerNetStartMode.Manual</code> the scheduler does not start with the host. Start it yourself through <code>ITickerNetHostScheduler.StartAsync()</code>.</p>
+      </div>
+      <div class="code"><div class="code-head"><span class="path">Program.cs</span><span>options example</span></div>
+<pre><code class="language-csharp">using TickerNet.DependencyInjection;
+
+builder.Services.AddTickerNet(options =&gt;
+{
+    options.ConfigureScheduler(scheduler =&gt;
+    {
+        scheduler.MaxConcurrency = 8;
+        scheduler.SchedulerTimeZone = TimeZoneInfo.Utc;
+    });
+    options.SetExceptionHandler&lt;MyTickerExceptionHandler&gt;();   // implements ITickerExceptionHandler
+});</code></pre></div>
+      <h3>Scheduler settings</h3>
+      <div class="prose"><p>Set these inside <code>ConfigureScheduler</code>. They live on <code>SchedulerOptionsBuilder</code> in <code>src/TickerNet.Utilities/TickerOptionsBuilder.cs</code>.</p></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Setting</th><th>Default</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code>NodeIdentifier</code></td><td><code>Environment.MachineName</code></td><td>This node's name. It is written as the lock holder on jobs the node takes, and used for heartbeats.</td></tr>
+          <tr><td><code>MaxConcurrency</code></td><td><code>Environment.ProcessorCount</code></td><td>Number of worker threads that run jobs.</td></tr>
+          <tr><td><code>IdleWorkerTimeOut</code></td><td>1 minute</td><td>How long an idle worker thread waits before it stops.</td></tr>
+          <tr><td><code>MinPollingInterval</code></td><td>1 second</td><td>Shortest wait between two reads of the store. Also settable as <code>options.MinPollingInterval</code>.</td></tr>
+          <tr><td><code>FallbackIntervalChecker</code></td><td>30 seconds</td><td>How often a second service looks for jobs that are past due and still waiting.</td></tr>
+          <tr><td><code>StaleCronOccurrenceThreshold</code></td><td><code>TimeSpan.Zero</code> (off)</td><td>Set by <code>SkipStaleCronOccurrencesOnStartup()</code>, below.</td></tr>
+          <tr><td><code>SchedulerTimeZone</code></td><td><code>TimeZoneInfo.Local</code></td><td>Time zone for cron expressions, and for execution times given with <code>DateTimeKind.Unspecified</code>.</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Options builder methods</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Method</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code>UseGZipCompression()</code></td><td>Compress request payloads with GZip. Without it they are stored as plain UTF-8 JSON.</td></tr>
+          <tr><td><code>ConfigureRequestJsonOptions(Action&lt;JsonSerializerOptions&gt;)</code></td><td>JSON settings for request payloads.</td></tr>
+          <tr><td><code>WithJsonContext(IJsonTypeInfoResolver)</code></td><td>Use a source-generated JSON context for payloads, for Native AOT or trimming.</td></tr>
+          <tr><td><code>SkipStaleCronOccurrencesOnStartup(TimeSpan? threshold = null)</code></td><td>At startup, mark waiting cron runs that are further in the past than the threshold (5 seconds if not given) as <code>Skipped</code>, so a restart doesn't run them late.</td></tr>
+          <tr><td><code>IgnoreSeedDefinedCronTickers()</code></td><td>Don't create cron jobs from cron expressions in <code>[TickerFunction]</code> at startup. They are created by default.</td></tr>
+          <tr><td><code>UseTickerSeeder(...)</code></td><td>Run your own code at startup with the time manager, the cron manager, or both, to create jobs.</td></tr>
+          <tr><td><code>DisableBackgroundServices()</code></td><td>Register only the managers. This app adds jobs; another app runs them.</td></tr>
+          <tr><td><code>SetExceptionHandler&lt;THandler&gt;()</code></td><td>Call your <code>ITickerExceptionHandler</code> when a job fails or is cancelled.</td></tr>
+          <tr><td><code>EnableActivitySource()</code></td><td>Emit OpenTelemetry spans. See <a href="#telemetry">Logs and tracing</a>.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="step" id="jobs">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Write a job</h2>
+        <p class="step-sub">A job is a method with <code>[TickerFunction]</code>. The function name is how you schedule it.</p></div>
+      <div class="code"><div class="code-head"><span class="path">src/TickerNet.Utilities/Base/TickerFunctionAttribute.cs</span><span>constructors</span></div>
+<pre><code class="language-csharp">public TickerFunctionAttribute(string functionName, string cronExpression = null,
+    TickerTaskPriority taskPriority = TickerTaskPriority.Normal, int maxConcurrency = 0)
+
+public TickerFunctionAttribute(string functionName, TickerTaskPriority taskPriority, int maxConcurrency = 0)</code></pre></div>
+      <div class="code"><div class="code-head"><span class="path">ReportJobs.cs</span><span>example</span></div>
+<pre><code class="language-csharp">using TickerNet.Utilities.Base;
+
+public record ReportRequest(int CustomerId, string Format);
+
+public class ReportJobs
+{
+    private readonly ILogger&lt;ReportJobs&gt; _logger;
+
+    public ReportJobs(ILogger&lt;ReportJobs&gt; logger) =&gt; _logger = logger;
+
+    // Runs whenever you schedule "BuildReport". The payload arrives typed.
+    [TickerFunction("BuildReport")]
+    public Task BuildAsync(TickerFunctionContext&lt;ReportRequest&gt; context, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Report for {CustomerId} as {Format}, attempt {Retry}",
+            context.Request.CustomerId, context.Request.Format, context.RetryCount);
+        return Task.CompletedTask;
+    }
+
+    // Also creates a cron job at startup: 02:00:00 every day.
+    [TickerFunction("NightlyCleanup", "0 0 2 * * *")]
+    public Task CleanupAsync(TickerFunctionContext context, CancellationToken cancellationToken)
+        =&gt; Task.CompletedTask;
+}</code></pre></div>
+      <div class="prose">
+        <ul>
+          <li><strong>Parameters.</strong> A job method can take <code>TickerFunctionContext</code>, <code>TickerFunctionContext&lt;T&gt;</code>, a <code>CancellationToken</code>, or nothing. The context gives <code>Id</code>, <code>ParentId</code>, <code>Type</code>, <code>RetryCount</code>, <code>IsDue</code>, <code>ScheduledFor</code> (UTC) and <code>FunctionName</code>, and <code>RequestCancellation()</code>. For cron runs, <code>context.CronOccurrenceOperations.SkipIfAlreadyRunning()</code> stops this run if another run of the same cron job is still going.</li>
+          <li><strong>The class.</strong> It must be a top-level, non-abstract, public or internal class. Each attempt runs in a new dependency injection scope, and the generated code builds the class with its constructor parameters taken from that scope (keyed services via <code>[FromKeyedServices]</code> work too). If the class has several constructors, mark one with <code>[TickerNetConstructor]</code>. Static methods need no instance.</li>
+          <li><strong>Cron syntax.</strong> Six fields, seconds first: <code>second minute hour day month day-of-week</code>. A value such as <code>"%Jobs:CleanupCron%"</code> is read from configuration at startup instead.</li>
+          <li><strong>Mistakes show at build time.</strong> The generator reports diagnostics <code>TN001</code> to <code>TN011</code> for problems such as a missing or duplicate name, a bad cron expression or a wrong parameter type. See <a href="migrating-from-tickerq.html#diagnostics">the full list</a>.</li>
+        </ul>
+      </div>
+      <h3>Register jobs in code instead</h3>
+      <div class="prose"><p>Classes that implement <code>ITickerFunction</code> or <code>ITickerFunction&lt;TRequest&gt;</code>, and plain lambdas, can be registered with <code>MapTicker</code>. A class's function name is its type name; a group adds a prefix, as in <code>Orders.ProcessOrderJob</code>. This is the pattern in <code>samples/TickerNet.Sample.Dashboard.ReflectionFree</code>.</p></div>
+      <div class="code"><div class="code-head"><span class="path">Program.cs</span><span>from samples/TickerNet.Sample.Dashboard.ReflectionFree</span></div>
+<pre><code class="language-csharp">builder.Services.MapTickerGroup("Background", group =&gt;
+{
+    group.MapTicker&lt;CleanupJob&gt;()
+        .WithCron("0 0 * * * *")
+        .WithMaxConcurrency(1);
+});
+
+builder.Services.MapTickerGroup("Orders")
+    .WithMaxConcurrency(5)
+    .MapTicker&lt;ProcessOrderJob, OrderRequest&gt;();
+
+builder.Services.MapTicker("InlinePing", (ctx, ct) =&gt;
+{
+    Console.WriteLine($"Ping! Id={ctx.Id}");
+    return Task.CompletedTask;
+});</code></pre></div>
+    </section>
+
+    <section class="step" id="schedule">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Schedule jobs</h2>
+        <p class="step-sub">Inject <code>ITimeTickerManager&lt;TimeTickerEntity&gt;</code> for one-off jobs and <code>ICronTickerManager&lt;CronTickerEntity&gt;</code> for recurring ones.</p></div>
+      <div class="code"><div class="code-head"><span class="path">src/TickerNet.Utilities/Interfaces/Managers/ITimeTickerManager.cs</span><span>abridged</span></div>
+<pre><code class="language-csharp">public interface ITimeTickerManager&lt;TTimeTicker&gt; where TTimeTicker : TimeTickerEntity&lt;TTimeTicker&gt;
+{
+    Task&lt;TickerResult&lt;TTimeTicker&gt;&gt; AddAsync(TTimeTicker entity, CancellationToken cancellationToken = default);
+    Task&lt;TickerResult&lt;TTimeTicker&gt;&gt; UpdateAsync(TTimeTicker timeTicker, CancellationToken cancellationToken = default);
+    Task&lt;TickerResult&lt;TTimeTicker&gt;&gt; DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    // AddBatchAsync, UpdateBatchAsync, DeleteBatchAsync, and AddAsync&lt;TFunction&gt; for MapTicker classes
+}</code></pre></div>
+      <div class="code"><div class="code-head"><span class="path">ReportScheduler.cs</span><span>example</span></div>
+<pre><code class="language-csharp">using TickerNet.Utilities;
+using TickerNet.Utilities.Entities;
+using TickerNet.Utilities.Interfaces.Managers;
+
+public class ReportScheduler(
+    ITimeTickerManager&lt;TimeTickerEntity&gt; timeTickers,
+    ICronTickerManager&lt;CronTickerEntity&gt; cronTickers)
+{
+    public async Task ScheduleAsync(CancellationToken ct)
+    {
+        // Once, in ten minutes, with a payload and three retries.
+        var once = await timeTickers.AddAsync(new TimeTickerEntity
+        {
+            Function = "BuildReport",
+            ExecutionTime = DateTime.UtcNow.AddMinutes(10),
+            Request = TickerHelper.CreateTickerRequest(new ReportRequest(42, "pdf")),
+            Retries = 3,
+            RetryIntervals = [30, 60, 300]   // seconds; the last value repeats
+        }, ct);
+
+        if (!once.IsSucceeded)
+            throw once.Exception;
+
+        // Every Monday at 08:00:00, in the scheduler's time zone.
+        await cronTickers.AddAsync(new CronTickerEntity
+        {
+            Function = "BuildReport",
+            Expression = "0 0 8 * * 1",
+            Request = TickerHelper.CreateTickerRequest(new ReportRequest(42, "pdf"))
+        }, ct);
+    }
+}</code></pre></div>
+      <div class="prose">
+        <ul>
+          <li><strong>Results, not exceptions.</strong> Manager methods return a <code>TickerResult&lt;T&gt;</code> with <code>IsSucceeded</code>, <code>Result</code>, <code>Exception</code> and <code>AffectedRows</code>. An unknown function name or a cron expression that doesn't parse comes back as a failed result.</li>
+          <li><strong>Execution time.</strong> No <code>ExecutionTime</code> means now. UTC and local times are converted to UTC; a time with <code>DateTimeKind.Unspecified</code> is read in <code>SchedulerTimeZone</code>. A job due within the next second is handed straight to the workers instead of waiting for the scheduler loop.</li>
+          <li><strong>Retries.</strong> <code>Retries</code> is the number of extra attempts. <code>RetryIntervals</code> gives the wait before each one in seconds; without it each wait is 30 seconds.</li>
+        </ul>
+      </div>
+      <h3>Chained jobs</h3>
+      <div class="prose"><p><code>FluentChainTickerBuilder&lt;TTimeTicker&gt;</code> (in <code>TickerNet.Utilities.Managers</code>) builds a parent job with up to five children, each with up to five grandchildren. Each child has a <code>RunCondition</code>: <code>OnSuccess</code>, <code>OnFailure</code>, <code>OnCancelled</code>, <code>OnFailureOrCancelled</code>, <code>OnAnyCompletedStatus</code> or <code>InProgress</code> (runs alongside the parent).</p></div>
+      <div class="code"><div class="code-head"><span class="path">example</span><span>pattern from benchmarks/TickerNet.Benchmarks/ChainBuilderBenchmarks.cs</span></div>
+<pre><code class="language-csharp">var chain = FluentChainTickerBuilder&lt;TimeTickerEntity&gt;.BeginWith(p =&gt; p
+        .SetFunction("ImportFile")
+        .SetExecutionTime(DateTime.UtcNow.AddMinutes(1)))
+    .WithFirstChild(c =&gt; c
+        .SetFunction("NotifyImportDone")
+        .SetRunCondition(RunCondition.OnSuccess))
+    .WithSecondChild(c =&gt; c
+        .SetFunction("NotifyImportFailed")
+        .SetRunCondition(RunCondition.OnFailure))
+    .Build();
+
+await timeTickers.AddAsync(chain);</code></pre></div>
+    </section>
+
+    <section class="step" id="stores">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Choose a store</h2>
+        <p class="step-sub">Jobs stay in memory unless you add a store inside <code>AddTickerNet(options =&gt; ...)</code>.</p></div>
+      <h3>In memory (the default)</h3>
+      <div class="prose"><p>If no store is added, <code>AddTickerNet</code> registers <code>TickerInMemoryPersistenceProvider</code>. Jobs live in the process and are gone when it stops, so use it for development, tests or jobs you can lose.</p></div>
+
+      <h3>Entity Framework Core</h3>
+      <div class="prose"><p><code>AddOperationalStore</code> from <code>TickerNet.EntityFrameworkCore.DependencyInjection</code> takes a <code>TickerNetEfCoreOptionBuilder</code>. Pick one of two ways.</p></div>
+      <div class="code"><div class="code-head"><span class="path">TickerNet's own DbContext</span><span>from samples/TickerNet.Sample.WebApi</span></div>
+<pre><code class="language-csharp">using Microsoft.EntityFrameworkCore;
+using TickerNet.EntityFrameworkCore.DbContextFactory;
+using TickerNet.EntityFrameworkCore.DependencyInjection;
+
+builder.Services.AddTickerNet(options =&gt;
+{
+    options.AddOperationalStore(ef =&gt;
+    {
+        ef.UseTickerNetDbContext&lt;TickerNetDbContext&gt;(db =&gt;
+            db.UseSqlite("Data Source=tickernet.db"));
+    });
+});</code></pre></div>
+      <div class="code"><div class="code-head"><span class="path">Your own DbContext</span><span>from samples/TickerNet.Sample.ApplicationDbContext</span></div>
+<pre><code class="language-csharp">using TickerNet.EntityFrameworkCore.Customizer;
+
+builder.Services.AddDbContext&lt;AppDbContext&gt;(db =&gt; db.UseSqlite("Data Source=app.db"));
+
+builder.Services.AddTickerNet(options =&gt;
+{
+    options.AddOperationalStore(ef =&gt;
+    {
+        ef.UseApplicationDbContext&lt;AppDbContext&gt;(ConfigurationType.UseModelCustomizer);
+    });
+});</code></pre></div>
+      <div class="prose">
+        <ul>
+          <li><code>UseTickerNetDbContext&lt;TDbContext&gt;(Action&lt;DbContextOptionsBuilder&gt; optionsAction, string schema = null)</code> registers a pooled context factory. The pool holds 1024 contexts unless you call <code>SetDbContextPoolSize</code>.</li>
+          <li><code>UseApplicationDbContext&lt;TDbContext&gt;(ConfigurationType)</code> stores jobs in your context. <code>UseModelCustomizer</code> adds TickerNet's three entities to your model for you. With <code>IgnoreModelCustomizer</code>, apply them yourself in <code>OnModelCreating</code> with the public <code>TimeTickerConfigurations&lt;T&gt;</code>, <code>CronTickerConfigurations&lt;T&gt;</code> and <code>CronTickerOccurrenceConfigurations&lt;T&gt;</code> from <code>TickerNet.EntityFrameworkCore.Configurations</code>.</li>
+          <li>The tables are <code>TimeTickers</code>, <code>CronTickers</code> and <code>CronTickerOccurrences</code> in schema <code>ticker</code>. Change the schema with <code>SetSchema(...)</code> or the <code>schema</code> argument.</li>
+          <li>TickerNet doesn't create the tables. Add an EF Core migration for the context and apply it, as the samples do with <code>db.Database.Migrate()</code>.</li>
+        </ul>
+      </div>
+
+      <h3>Redis</h3>
+      <div class="code"><div class="code-head"><span class="path">Program.cs</span><span>Redis</span></div>
+<pre><code class="language-csharp">using TickerNet.Caching.StackExchangeRedis.DependencyInjection;
+
+builder.Services.AddTickerNet(options =&gt;
+{
+    options.AddStackExchangeRedis(redis =&gt;
+    {
+        redis.Configuration = builder.Configuration.GetConnectionString("Redis");
+    });
+});</code></pre></div>
+      <div class="prose">
+        <ul>
+          <li>The setup action is required and must set <code>Configuration</code>, <code>ConfigurationOptions</code>, <code>ConnectionMultiplexer</code> or <code>ConnectionMultiplexerFactory</code>. Otherwise <code>AddTickerNet</code> throws <code>InvalidOperationException</code>.</li>
+          <li><code>TickerNetRedisOptionBuilder</code> extends <code>RedisCacheOptions</code>. It adds <code>NodeHeartbeatInterval</code> (1 minute), <code>ConnectionMultiplexer</code> (yours to dispose) and <code>JsonSerializerContext</code> (for AOT). <code>InstanceName</code> defaults to <code>"tickernet:"</code>.</li>
+          <li>Used alone, Redis is the store. Used with the EF Core or MongoDB store, that store keeps the jobs and Redis adds node heartbeats and dead-node cleanup, plus a cache of cron expressions for EF Core.</li>
+        </ul>
+      </div>
+
+      <h3>MongoDB</h3>
+      <div class="code"><div class="code-head"><span class="path">Program.cs</span><span>from samples/TickerNet.Sample.MongoDB</span></div>
+<pre><code class="language-csharp">using TickerNet.MongoDB.DependencyInjection;
+
+builder.Services.AddTickerNet(options =&gt;
+{
+    options.AddOperationalStore(mongo =&gt;
+    {
+        mongo.UseTickerNetMongoClient(
+            connectionString: builder.Configuration["Mongo:ConnectionString"] ?? "mongodb://localhost:27017",
+            databaseName: builder.Configuration["Mongo:Database"] ?? "tickernet");
+    });
+});</code></pre></div>
+      <div class="prose">
+        <ul>
+          <li>Call <code>UseTickerNetMongoClient(connectionString, databaseName)</code> to let TickerNet own the client, or <code>UseExistingMongoClient(databaseName)</code> to use an <code>IMongoClient</code> already in dependency injection. If you call neither, <code>AddOperationalStore</code> throws <code>InvalidOperationException</code>.</li>
+          <li>Collections are <code>ticker_TimeTickers</code>, <code>ticker_CronTickers</code> and <code>ticker_CronTickerOccurrences</code>. Change the prefix with <code>SetCollectionPrefix(...)</code>. A hosted service creates the indexes at startup.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step" id="dashboard">
+      <div class="step-head"><span class="step-num">07</span><h2 class="step-title">Dashboard</h2>
+        <p class="step-sub">Add <code>TickerNet.Dashboard</code> and call <code>AddDashboard</code>. <code>UseTickerNet()</code> then serves it.</p></div>
+      <div class="code"><div class="code-head"><span class="path">Program.cs</span><span>dashboard with basic sign-in</span></div>
+<pre><code class="language-csharp">using TickerNet.Dashboard.DependencyInjection;
+
+builder.Services.AddTickerNet(options =&gt;
+{
+    options.AddDashboard(dashboard =&gt;
+    {
+        dashboard.SetBasePath("/jobs");
+        dashboard.WithBasicAuth("admin", builder.Configuration["Dashboard:Password"]!);
+    });
+});
+
+var app = builder.Build();
+app.UseTickerNet();   // maps the dashboard at /jobs
+app.Run();</code></pre></div>
+      <div class="prose">
+        <ul>
+          <li><strong>Path.</strong> The default is <code>/tickernet/dashboard</code>. Under it are the web app, the HTTP API at <code>api/...</code> and the SignalR hub at <code>ticker-notification-hub</code>.</li>
+          <li><strong>Hosting.</strong> With <code>WebApplication</code>, <code>UseTickerNet()</code> adds the dashboard. With a <code>Startup</code> class, a startup filter registered by <code>AddDashboard</code> adds it.</li>
+          <li><strong>From source.</strong> The dashboard serves the files embedded from <code>src/TickerNet.Dashboard/wwwroot/dist</code>. Run <code>npm ci &amp;&amp; npm run build</code> in <code>wwwroot</code> before you build the project.</li>
+        </ul>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Sign-in method</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code>WithNoAuth()</code></td><td>No sign-in. This is the default.</td></tr>
+          <tr><td><code>WithBasicAuth(username, password)</code></td><td>Username and password, sent as HTTP Basic.</td></tr>
+          <tr><td><code>WithApiKey(apiKey)</code></td><td>A key the user enters, sent as a Bearer token.</td></tr>
+          <tr><td><code>WithHostAuthentication(policy = null)</code></td><td>Your app's own authentication, with an optional authorization policy name.</td></tr>
+          <tr><td><code>WithCustomAuth(Func&lt;string, bool&gt; validator)</code></td><td>Your function decides. It gets the <code>Authorization</code> header value, or the <code>access_token</code> query value for SignalR.</td></tr>
+          <tr><td><code>WithSessionTimeout(minutes)</code></td><td>Session length. The default is 60 minutes.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="prose"><p>Also on <code>DashboardOptionsBuilder</code>: <code>SetCorsPolicy(...)</code>, <code>SetBackendDomain(...)</code>, <code>SetGroupName(...)</code> for an OpenAPI group, and the <code>PreDashboardMiddleware</code>, <code>CustomMiddleware</code> and <code>PostDashboardMiddleware</code> hooks.</p></div>
+      <div class="warnbox"><b>Lock it down before you deploy.</b> Out of the box the dashboard has no sign-in, and its CORS policy allows any origin with credentials. Anyone who can reach the URL can see, add, run and delete jobs. Pick a sign-in method, and set a CORS policy if the dashboard is served across origins.</div>
+    </section>
+
+    <section class="step" id="telemetry">
+      <div class="step-head"><span class="step-num">08</span><h2 class="step-title">Logs and tracing</h2></div>
+      <div class="prose">
+        <p><strong>Logs.</strong> Job events always go to <code>ILogger</code>, with messages such as <code>TickerNet Job completed: {Function} ({JobId}) in {ExecutionTime}ms</code>. Logger categories follow the <code>TickerNet.*</code> namespaces, so <code>Logging:LogLevel:TickerNet</code> in configuration controls them.</p>
+        <p><strong>Traces.</strong> Turn on spans in one of two ways. Both use an <code>ActivitySource</code> named <code>TickerNet</code>.</p>
+        <ul>
+          <li><code>options.EnableActivitySource()</code>, built into the core packages.</li>
+          <li><code>options.AddOpenTelemetryInstrumentation()</code> from <code>TickerNet.Instrumentation.OpenTelemetry</code>, which also brings in the OpenTelemetry packages.</li>
+        </ul>
+      </div>
+      <div class="code"><div class="code-head"><span class="path">Program.cs</span><span>tracing</span></div>
+<pre><code class="language-csharp">using OpenTelemetry.Trace;
+
+builder.Services.AddTickerNet(options =&gt; options.EnableActivitySource());
+
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing =&gt; tracing.AddSource("TickerNet"));   // then add your exporter</code></pre></div>
+      <div class="prose"><p>Each run is a span named <code>tickernet.job.execute.timeticker</code> or <code>tickernet.job.execute.crontickeroccurrence</code>. Events such as <code>tickernet.job.enqueued</code>, <code>.completed</code>, <code>.failed</code>, <code>.cancelled</code> and <code>.skipped</code> are separate spans. Tags start with <code>tickernet.job.</code>, for example <code>tickernet.job.id</code> and <code>tickernet.job.function</code>.</p></div>
+    </section>
+    <nav class="pager" aria-label="Pages"><a href="index.html"><small>Previous</small>Home</a><a class="next" href="migrating-from-tickerq.html"><small>Next</small>Migrating from TickerQ</a></nav>
+    <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>

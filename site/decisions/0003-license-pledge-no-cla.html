@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADR 0003: License MIT OR Apache-2.0 with an open-source pledge and no CLA</title>
+<meta name="description" content="TickerNet keeps MIT OR Apache-2.0, adds an irrevocable open-source pledge, and uses a DCO sign-off instead of a CLA.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="../contributing.html">Contributing</a></li>
+        <li><a href="../governance.html">Governance</a></li>
+        <li><a href="index.html" aria-current="page">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>ADR 0003</h2>
+    <ol><li><a href="#context"><span class="n">01</span><span>Context</span></a></li><li><a href="#decision"><span class="n">02</span><span>Decision</span></a></li><li><a href="#alternatives"><span class="n">03</span><span>Alternatives considered</span></a></li><li><a href="#consequences"><span class="n">04</span><span>Consequences</span></a></li><li><a href="#where"><span class="n">05</span><span>Where it lives</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol>
+    <p class="rail-back"><a href="index.html">← All decisions</a></p>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">ADR 0003 · Origin and license</p>
+      <h1>License MIT OR Apache-2.0 with an open-source pledge and no CLA</h1>
+      <p class="lede">TickerNet keeps TickerQ's dual license, adds an irrevocable pledge that every release stays open source, and takes contributions under a DCO sign-off instead of a contributor license agreement.</p>
+      <dl class="adr-meta">
+        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Decided</dt><dd>2026-11-23</dd></div>
+        <div><dt>Affects</dt><dd><code>LICENSE</code>, <code>GOVERNANCE.md</code>, <code>TRADEMARKS.md</code>, <code>CONTRIBUTING.md</code></dd></div>
+      </dl>
+      <p class="adr-related">Related: <a href="0001-fork-at-last-open-source-commit.html">ADR 0001</a> Fork TickerQ at its last open-source commit, <a href="0004-clean-room-tickerq-commercial.html">ADR 0004</a> Keep a clean room around TickerQ's commercial versions, <a href="0007-sponsor-and-home.html">ADR 0007</a> Omniscient AI sponsors TickerNet, which lives in its own GitHub organization</p>
+    </header>
+    <section class="step" id="context">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
+      <div class="prose"><p>TickerQ moved from MIT OR Apache-2.0 to a commercial license (<a href="0001-fork-at-last-open-source-commit.html">ADR 0001</a>). Its <code>CLA.md</code>, at the fork point, granted Arcenox LLC the right to use contributions "under any license, including proprietary licenses" (section 2). An agreement like that lets one party relicense everyone's work. People who adopt TickerNet need to know it can't happen again.</p></div>
+    </section>
+    <section class="step" id="decision">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Decision</h2></div>
+      <div class="prose"><ul><li>Keep the dual license, MIT OR Apache-2.0, from upstream: <code>LICENSE</code>, and <code>PackageLicenseExpression</code> in <code>src/Directory.Build.props</code>.</li><li><code>GOVERNANCE.md</code> makes an irrevocable pledge: every release stays open source; no commercial edition under the TickerNet name; no license changes by assignment; and a handover keeps the pledge.</li><li>No CLA. Contributors keep their copyright and sign off each commit under the Developer Certificate of Origin 1.1 (<code>CONTRIBUTING.md</code>, rule 1). <code>.github/workflows/dco.yaml</code> checks every pull request.</li><li><code>TRADEMARKS.md</code> reserves the TickerNet name for the open-source project.</li></ul></div>
+    </section>
+    <section class="step" id="alternatives">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Alternatives considered</h2></div>
+      <div class="prose"><ul><li><strong>Copyleft, such as MPL-2.0 or LGPL.</strong> Rejected: it would limit proprietary derivatives, which the project wants to allow.</li><li><strong>MIT only.</strong> Rejected: it loses Apache-2.0's patent grant.</li><li><strong>A CLA.</strong> Rejected: it gives one party the rights to relicense everyone's work, which is the mechanism that let TickerQ relicense.</li></ul></div>
+    </section>
+    <section class="step" id="consequences">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
+      <div class="prose"><ul><li>The pledge binds the project and its name, not its users. Anyone can build proprietary products on TickerNet, but not under the TickerNet name.</li><li>No single party collects the rights to relicense contributions.</li><li>A later step could move the name and package IDs to an open-source foundation. Pledge item 4 already requires that, or a transfer to the active maintainers, if the steward stops supporting the project.</li><li><code>GOVERNANCE.md</code> changes only through a pull request with an ADR, and the pledge may never be weakened.</li></ul></div>
+    </section>
+    <section class="step" id="where">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
+      <div class="prose"><ul><li><code>LICENSE</code></li><li><code>GOVERNANCE.md</code></li><li><code>TRADEMARKS.md</code></li><li><code>CONTRIBUTING.md</code> (rule 1)</li><li><code>.github/workflows/dco.yaml</code></li><li><code>src/Directory.Build.props</code></li></ul></div>
+    </section>
+    <section class="step" id="sources">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
+      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/blob/main/LICENSE"><code>LICENSE</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/GOVERNANCE.md"><code>GOVERNANCE.md</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/TRADEMARKS.md"><code>TRADEMARKS.md</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/CONTRIBUTING.md"><code>CONTRIBUTING.md</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/3acd0f314a351817a3159d7d29a3798c8612a263/CLA.md"><code>CLA.md</code> at <code>3acd0f31</code></a>, section 2</li><li><a href="https://github.com/TickerNet/TickerNet/commit/08b7fff"><code>08b7fff</code></a> Remove TickerQ Hub, upstream CI, CLA and caches</li></ul></div>
+    </section>
+    <nav class="pager" aria-label="Decisions"><a href="0002-name-tickernet-rename-everything.html"><small>Previous</small>ADR 0002: Name the project TickerNet and rename everything</a><a class="next" href="0004-clean-room-tickerq-commercial.html"><small>Next</small>ADR 0004: Keep a clean room around TickerQ's commercial versions</a></nav>
+    <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="../assets/site.js"></script>
+</body>
+</html>

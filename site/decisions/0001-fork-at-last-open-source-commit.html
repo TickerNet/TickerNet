@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADR 0001: Fork TickerQ at its last open-source commit</title>
+<meta name="description" content="TickerNet starts from TickerQ commit 3acd0f31, the last main-branch commit licensed MIT OR Apache-2.0, and keeps TickerQ&#x27;s history up to it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="../contributing.html">Contributing</a></li>
+        <li><a href="../governance.html">Governance</a></li>
+        <li><a href="index.html" aria-current="page">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>ADR 0001</h2>
+    <ol><li><a href="#context"><span class="n">01</span><span>Context</span></a></li><li><a href="#decision"><span class="n">02</span><span>Decision</span></a></li><li><a href="#alternatives"><span class="n">03</span><span>Alternatives considered</span></a></li><li><a href="#consequences"><span class="n">04</span><span>Consequences</span></a></li><li><a href="#where"><span class="n">05</span><span>Where it lives</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol>
+    <p class="rail-back"><a href="index.html">← All decisions</a></p>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">ADR 0001 · Origin and license</p>
+      <h1>Fork TickerQ at its last open-source commit</h1>
+      <p class="lede">TickerNet starts from TickerQ commit <code>3acd0f31</code> (5 July 2026), the last commit on TickerQ's main branch licensed MIT OR Apache-2.0, and keeps TickerQ's history up to it.</p>
+      <dl class="adr-meta">
+        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Decided</dt><dd>2026-11-23</dd></div>
+        <div><dt>Affects</dt><dd><code>NOTICE</code>, <code>LICENSE</code>, git history</dd></div>
+      </dl>
+      <p class="adr-related">Related: <a href="0002-name-tickernet-rename-everything.html">ADR 0002</a> Name the project TickerNet and rename everything, <a href="0003-license-pledge-no-cla.html">ADR 0003</a> License MIT OR Apache-2.0 with an open-source pledge and no CLA, <a href="0004-clean-room-tickerq-commercial.html">ADR 0004</a> Keep a clean room around TickerQ's commercial versions</p>
+    </header>
+    <section class="step" id="context">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
+      <div class="prose"><p>TickerQ, by Arcenox LLC, was dual-licensed MIT OR Apache-2.0. Its <code>LICENSE</code> at commit <code>3acd0f31</code> says so, and the TickerQ 10.4.0 NuGet package, built from commit <code>c6ed1e7</code> (12 May 2026), carries the license expression <code>MIT OR Apache-2.0</code>.</p><p>On 19 October 2026, commit <code>13a9b544</code>, "Main commercial (#919)", moved TickerQ's main branch to a commercial license. TickerQ 10.5.0, released on 25 October 2026, ships <code>LICENSE.md</code>: the TickerQ Software License Agreement v1.0. It is free for organizations under US$5 million in annual revenue and paid above that. Section 2 of the agreement says artifacts released earlier under MIT or Apache-2.0 stay under their original licenses.</p><p>So TickerQ's code up to the relicense can be forked under its open-source license, and nothing after it can.</p></div>
+    </section>
+    <section class="step" id="decision">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Decision</h2></div>
+      <div class="prose"><ul><li>Fork at <code>3acd0f314a351817a3159d7d29a3798c8612a263</code> (2026-07-05), the last commit on TickerQ's main branch distributed under MIT OR Apache-2.0.</li><li>That commit is four commits after the 10.4.0 package. The four are: #866, which moves ActivitySource diagnostics into the main package (<code>5ffa80a</code>); #859, which bumps OpenTelemetry to the CVE-patched 1.15.3 (<code>a4600eb</code>); #864, a refactor of cron occurrence serialization (<code>526d4fe</code>); and #874, the MongoDB persistence provider by Alex Brown (<code>3acd0f3</code>).</li><li>Keep TickerQ's git history up to the fork point, 434 commits, so every original change keeps its author.</li><li>Record where the code came from in <code>NOTICE</code> and at the top of <code>LICENSE</code>, and keep Arcenox LLC's copyright notices.</li></ul></div>
+    </section>
+    <section class="step" id="alternatives">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Alternatives considered</h2></div>
+      <div class="prose"><ul><li><strong>Fork exactly the 10.4.0 package source</strong> (<code>c6ed1e7</code>). Rejected: it would lose the OpenTelemetry CVE fix and the MongoDB provider.</li><li><strong>Stay on TickerQ under its Community license.</strong> It is free under US$5 million in annual revenue, but it is source-available, not open source.</li><li><strong>Use an existing community fork</strong>, such as <code>xaviergxf/Tickwork</code> (MIT, forked from 10.4.0 on 2026-10-23). Why it was not chosen: Not recorded.</li></ul></div>
+    </section>
+    <section class="step" id="consequences">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
+      <div class="prose"><ul><li>TickerNet has everything TickerQ had at <code>3acd0f31</code>, including the MongoDB store and ActivitySource tracing in the core packages.</li><li>Nothing from TickerQ 10.5.0 or later can come in. Fixes and features made there have to be written again from a description (<a href="0004-clean-room-tickerq-commercial.html">ADR 0004</a>).</li><li>The repository's history starts with TickerQ's commits. TickerNet's own work starts at commit <code>08b7fff</code>.</li></ul></div>
+    </section>
+    <section class="step" id="where">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
+      <div class="prose"><ul><li><code>NOTICE</code></li><li><code>LICENSE</code> (the paragraph above the license texts)</li><li>Git history up to <code>3acd0f31</code></li></ul></div>
+    </section>
+    <section class="step" id="sources">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
+      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/blob/main/NOTICE"><code>NOTICE</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/LICENSE"><code>LICENSE</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/3acd0f314a351817a3159d7d29a3798c8612a263/LICENSE"><code>LICENSE</code> at <code>3acd0f31</code></a>, the upstream license at the fork point</li><li>TickerQ Software License Agreement v1.0 (<code>LICENSE.md</code> in the TickerQ 10.5.0 package), section 2</li><li>NuGet package metadata (<code>.nuspec</code>) for TickerQ 10.4.0 and 10.5.0</li><li><a href="https://github.com/TickerNet/TickerNet/commit/5ffa80a"><code>5ffa80a</code></a> Move ActivitySource diagnostics into main package (#866)</li><li><a href="https://github.com/TickerNet/TickerNet/commit/a4600eb"><code>a4600eb</code></a> Bump OpenTelemetry.* dependency to CVE patched 1.15.3 version (#859)</li><li><a href="https://github.com/TickerNet/TickerNet/commit/526d4fe"><code>526d4fe</code></a> Refactor cron occurrence serialization logic (#864)</li><li><a href="https://github.com/TickerNet/TickerNet/commit/3acd0f3"><code>3acd0f3</code></a> Add MongoDB persistence provider (#874)</li></ul></div>
+    </section>
+    <nav class="pager" aria-label="Decisions"><a href="index.html"><small>Back</small>All decisions</a><a class="next" href="0002-name-tickernet-rename-everything.html"><small>Next</small>ADR 0002: Name the project TickerNet and rename everything</a></nav>
+    <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="../assets/site.js"></script>
+</body>
+</html>

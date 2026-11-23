@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Migrating from TickerQ · TickerNet docs</title>
+<meta name="description" content="Move from TickerQ 10.4.x or an earlier open-source release to TickerNet: package IDs, namespaces, renamed API, diagnostic IDs, and every stored or external name that changed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="getting-started.html">Getting started</a></li>
+        <li><a href="migrating-from-tickerq.html" aria-current="page">Migrating from TickerQ</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+        <li><a href="governance.html">Governance</a></li>
+        <li><a href="decisions/index.html">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>On this page</h2>
+    <ol>
+      <li><a href="#before"><span class="n">→</span><span>Before you start</span></a></li>
+      <li><a href="#packages"><span class="n">01</span><span>Packages</span></a></li>
+      <li><a href="#api"><span class="n">02</span><span>Namespaces and API</span></a></li>
+      <li><a href="#diagnostics"><span class="n">03</span><span>Source generator and diagnostics</span></a></li>
+      <li><a href="#stored"><span class="n">04</span><span>Stored and external names</span></a></li>
+      <li><a href="#ef-migrations"><span class="n">05</span><span>EF Core migrations</span></a></li>
+      <li><a href="#checklist"><span class="n">↓</span><span>Checklist</span></a></li>
+    </ol>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">TickerNet · coming from TickerQ</p>
+      <h1>Migrating from TickerQ</h1>
+      <p class="lede">TickerNet is TickerQ's code as of commit <code>3acd0f31</code> with every TickerQ name changed to TickerNet. Your data carries over: table, collection and key names are the same. Your code needs new package references and namespaces, and a few names your monitoring or proxy may depend on have changed.</p>
+      <details class="mobile-toc">
+        <summary>On this page</summary>
+        <ol>
+          <li><a href="#before">Before you start</a></li>
+          <li><a href="#packages">Packages</a></li>
+          <li><a href="#api">Namespaces and API</a></li>
+          <li><a href="#diagnostics">Source generator and diagnostics</a></li>
+          <li><a href="#stored">Stored and external names</a></li>
+          <li><a href="#ef-migrations">EF Core migrations</a></li>
+          <li><a href="#checklist">Checklist</a></li>
+        </ol>
+      </details>
+    </header>
+
+    <section class="step" id="before">
+      <div class="step-head"><span class="step-num">→</span><h2 class="step-title">Before you start</h2></div>
+      <div class="prose">
+        <ul>
+          <li><strong>Which TickerQ.</strong> This guide is for TickerQ 10.4.x and earlier open-source releases. It was checked against the TickerQ code at the fork point, commit <code>3acd0f31</code>, which is four commits after the 10.4.0 package.</li>
+          <li><strong>.NET 10 first.</strong> TickerNet targets .NET 10 only. If you are on a TickerQ 8.x or 9.x release for .NET 8 or 9, move your app to .NET 10 first (<a href="decisions/0006-version-independently-dotnet-10.html">ADR 0006</a>).</li>
+          <li><strong>Not on NuGet yet.</strong> Until the first release, reference TickerNet's projects as <a href="getting-started.html#packages">Getting started</a> shows.</li>
+          <li><strong>No TickerQ Hub.</strong> TickerNet has no counterpart to TickerQ.SDK or TickerQ.RemoteExecutor, which connect to TickerQ Hub, a hosted service with its own terms (<a href="decisions/0005-drop-tickerq-hub.html">ADR 0005</a>).</li>
+        </ul>
+      </div>
+      <div class="warnbox"><b>TickerQ 10.5.0 and later are a different product.</b> They are released under a commercial license, as are the matching 8.5.0, 9.5.0 and 11.5.0 builds. Nothing from those versions is in TickerNet, and features added there do not exist here. This guide does not cover them.</div>
+      <div class="prose"><p>If you are on 10.4.0, you also pick up the four TickerQ commits that came after it and before the fork: ActivitySource tracing built into the core packages (<code>EnableActivitySource()</code>), OpenTelemetry packages at 1.15.3 or later, a change to how the dashboard sends cron runs over SignalR, and the new MongoDB store.</p></div>
+    </section>
+
+    <section class="step" id="packages">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Packages</h2>
+        <p class="step-sub">Each TickerQ package has a TickerNet package of the same shape. All are version <code>1.0.0-preview.1</code>.</p></div>
+      <div class="tbl-wrap"><table class="wrap">
+        <thead><tr><th>TickerQ package</th><th>TickerNet package</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>TickerQ</code></td><td><code>TickerNet</code></td><td>Carries the source generator, as before.</td></tr>
+          <tr><td><code>TickerQ.Utilities</code></td><td><code>TickerNet.Utilities</code></td><td></td></tr>
+          <tr><td><code>TickerQ.EntityFrameworkCore</code></td><td><code>TickerNet.EntityFrameworkCore</code></td><td></td></tr>
+          <tr><td><code>TickerQ.Caching.StackExchangeRedis</code></td><td><code>TickerNet.Caching.StackExchangeRedis</code></td><td></td></tr>
+          <tr><td><code>TickerQ.Dashboard</code></td><td><code>TickerNet.Dashboard</code></td><td></td></tr>
+          <tr><td><code>TickerQ.Instrumentation.OpenTelemetry</code></td><td><code>TickerNet.Instrumentation.OpenTelemetry</code></td><td></td></tr>
+          <tr><td>none in 10.4.0</td><td><code>TickerNet.MongoDB</code></td><td>The MongoDB store was added to TickerQ after the 10.4.0 package, at the fork point.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="step" id="api">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Namespaces and API</h2>
+        <p class="step-sub">The rename replaced <code>TickerQ</code> with <code>TickerNet</code> everywhere, in any letter case, and changed nothing else.</p></div>
+      <div class="prose"><p>Every namespace moved: <code>TickerQ.DependencyInjection</code> is now <code>TickerNet.DependencyInjection</code>, <code>TickerQ.Utilities.Base</code> is now <code>TickerNet.Utilities.Base</code>, and so on. <code>TickerQ.TickerQThreadPool</code> is now <code>TickerNet.TickerNetThreadPool</code>. Public types and members with TickerQ in their name changed the same way:</p></div>
+      <div class="tbl-wrap"><table class="wrap">
+        <thead><tr><th>TickerQ</th><th>TickerNet</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td><code>AddTickerQ(...)</code>, <code>AddTickerQ&lt;TTimeTicker, TCronTicker&gt;(...)</code></td><td><code>AddTickerNet</code></td><td><code>TickerNetServiceExtensions</code></td></tr>
+          <tr><td><code>UseTickerQ(TickerQStartMode)</code></td><td><code>UseTickerNet(TickerNetStartMode)</code></td><td><code>TickerNetServiceExtensions</code></td></tr>
+          <tr><td><code>TickerQStartMode</code></td><td><code>TickerNetStartMode</code></td><td><code>TickerNet.Utilities.Enums</code></td></tr>
+          <tr><td><code>AddTickerQDiscovery(...)</code></td><td><code>AddTickerNetDiscovery</code></td><td><code>TickerNetDiscoveryExtension</code></td></tr>
+          <tr><td><code>TickerQServiceExtensions</code>, <code>TickerQEndpointExtensions</code>, <code>TickerQDiscoveryExtension</code></td><td><code>TickerNetServiceExtensions</code>, <code>TickerNetEndpointExtensions</code>, <code>TickerNetDiscoveryExtension</code></td><td><code>TickerNet.DependencyInjection</code></td></tr>
+          <tr><td><code>TickerQDbContext</code>, <code>TickerQDbContext&lt;TTimeTicker, TCronTicker&gt;</code></td><td><code>TickerNetDbContext</code></td><td><code>TickerNet.EntityFrameworkCore.DbContextFactory</code></td></tr>
+          <tr><td><code>TickerQEfCoreOptionBuilder&lt;,&gt;</code></td><td><code>TickerNetEfCoreOptionBuilder&lt;,&gt;</code></td><td><code>TickerNet.EntityFrameworkCore</code></td></tr>
+          <tr><td><code>UseTickerQDbContext&lt;TDbContext&gt;(...)</code></td><td><code>UseTickerNetDbContext&lt;TDbContext&gt;</code></td><td>EF Core option builder</td></tr>
+          <tr><td><code>ServiceBuilder.TickerQOptionsConfiguration&lt;,,&gt;</code></td><td><code>ServiceBuilder.TickerNetOptionsConfiguration&lt;,,&gt;</code></td><td><code>TickerNet.EntityFrameworkCore.Customizer</code></td></tr>
+          <tr><td><code>TickerQMongoOptionBuilder&lt;,&gt;</code></td><td><code>TickerNetMongoOptionBuilder&lt;,&gt;</code></td><td><code>TickerNet.MongoDB</code></td></tr>
+          <tr><td><code>UseTickerQMongoClient(...)</code></td><td><code>UseTickerNetMongoClient</code></td><td>MongoDB option builder</td></tr>
+          <tr><td><code>ServiceExtension.TickerQRedisOptionBuilder</code></td><td><code>ServiceExtension.TickerNetRedisOptionBuilder</code></td><td><code>TickerNet.Caching.StackExchangeRedis.DependencyInjection</code></td></tr>
+          <tr><td><code>[TickerQConstructor]</code> (<code>TickerQConstructorAttribute</code>)</td><td><code>[TickerNetConstructor]</code></td><td><code>TickerNet.Utilities.Base</code></td></tr>
+          <tr><td><code>ITickerQHostScheduler</code>, <code>ITickerQTaskScheduler</code>, <code>ITickerQDispatcher</code></td><td><code>ITickerNetHostScheduler</code>, <code>ITickerNetTaskScheduler</code>, <code>ITickerNetDispatcher</code></td><td><code>TickerNet.Utilities.Interfaces</code></td></tr>
+          <tr><td><code>TickerQTaskScheduler</code>, <code>IsTickerQWorkerThread</code></td><td><code>TickerNetTaskScheduler</code>, <code>IsTickerNetWorkerThread</code></td><td><code>TickerNet.TickerNetThreadPool</code></td></tr>
+          <tr><td><code>TickerQBaseLoggerInstrumentation</code></td><td><code>TickerNetBaseLoggerInstrumentation</code></td><td><code>TickerNet.Utilities.Instrumentation</code></td></tr>
+          <tr><td><code>TickerQNotificationHub</code></td><td><code>TickerNetNotificationHub</code></td><td><code>TickerNet.Dashboard.Hubs</code></td></tr>
+        </tbody>
+      </table></div>
+      <div class="prose">
+        <p><strong>Names that did not change.</strong> Anything without TickerQ in its name kept it: <code>AddOperationalStore</code>, <code>AddStackExchangeRedis</code>, <code>AddDashboard</code>, <code>AddOpenTelemetryInstrumentation</code>, <code>EnableActivitySource</code>, <code>MapTicker</code>, <code>[TickerFunction]</code>, <code>TickerFunctionContext</code>, the managers, the entities and <code>TickerHelper</code>. Names that start with <code>TickerQuery</code> or contain <code>TickerQueryable</code>, such as <code>ITickerQueryable</code>, <code>TimeTickerQueryFilter</code> and <code>CronTickerQueryFilter</code>, mean "ticker query" and were left alone.</p>
+        <p><strong>Doing it in one pass.</strong> Commit your work first, then run this from your repository root. It renames TickerQ in C#, project and JSON files and <code>.editorconfig</code>, leaves <code>TickerQuery…</code> names and EF Core migration IDs alone, and changes <code>TQ0nn</code> diagnostic IDs to <code>TN0nn</code>. Review the diff before you commit it.</p>
+      </div>
+      <div class="code"><div class="code-head"><span class="path">shell</span><span>one-pass rename, needs git and perl</span></div>
+<pre><code class="language-bash">git grep -lz -e TickerQ -e 'TQ0[0-9][0-9]' -- '*.cs' '*.csproj' '*.props' '*.json' '.editorconfig' \
+  | xargs -0 perl -pi -e 'next if /\[Migration\(/; s/TickerQ(?!uer)/TickerNet/g; s/\bTQ0(\d\d)\b/TN0$1/g'</code></pre></div>
+      <div class="prose"><p>It does not touch lower-case strings such as <code>"tickerq"</code> or <code>"/tickerq/dashboard"</code>; <a href="#stored">section 04</a> lists those. It also leaves TickerQ's version numbers on package references, so swap those for TickerNet project references.</p></div>
+    </section>
+
+    <section class="step" id="diagnostics">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Source generator and diagnostics</h2>
+        <p class="step-sub">Diagnostic IDs moved from <code>TQ</code> to <code>TN</code>. Numbers, meanings and severities are the same.</p></div>
+      <div class="tbl-wrap"><table class="wrap">
+        <thead><tr><th>TickerQ</th><th>TickerNet</th><th>Severity</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>TQ001</code></td><td><code>TN001</code></td><td>Error</td><td>Class must be public or internal to hold <code>[TickerFunction]</code> methods.</td></tr>
+          <tr><td><code>TQ002</code></td><td><code>TN002</code></td><td>Error</td><td>Method must be public or internal.</td></tr>
+          <tr><td><code>TQ003</code></td><td><code>TN003</code></td><td>Error</td><td>Invalid cron expression.</td></tr>
+          <tr><td><code>TQ004</code></td><td><code>TN004</code></td><td>Error</td><td>Missing function name.</td></tr>
+          <tr><td><code>TQ005</code></td><td><code>TN005</code></td><td>Error</td><td>Duplicate function name.</td></tr>
+          <tr><td><code>TQ006</code></td><td><code>TN006</code></td><td>Warning</td><td>Several constructors; the first is used unless one has <code>[TickerNetConstructor]</code>.</td></tr>
+          <tr><td><code>TQ007</code></td><td><code>TN007</code></td><td>Error</td><td>Abstract class contains <code>[TickerFunction]</code> methods.</td></tr>
+          <tr><td><code>TQ008</code></td><td><code>TN008</code></td><td>Error</td><td>Nested class contains <code>[TickerFunction]</code> methods.</td></tr>
+          <tr><td><code>TQ009</code></td><td><code>TN009</code></td><td>Error</td><td>Invalid parameter. Only <code>TickerFunctionContext</code>, <code>TickerFunctionContext&lt;T&gt;</code> and <code>CancellationToken</code> are allowed.</td></tr>
+          <tr><td><code>TQ010</code></td><td><code>TN010</code></td><td>Error</td><td>More than one constructor has <code>[TickerNetConstructor]</code>.</td></tr>
+          <tr><td><code>TQ011</code></td><td><code>TN011</code></td><td>Error</td><td><code>maxConcurrency</code> is below 0 (0 means no limit).</td></tr>
+        </tbody>
+      </table></div>
+      <div class="prose">
+        <ul>
+          <li>Update <code>#pragma warning disable TQ006</code>, <code>&lt;NoWarn&gt;</code> entries and <code>dotnet_diagnostic.TQ006.severity</code> lines in <code>.editorconfig</code>. The diagnostic category changed from <code>TickerQ.SourceGenerator</code> to <code>TickerNet.SourceGenerator</code>.</li>
+          <li>The generated class in your root namespace is now <code>TickerNetInstanceFactoryExtensions</code> (was <code>TickerQInstanceFactoryExtensions</code>), in <code>TickerNetInstanceFactory.g.cs</code>. Update any call to its <code>Initialize()</code> method, as in <code>samples/TickerNet.Sample.WorkerService</code>. The generated <code>TickerFunctions</code> class kept its name.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step" id="stored">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Stored and external names</h2>
+        <p class="step-sub">Checked by comparing the code at <code>3acd0f31</code> with <code>main</code>. Anything with "tickerq" in it, in any case, changed; nothing else did.</p></div>
+      <h3>Changed</h3>
+      <div class="tbl-wrap"><table class="wrap">
+        <thead><tr><th>Name</th><th>TickerQ</th><th>TickerNet</th><th>What to do</th></tr></thead>
+        <tbody>
+          <tr><td>Redis <code>InstanceName</code> default: the prefix for node heartbeats (<code>hb:{node}</code>), the node list (<code>nodes:registry</code>) and the cron expression cache (<code>cron:expressions</code>)</td><td><code>tickerq:</code></td><td><code>tickernet:</code></td><td>Upgrade every node at once: a TickerQ node and a TickerNet node don't see each other's heartbeats. To keep the old prefix, set <code>InstanceName = "tickerq:"</code> in <code>AddStackExchangeRedis</code>. Old heartbeat and node-list keys expire on their own; <code>tickerq:cron:expressions</code> has no expiry, so delete it by hand.</td></tr>
+          <tr><td>DI key for the Redis <code>IConnectionMultiplexer</code>, <code>IDatabase</code> and <code>IDistributedCache</code></td><td><code>"tickerq"</code></td><td><code>"tickernet"</code></td><td>Change any <code>[FromKeyedServices("tickerq")]</code> or <code>GetRequiredKeyedService(..., "tickerq")</code> in your code.</td></tr>
+          <tr><td>Dashboard default path</td><td><code>/tickerq/dashboard</code></td><td><code>/tickernet/dashboard</code></td><td>Update links, bookmarks and proxy or access rules, or keep the old path with <code>SetBasePath("/tickerq/dashboard")</code>.</td></tr>
+          <tr><td>Dashboard config scripts</td><td><code>__tickerq-config.js</code>, <code>__tickerq-preload.js</code></td><td><code>__tickernet-config.js</code>, <code>__tickernet-preload.js</code></td><td>Update proxy rules or content security policies that name them.</td></tr>
+          <tr><td>Dashboard browser global</td><td><code>window.TickerQConfig</code></td><td><code>window.TickerNetConfig</code></td><td>Only matters if you changed the dashboard's web app.</td></tr>
+          <tr><td>Dashboard browser storage keys</td><td><code>tickerq_basic_auth</code>, <code>tickerq_api_key</code>, <code>tickerq_host_access_key</code>, <code>tickerq_bearer_token</code>, <code>tickerq:dashboard:timezone</code></td><td><code>tickernet_basic_auth</code>, <code>tickernet_api_key</code>, <code>tickernet_host_access_key</code>, <code>tickernet_bearer_token</code>, <code>tickernet:dashboard:timezone</code></td><td>Users sign in again, and their chosen dashboard time zone resets.</td></tr>
+          <tr><td>Dashboard CORS policy name</td><td><code>TickerQ_Dashboard_CORS</code></td><td><code>TickerNet_Dashboard_CORS</code></td><td>Only matters if your code refers to the policy.</td></tr>
+          <tr><td>Dashboard OpenAPI tag</td><td><code>TickerQ Dashboard</code></td><td><code>TickerNet Dashboard</code></td><td>Update OpenAPI filters that use it.</td></tr>
+          <tr><td>ActivitySource name</td><td><code>TickerQ</code></td><td><code>TickerNet</code></td><td>Change <code>AddSource("TickerQ")</code> to <code>AddSource("TickerNet")</code>.</td></tr>
+          <tr><td>Span names</td><td><code>tickerq.job.execute.*</code>, <code>tickerq.job.enqueued</code> and the other <code>tickerq.job.*</code> and <code>tickerq.seeding.*</code> spans, <code>tickerq.job_request_serialization.failed</code></td><td>The same with <code>tickernet.</code> in front</td><td>Update trace queries, dashboards and alerts.</td></tr>
+          <tr><td>Span tags</td><td><code>tickerq.job.id</code>, <code>tickerq.job.function</code>, <code>tickerq.job.type</code> and the other <code>tickerq.*</code> tags</td><td><code>tickernet.job.id</code>, <code>tickernet.job.function</code>, <code>tickernet.job.type</code>, …</td><td>Same as span names.</td></tr>
+          <tr><td>Log messages</td><td><code>TickerQ Job enqueued: …</code>, <code>TickerQ Job completed: …</code> and the rest</td><td><code>TickerNet Job enqueued: …</code>, <code>TickerNet Job completed: …</code>, …</td><td>Update log searches and alerts that match on the text.</td></tr>
+          <tr><td>Logger categories</td><td><code>TickerQ.*</code></td><td><code>TickerNet.*</code></td><td>Change <code>Logging:LogLevel:TickerQ</code> to <code>Logging:LogLevel:TickerNet</code>.</td></tr>
+          <tr><td>Worker thread names</td><td><code>TickerQ.Worker-{n}</code></td><td><code>TickerNet.Worker-{n}</code></td><td>Seen only in debuggers and profilers.</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Unchanged</h3>
+      <div class="tbl-wrap"><table class="wrap">
+        <thead><tr><th>Name</th><th>Value in both</th></tr></thead>
+        <tbody>
+          <tr><td>EF Core schema and tables</td><td>Schema <code>ticker</code>; tables <code>TimeTickers</code>, <code>CronTickers</code> and <code>CronTickerOccurrences</code>, with the same columns, keys and index names (for example <code>IX_TimeTicker_Status_ExecutionTime</code> and <code>UQ_CronTickerId_ExecutionTime</code>).</td></tr>
+          <tr><td>MongoDB collections</td><td>Prefix <code>ticker_</code>: <code>ticker_TimeTickers</code>, <code>ticker_CronTickers</code>, <code>ticker_CronTickerOccurrences</code>, with the same index names. The database name is whatever you pass; the package README's example changed from <code>tickerq</code> to <code>tickernet</code>, so keep your own value.</td></tr>
+          <tr><td>Redis store keys</td><td>Prefix <code>tq</code>: <code>tq:tt:{id}</code>, <code>tq:tt:ids</code>, <code>tq:tt:pending</code>, <code>tq:cron:{id}</code>, <code>tq:cron:ids</code>, <code>tq:cron:{id}:occurrences</code>, <code>tq:co:{id}</code>, <code>tq:co:ids</code>, <code>tq:co:pending</code>. These are written straight to the database, not under <code>InstanceName</code>.</td></tr>
+          <tr><td>Request payloads</td><td>UTF-8 JSON bytes, GZip-compressed if you turned that on.</td></tr>
+          <tr><td>Seeded cron jobs</td><td><code>InitIdentifier</code> values <code>MemoryTicker_Seeded_{function}</code>, so cron jobs from <code>[TickerFunction]</code> are matched, not duplicated.</td></tr>
+          <tr><td>Function names</td><td>Your own strings, so stored jobs still find their functions.</td></tr>
+          <tr><td>Dashboard API and sign-in</td><td>HTTP API under <code>api/</code>, SignalR hub at <code>ticker-notification-hub</code>, credentials in the <code>Authorization</code> header (Basic or Bearer) or the <code>access_token</code> query value. No cookies.</td></tr>
+          <tr><td>Configuration</td><td>TickerNet reads no configuration section of its own. Cron placeholders such as <code>%Jobs:Cron%</code> use the keys you chose.</td></tr>
+          <tr><td>Metrics</td><td>There is no <code>Meter</code> in either code base.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="step" id="ef-migrations">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">EF Core migrations</h2>
+        <p class="step-sub">The database needs no change. Your migration files do.</p></div>
+      <div class="prose">
+        <p>Migrations you generated with TickerQ refer to <code>TickerQ.EntityFrameworkCore.DbContextFactory</code>, <code>typeof(TickerQDbContext)</code> and, in the model snapshot, entity names such as <code>"TickerQ.Utilities.Entities.TimeTickerEntity"</code>. Rename those to TickerNet so the files compile and the snapshot matches the new model. The one-pass command in <a href="#api">section 02</a> does this.</p>
+        <p>Leave every migration ID in <code>[Migration("…")]</code> as it is, even if it says TickerQ. EF Core records applied migrations by ID in <code>__EFMigrationsHistory</code>. A changed ID looks like a new migration, and applying it would try to create tables that already exist.</p>
+        <p>To check, add a throwaway migration. If its <code>Up()</code> and <code>Down()</code> are empty, the model matches the database and you can remove it. If not, read it before you apply anything.</p>
+      </div>
+      <div class="code"><div class="code-head"><span class="path">shell</span><span>check that nothing changed</span></div>
+<pre><code class="language-bash">dotnet ef migrations add CheckTickerNetRename
+# Inspect the new file: Up() and Down() should have no operations.
+dotnet ef migrations remove</code></pre></div>
+    </section>
+
+    <section class="step" id="checklist">
+      <div class="step-head"><span class="step-num">↓</span><h2 class="step-title">Checklist</h2></div>
+      <ul class="checklist">
+        <li><span>Your app runs on .NET 10.</span></li>
+        <li><span>TickerQ package references are replaced with TickerNet project references (packages after the first release).</span></li>
+        <li><span>Namespaces, types and members are renamed, with <code>TickerQuery…</code> names and migration IDs left alone.</span></li>
+        <li><span><code>TQ0nn</code> suppressions and severities now say <code>TN0nn</code>.</span></li>
+        <li><span>EF Core migration files compile, and a check migration comes out empty.</span></li>
+        <li><span>Redis: you chose to keep or change the <code>InstanceName</code> prefix, and changed any <code>"tickerq"</code> keyed-service lookups.</span></li>
+        <li><span>Dashboard: links and proxy rules use the new path, or you set the old one. Users know to sign in again.</span></li>
+        <li><span>Tracing listens to <code>TickerNet</code>; trace and log queries, alerts and log levels use the new names.</span></li>
+        <li><span>All nodes are upgraded in the same deployment.</span></li>
+      </ul>
+    </section>
+    <nav class="pager" aria-label="Pages"><a href="getting-started.html"><small>Previous</small>Getting started</a><a class="next" href="contributing.html"><small>Next</small>Contributing</a></nav>
+    <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>

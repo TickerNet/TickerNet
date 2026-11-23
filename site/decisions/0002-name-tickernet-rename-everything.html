@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADR 0002: Name the project TickerNet and rename everything</title>
+<meta name="description" content="The fork is called TickerNet; every TickerQ name in code, packages and diagnostics became TickerNet, and stored names stayed the same.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="../contributing.html">Contributing</a></li>
+        <li><a href="../governance.html">Governance</a></li>
+        <li><a href="index.html" aria-current="page">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>ADR 0002</h2>
+    <ol><li><a href="#context"><span class="n">01</span><span>Context</span></a></li><li><a href="#decision"><span class="n">02</span><span>Decision</span></a></li><li><a href="#alternatives"><span class="n">03</span><span>Alternatives considered</span></a></li><li><a href="#consequences"><span class="n">04</span><span>Consequences</span></a></li><li><a href="#where"><span class="n">05</span><span>Where it lives</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol>
+    <p class="rail-back"><a href="index.html">← All decisions</a></p>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">ADR 0002 · Code and packages</p>
+      <h1>Name the project TickerNet and rename everything</h1>
+      <p class="lede">The fork is called TickerNet. Every TickerQ name in the code, the packages and the diagnostics became TickerNet. Stored names did not contain TickerQ, so existing data carries over.</p>
+      <dl class="adr-meta">
+        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Decided</dt><dd>2026-11-23</dd></div>
+        <div><dt>Affects</dt><dd><code>src/</code>, <code>tests/</code>, <code>samples/</code>, <code>benchmarks/</code>, <code>TickerNet.slnx</code></dd></div>
+      </dl>
+      <p class="adr-related">Related: <a href="0001-fork-at-last-open-source-commit.html">ADR 0001</a> Fork TickerQ at its last open-source commit, <a href="0003-license-pledge-no-cla.html">ADR 0003</a> License MIT OR Apache-2.0 with an open-source pledge and no CLA</p>
+    </header>
+    <section class="step" id="context">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
+      <div class="prose"><p>The fork needs its own name. TickerQ is Arcenox LLC's name (<code>TRADEMARKS.md</code>), and TickerQ's commercial agreement restricts use of its trademarks in sections 8(i) and 14. People moving from TickerQ also need their stored jobs to keep working.</p></div>
+    </section>
+    <section class="step" id="decision">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Decision</h2></div>
+      <div class="prose"><ul><li>The project is called <strong>TickerNet</strong>.</li><li>Commit <code>b4d7dca</code> replaced TickerQ with TickerNet in namespaces, package IDs, project and file names, types and members, in every letter case. It changed source-generator diagnostic IDs from <code>TQ0nn</code> to <code>TN0nn</code>. Nothing else in the code changed.</li><li>Names that start with <code>TickerQuery</code> or contain <code>TickerQueryable</code>, such as <code>ITickerQueryable</code> and <code>TimeTickerQueryFilter</code>, were kept. They mean "ticker query", not the product.</li><li>Stored names were left alone: the EF Core schema <code>ticker</code> and its tables, the MongoDB <code>ticker_</code> collections and the Redis <code>tq:</code> keys. EF Core databases, MongoDB collections and Redis data carry over.</li></ul></div>
+    </section>
+    <section class="step" id="alternatives">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Alternatives considered</h2></div>
+      <div class="prose"><ul><li><strong>Keep TickerQ's namespaces and package IDs</strong> for drop-in compatibility. Rejected: TickerQ is Arcenox LLC's name, it invites confusion between the two projects, and TickerQ's commercial agreement restricts use of its trademarks in sections 8(i) and 14.</li><li><strong>TickerR.</strong> Rejected: it is one letter away from TickerQ and likely to be confused with it.</li></ul></div>
+    </section>
+    <section class="step" id="consequences">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
+      <div class="prose"><ul><li>Moving from TickerQ needs code changes: package references, namespaces, renamed API and diagnostic IDs. The <a href="../migrating-from-tickerq.html">migration guide</a> lists them.</li><li>Because the rename covered every letter case, some external names changed too: the default dashboard path, the Redis <code>InstanceName</code> default and keyed-service key, the ActivitySource, span and tag names, log text and the dashboard's browser storage keys. Monitoring, proxies and bookmarks that use them need updating.</li><li><code>TRADEMARKS.md</code> keeps the new name for the open-source project.</li></ul></div>
+    </section>
+    <section class="step" id="where">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
+      <div class="prose"><ul><li>Namespaces and package IDs across <code>src/*/</code></li><li><code>src/TickerNet.SourceGenerator/Validation/DiagnosticDescriptors.cs</code></li><li><code>site/migrating-from-tickerq.html</code></li><li><code>TRADEMARKS.md</code></li></ul></div>
+    </section>
+    <section class="step" id="sources">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
+      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/commit/b4d7dca"><code>b4d7dca</code></a> Rename TickerQ to TickerNet</li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/TRADEMARKS.md"><code>TRADEMARKS.md</code></a></li><li>TickerQ Software License Agreement v1.0, sections 8(i) and 14</li><li>Comparison of the code at <code>3acd0f31</code> with <code>b4d7dca</code>, done for the <a href="../migrating-from-tickerq.html#stored">migration guide</a></li></ul></div>
+    </section>
+    <nav class="pager" aria-label="Decisions"><a href="0001-fork-at-last-open-source-commit.html"><small>Previous</small>ADR 0001: Fork TickerQ at its last open-source commit</a><a class="next" href="0003-license-pledge-no-cla.html"><small>Next</small>ADR 0003: License MIT OR Apache-2.0 with an open-source pledge and no CLA</a></nav>
+    <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="../assets/site.js"></script>
+</body>
+</html>
