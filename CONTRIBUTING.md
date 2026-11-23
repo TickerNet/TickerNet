@@ -66,7 +66,7 @@ Pull requests are merged with squash and merge.
 
 ## Reporting issues
 
-Use [GitHub Issues](https://github.com/tickernet/TickerNet/issues) for bugs and feature requests. Include the
+Use [GitHub Issues](https://github.com/TickerNet/TickerNet/issues) for bugs and feature requests. Include the
 TickerNet and .NET versions, steps to reproduce, and what you expected to happen. Report security problems
 privately, as [SECURITY.md](SECURITY.md) describes.
 

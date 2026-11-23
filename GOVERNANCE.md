@@ -9,7 +9,7 @@ like on top of it.
 [Omniscient AI](https://omniscient.to) (Omniscient AI Private Limited) sponsors TickerNet. As steward it:
 
 - funds maintainer time and the project's running costs;
-- holds the project's name, the `tickernet` GitHub organization, the docs site and the `TickerNet` package IDs on
+- holds the project's name, the `TickerNet` GitHub organization, the docs site and the `TickerNet` package IDs on
   NuGet, on behalf of the project and its users, under the pledge below.
 
 The steward does not own contributors' work. Contributors keep the copyright in what they write and license it to

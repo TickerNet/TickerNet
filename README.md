@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/tickernet/TickerNet/actions/workflows/ci.yaml"><img src="https://img.shields.io/github/actions/workflow/status/tickernet/TickerNet/ci.yaml?branch=main&style=flat-square" alt="Build status" /></a>
+  <a href="https://github.com/TickerNet/TickerNet/actions/workflows/ci.yaml"><img src="https://img.shields.io/github/actions/workflow/status/TickerNet/TickerNet/ci.yaml?branch=main&style=flat-square" alt="Build status" /></a>
   <a href="https://tickernet.github.io/TickerNet/"><img src="https://img.shields.io/badge/docs-tickernet.github.io-blue?style=flat-square" alt="Documentation" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green?style=flat-square" alt="License: MIT OR Apache-2.0" /></a>
 </p>

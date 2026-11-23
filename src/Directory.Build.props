@@ -5,7 +5,7 @@
         <Version>1.0.0-preview.1</Version>
         <DotNetVersion>[10.0.0,11.0.0)</DotNetVersion>
         <DotNetAbstractionsVersion>[10.0.0,11.0.0)</DotNetAbstractionsVersion>
-        <RepositoryUrl>https://github.com/tickernet/TickerNet</RepositoryUrl>
+        <RepositoryUrl>https://github.com/TickerNet/TickerNet</RepositoryUrl>
         <PackageProjectUrl>https://tickernet.github.io/TickerNet/</PackageProjectUrl>
         <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
         <PackageTags>ticker;queue;cron;time;scheduler;fire-and-forget</PackageTags>
