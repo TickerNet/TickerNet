@@ -264,7 +264,7 @@ public sealed class HubAndWorkerTests
             describe: crons =>
                 $"{crons.Length} cron job(s): [{string.Join(", ", crons.Select(c => $"{c.Id} paused={c.IsSystemPaused} expr={c.Expression}"))}]; " +
                 $"connected workers: [{string.Join(", ", hub.Registry.All().Select(w => $"{w.NodeName} draining={w.IsDraining} closed={w.Closed.IsCancellationRequested}"))}]; " +
-                $"hub log:\n{string.Join("\n", hub.Log.Lines.TakeLast(40))}");
+                $"hub log:\n{string.Join("\n", hub.Log.Lines.Where(l => !l.Contains("Cron ") || l.Contains(function)).TakeLast(60))}");
         Assert.Single(paused);
     }
 

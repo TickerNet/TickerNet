@@ -52,6 +52,7 @@ internal sealed class HubTestHost : IAsyncDisposable
         builder.Logging.ClearProviders();
         var log = new CapturingLoggerProvider();
         builder.Logging.AddProvider(log);
+        builder.Logging.SetMinimumLevel(LogLevel.Debug);
         if (Environment.GetEnvironmentVariable("TICKERNET_TEST_LOGS") == "1")
             builder.Logging.AddSimpleConsole(o => o.SingleLine = true).SetMinimumLevel(LogLevel.Debug).AddFilter("Microsoft", LogLevel.Warning).AddFilter("Grpc", LogLevel.Debug);
         builder.WebHost.ConfigureKestrel(kestrel =>

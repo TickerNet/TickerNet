@@ -25,7 +25,8 @@ internal sealed class CapturingLoggerProvider : ILoggerProvider
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
 
         public bool IsEnabled(LogLevel logLevel)
-            => logLevel >= LogLevel.Information && category.StartsWith("TickerNet", StringComparison.Ordinal);
+            => category.StartsWith("TickerNet", StringComparison.Ordinal)
+               && (logLevel >= LogLevel.Information || category.Contains("WorkerPauseMonitor", StringComparison.Ordinal));
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
