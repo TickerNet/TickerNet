@@ -1,7 +1,7 @@
 <h1 align="center">
-  <img src="https://tickerq.net/tickerq-logo.svg" alt="TickerQ Logo" width="140" />
+  <img src="https://tickernet.net/tickernet-logo.svg" alt="TickerNet Logo" width="140" />
   <br />
-  TickerQ
+  TickerNet
 </h1>
 
 <p align="center">
@@ -10,17 +10,17 @@
 </p>
 
 <p align="center">
-  <a href="https://www.nuget.org/packages/tickerq"><img src="https://img.shields.io/nuget/dt/tickerq.svg?style=flat-square" alt="NuGet Downloads" /></a>
-  <a href="https://www.nuget.org/packages/tickerq"><img src="https://img.shields.io/nuget/vpre/tickerq.svg?style=flat-square" alt="NuGet Version" /></a>
-  <a href="https://github.com/Arcenox-co/TickerQ/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/Arcenox-co/TickerQ/build.yml?branch=main&style=flat-square" alt="Build Status" /></a>
-  <a href="https://tickerq.net"><img src="https://img.shields.io/badge/docs-tickerq.net-blue?style=flat-square" alt="Documentation" /></a>
-  <a href="https://discord.gg/ZJemWvp9MK"><img src="https://img.shields.io/badge/discord-TickerQ-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord" /></a>
-  <a href="https://opencollective.com/tickerq"><img src="https://opencollective.com/tickerq/tiers/badge.svg?style=flat-square" alt="OpenCollective" /></a>
+  <a href="https://www.nuget.org/packages/tickernet"><img src="https://img.shields.io/nuget/dt/tickernet.svg?style=flat-square" alt="NuGet Downloads" /></a>
+  <a href="https://www.nuget.org/packages/tickernet"><img src="https://img.shields.io/nuget/vpre/tickernet.svg?style=flat-square" alt="NuGet Version" /></a>
+  <a href="https://github.com/Arcenox-co/TickerNet/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/Arcenox-co/TickerNet/build.yml?branch=main&style=flat-square" alt="Build Status" /></a>
+  <a href="https://tickernet.net"><img src="https://img.shields.io/badge/docs-tickernet.net-blue?style=flat-square" alt="Documentation" /></a>
+  <a href="https://discord.gg/ZJemWvp9MK"><img src="https://img.shields.io/badge/discord-TickerNet-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord" /></a>
+  <a href="https://opencollective.com/tickernet"><img src="https://opencollective.com/tickernet/tiers/badge.svg?style=flat-square" alt="OpenCollective" /></a>
 </p>
 
 ---
 
-## Why TickerQ?
+## Why TickerNet?
 
 | | |
 |---|---|
@@ -28,23 +28,23 @@
 | **Your database** | EF Core (PostgreSQL, SQL Server, SQLite, MySQL) or Redis. No separate storage. |
 | **Real-time dashboard** | Built-in SignalR dashboard. Monitor, inspect, manage — no paid add-ons. |
 | **Multi-node** | Redis heartbeats, dead-node cleanup, lock-based coordination. Just add instances. |
-| **Minimal setup** | `AddTickerQ()` → decorate a method → schedule. Minutes, not hours. |
+| **Minimal setup** | `AddTickerNet()` → decorate a method → schedule. Minutes, not hours. |
 
 ## Features
 
 - **Time & cron scheduling** — one-off and recurring jobs
 - **Source-generated** — compile-time function registration for maximum performance
 - **Dual persistence** — EF Core (PostgreSQL, SQL Server, SQLite, MySQL) or Redis
-- **Live dashboard** — real-time UI with SignalR — [screenshots](https://tickerq.net/features/dashboard.html#dashboard-screenshots)
+- **Live dashboard** — real-time UI with SignalR — [screenshots](https://tickernet.net/features/dashboard.html#dashboard-screenshots)
 - **Retry & throttling** — configurable retry policies with backoff
 - **Dependency injection** — first-class DI support
 - **Multi-node** — distributed coordination via Redis heartbeats and dead-node cleanup
-- **Hub** — centralized scheduling across applications via [TickerQ Hub](https://hub.tickerq.net)
+- **Hub** — centralized scheduling across applications via [TickerNet Hub](https://hub.tickernet.net)
 
 ## Quick Start
 
 ```bash
-dotnet add package TickerQ
+dotnet add package TickerNet
 ```
 
 ### 1. Register services
@@ -52,17 +52,17 @@ dotnet add package TickerQ
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddTickerQ();
+builder.Services.AddTickerNet();
 
 var app = builder.Build();
-app.UseTickerQ();
+app.UseTickerNet();
 app.Run();
 ```
 
 ### 2. Create a job
 
 ```csharp
-using TickerQ.Utilities.Base;
+using TickerNet.Utilities.Base;
 
 public class MyJobs
 {
@@ -71,7 +71,7 @@ public class MyJobs
         TickerFunctionContext context,
         CancellationToken cancellationToken)
     {
-        Console.WriteLine($"Hello from TickerQ! Job ID: {context.Id}");
+        Console.WriteLine($"Hello from TickerNet! Job ID: {context.Id}");
     }
 }
 ```
@@ -96,29 +96,29 @@ public class MyService(ITimeTickerManager<TimeTickerEntity> manager)
 
 | Package | Description |
 |---------|------------|
-| [`TickerQ`](https://www.nuget.org/packages/TickerQ) | Core scheduler engine |
-| [`TickerQ.Utilities`](https://www.nuget.org/packages/TickerQ.Utilities) | Shared types, entities, and interfaces |
-| [`TickerQ.EntityFrameworkCore`](https://www.nuget.org/packages/TickerQ.EntityFrameworkCore) | EF Core persistence provider |
-| [`TickerQ.Caching.StackExchangeRedis`](https://www.nuget.org/packages/TickerQ.Caching.StackExchangeRedis) | Redis persistence and distributed coordination |
-| [`TickerQ.Dashboard`](https://www.nuget.org/packages/TickerQ.Dashboard) | Real-time dashboard UI |
-| [`TickerQ.Instrumentation.OpenTelemetry`](https://www.nuget.org/packages/TickerQ.Instrumentation.OpenTelemetry) | OpenTelemetry tracing |
-| [`TickerQ.SourceGenerator`](https://www.nuget.org/packages/TickerQ.SourceGenerator) | Compile-time function registration |
+| [`TickerNet`](https://www.nuget.org/packages/TickerNet) | Core scheduler engine |
+| [`TickerNet.Utilities`](https://www.nuget.org/packages/TickerNet.Utilities) | Shared types, entities, and interfaces |
+| [`TickerNet.EntityFrameworkCore`](https://www.nuget.org/packages/TickerNet.EntityFrameworkCore) | EF Core persistence provider |
+| [`TickerNet.Caching.StackExchangeRedis`](https://www.nuget.org/packages/TickerNet.Caching.StackExchangeRedis) | Redis persistence and distributed coordination |
+| [`TickerNet.Dashboard`](https://www.nuget.org/packages/TickerNet.Dashboard) | Real-time dashboard UI |
+| [`TickerNet.Instrumentation.OpenTelemetry`](https://www.nuget.org/packages/TickerNet.Instrumentation.OpenTelemetry) | OpenTelemetry tracing |
+| [`TickerNet.SourceGenerator`](https://www.nuget.org/packages/TickerNet.SourceGenerator) | Compile-time function registration |
 
 > **Note:** All packages are versioned together. Always update all packages to the same version.
 
-## TickerQ Hub
+## TickerNet Hub
 
-Centralized scheduling across applications — [hub.tickerq.net](https://hub.tickerq.net)
+Centralized scheduling across applications — [hub.tickernet.net](https://hub.tickernet.net)
 
 ## Documentation
 
-Full documentation at **[tickerq.net](https://tickerq.net)** — docs are open-source at [TickerQ-UI](https://github.com/Arcenox-co/TickerQ-UI).
+Full documentation at **[tickernet.net](https://tickernet.net)** — docs are open-source at [TickerNet-UI](https://github.com/Arcenox-co/TickerNet-UI).
 
 ## Sponsors & Backers
 
-Support TickerQ through [OpenCollective](https://opencollective.com/tickerq).
+Support TickerNet through [OpenCollective](https://opencollective.com/tickernet).
 
-<a href="https://opencollective.com/tickerq"><img src="https://opencollective.com/tickerq/backers.svg?width=890" /></a>
+<a href="https://opencollective.com/tickernet"><img src="https://opencollective.com/tickernet/backers.svg?width=890" /></a>
 
 ## Contributing
 
@@ -128,8 +128,8 @@ PRs, ideas, and issues are welcome! Please read our [Contributing Guide](CONTRIB
 
 Thanks to all our wonderful contributors! See [CONTRIBUTORS.md](CONTRIBUTORS.md) for details.
 
-<a href="https://github.com/Arcenox-co/TickerQ/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Arcenox-co/TickerQ" />
+<a href="https://github.com/Arcenox-co/TickerNet/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Arcenox-co/TickerNet" />
 </a>
 
 ## License
