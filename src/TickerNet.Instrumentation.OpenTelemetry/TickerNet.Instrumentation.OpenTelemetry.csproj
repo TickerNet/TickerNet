@@ -16,6 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="TickerNet.Utilities" Version="$(Version)" />
+    <ProjectReference Include="..\TickerNet.Utilities\TickerNet.Utilities.csproj" />
   </ItemGroup>
 </Project>
