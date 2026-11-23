@@ -13,6 +13,8 @@ export class GetCronTickerResponse {
     updatedAt!:string;
     retries!:number;
     isEnabled!:boolean;
+    /** Paused by the hub because no worker that offers this remote function is connected. */
+    isSystemPaused?:boolean;
     actions:string|undefined = undefined;
 }
 
