@@ -1227,6 +1227,28 @@ const refreshData = async () => {
             hide-default-footer
             class="enhanced-table"
           >
+            <template v-slot:item.function="{ item }">
+              <span class="function-cell">
+                {{ item.function }}
+                <v-tooltip v-if="item.isSystemPaused" location="top">
+                  <template #activator="{ props }">
+                    <v-chip
+                      v-bind="props"
+                      size="x-small"
+                      color="warning"
+                      variant="tonal"
+                      class="ml-2 worker-offline-chip"
+                      data-testid="worker-offline-chip"
+                    >
+                      <v-icon size="x-small" class="mr-1">mdi-lan-disconnect</v-icon>
+                      Worker offline
+                    </v-chip>
+                  </template>
+                  <span>Paused until a worker that offers this function connects. It resumes on its own.</span>
+                </v-tooltip>
+              </span>
+            </template>
+
             <template v-slot:item.expression="{ item }">
               <v-tooltip location="top">
                 <template #activator="{ props }">
@@ -2314,4 +2336,11 @@ const refreshData = async () => {
     padding: 16px;
   }
 }
+.function-cell {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
 </style> 
