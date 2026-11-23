@@ -260,8 +260,12 @@ public sealed class HubAndWorkerTests
 
         var paused = await HubTestHost.EventuallyAsync(
             () => hub.Store.GetCronTickers(c => c.Function == remoteName, CancellationToken.None),
-            crons => crons.Length == 1 && crons[0].IsSystemPaused);
-        Assert.True(paused[0].IsSystemPaused);
+            crons => crons.Length > 0 && crons.All(c => c.IsSystemPaused),
+            describe: crons =>
+                $"{crons.Length} cron job(s): [{string.Join(", ", crons.Select(c => $"{c.Id} paused={c.IsSystemPaused} expr={c.Expression}"))}]; " +
+                $"connected workers: [{string.Join(", ", hub.Registry.All().Select(w => $"{w.NodeName} draining={w.IsDraining} closed={w.Closed.IsCancellationRequested}"))}]; " +
+                $"hub log:\n{string.Join("\n", hub.Log.Lines.TakeLast(40))}");
+        Assert.Single(paused);
     }
 
     [Fact]

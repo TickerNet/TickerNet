@@ -47,7 +47,8 @@ disconnects, so rolling deploys don't fail jobs.
 
 | Option | Default | Meaning |
 | --- | --- | --- |
-| `HubAddress` | (required) | The scheduler's address. |
+| `HubAddress` | (required unless `HubAddresses` is set) | The scheduler's address. |
+| `HubAddresses` | empty | With several scheduler instances, each instance's address; the worker connects to all of them. |
 | `SharedSecret` | (required) | The scheduler's shared secret. |
 | `NodeName` | (required) | Groups interchangeable replicas. No `@` or spaces. |
 | `MaxConcurrency` | 0 (no limit) | Most runs this worker executes at once. |

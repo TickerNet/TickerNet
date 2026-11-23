@@ -180,9 +180,11 @@ public sealed class HubSafetyTests
 
         // A replica started without its functions (for example, UseTickerNet() forgotten).
         using var empty = await hub.StartWorkerAsync(node, offers: _ => false);
-        await Task.Delay(TimeSpan.FromSeconds(3));
 
-        var crons = await hub.Store.GetCronTickers(c => c.Function == remoteName, CancellationToken.None);
+        // Still there, and paused once the hub's startup grace (WorkerTimeout) has passed.
+        var crons = await HubTestHost.EventuallyAsync(
+            () => hub.Store.GetCronTickers(c => c.Function == remoteName, CancellationToken.None),
+            found => found.Length != 1 || found[0].IsSystemPaused);
         Assert.Single(crons);
         Assert.True(crons[0].IsSystemPaused);
         await empty.StopAsync();

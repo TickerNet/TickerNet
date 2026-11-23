@@ -25,11 +25,15 @@ internal sealed class HubTestHost : IAsyncDisposable
 {
     public const string Secret = "test-shared-secret-0123456789-abcdefghij";
 
-    private HubTestHost(WebApplication app, Uri address)
+    private HubTestHost(WebApplication app, Uri address, CapturingLoggerProvider log)
     {
         App = app;
         Address = address;
+        Log = log;
     }
+
+    /// <summary>The hub's recent TickerNet log lines, for failure messages.</summary>
+    public CapturingLoggerProvider Log { get; }
 
     public WebApplication App { get; }
     public Uri Address { get; }
@@ -46,6 +50,8 @@ internal sealed class HubTestHost : IAsyncDisposable
     {
         var builder = WebApplication.CreateBuilder();
         builder.Logging.ClearProviders();
+        var log = new CapturingLoggerProvider();
+        builder.Logging.AddProvider(log);
         if (Environment.GetEnvironmentVariable("TICKERNET_TEST_LOGS") == "1")
             builder.Logging.AddSimpleConsole(o => o.SingleLine = true).SetMinimumLevel(LogLevel.Debug).AddFilter("Microsoft", LogLevel.Warning).AddFilter("Grpc", LogLevel.Debug);
         builder.WebHost.ConfigureKestrel(kestrel =>
@@ -55,6 +61,8 @@ internal sealed class HubTestHost : IAsyncDisposable
         {
             hub.SharedSecret = Secret;
             hub.WorkerWaitTimeout = TimeSpan.FromSeconds(5);
+            // Test workers send a heartbeat every second.
+            hub.WorkerTimeout = TimeSpan.FromSeconds(4);
             configure?.Invoke(hub);
         }));
 
@@ -64,7 +72,7 @@ internal sealed class HubTestHost : IAsyncDisposable
         await app.StartAsync();
 
         var address = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.First();
-        return new HubTestHost(app, new Uri(address));
+        return new HubTestHost(app, new Uri(address), log);
     }
 
     public async Task<IHost> StartWorkerAsync(
@@ -123,7 +131,7 @@ internal sealed class HubTestHost : IAsyncDisposable
 
     public static string UniqueName(string prefix) => $"{prefix}_{Guid.NewGuid():N}";
 
-    public static async Task<T> EventuallyAsync<T>(Func<Task<T>> probe, Func<T, bool> done, TimeSpan? timeout = null)
+    public static async Task<T> EventuallyAsync<T>(Func<Task<T>> probe, Func<T, bool> done, TimeSpan? timeout = null, Func<T, string>? describe = null)
     {
         var deadline = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(20));
         while (true)
@@ -131,7 +139,7 @@ internal sealed class HubTestHost : IAsyncDisposable
             var value = await probe();
             if (done(value)) return value;
             if (DateTime.UtcNow > deadline)
-                throw new TimeoutException($"Condition not met in time. Last value: {value}");
+                throw new TimeoutException($"Condition not met in time. Last value: {(describe != null ? describe(value) : value)}");
             await Task.Delay(50);
         }
     }

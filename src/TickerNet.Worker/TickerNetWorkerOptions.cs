@@ -11,9 +11,21 @@ public sealed class TickerNetWorkerOptions
 {
     /// <summary>
     /// Address of the scheduler that runs TickerNet.Hub, for example <c>https://scheduler.internal:5001</c>.
-    /// Required. The endpoint speaks gRPC over HTTP/2.
+    /// Required unless <see cref="HubAddresses"/> is set. The endpoint speaks gRPC over HTTP/2.
     /// </summary>
     public Uri? HubAddress { get; set; }
+
+    /// <summary>
+    /// Addresses of every scheduler instance that runs TickerNet.Hub, when there is more than one.
+    /// The worker keeps a connection to each, so whichever instance picks up a job can send it here.
+    /// Each address must reach one instance (not a load balancer in front of several), for example
+    /// one DNS name per pod. Used together with <see cref="HubAddress"/> if both are set.
+    /// </summary>
+    public IList<Uri> HubAddresses { get; } = new List<Uri>();
+
+    /// <summary><see cref="HubAddress"/> and <see cref="HubAddresses"/>, without duplicates.</summary>
+    internal IReadOnlyList<Uri> EffectiveHubAddresses
+        => (HubAddress is null ? HubAddresses : HubAddresses.Prepend(HubAddress)).Distinct().ToArray();
 
     /// <summary>
     /// The secret configured on the hub (<c>TickerNetHubOptions.SharedSecret</c>). Required, at least
@@ -69,12 +81,18 @@ public sealed class TickerNetWorkerOptions
 
     internal void Validate()
     {
-        if (HubAddress is null || !HubAddress.IsAbsoluteUri
-            || (HubAddress.Scheme != Uri.UriSchemeHttps && HubAddress.Scheme != Uri.UriSchemeHttp))
-            throw new InvalidOperationException("TickerNetWorkerOptions.HubAddress must be an absolute http or https address.");
-        if (HubAddress.Scheme == Uri.UriSchemeHttp && !HubAddress.IsLoopback && !AllowUnencryptedHttp)
-            throw new InvalidOperationException(
-                "TickerNetWorkerOptions.HubAddress uses http to another machine. Use https, or set AllowUnencryptedHttp inside a trusted private network.");
+        var addresses = EffectiveHubAddresses;
+        if (addresses.Count == 0)
+            throw new InvalidOperationException("Set TickerNetWorkerOptions.HubAddress (or HubAddresses for several scheduler instances).");
+        foreach (var address in addresses)
+        {
+            if (address is null || !address.IsAbsoluteUri
+                || (address.Scheme != Uri.UriSchemeHttps && address.Scheme != Uri.UriSchemeHttp))
+                throw new InvalidOperationException($"Hub address '{address}' must be an absolute http or https address.");
+            if (address.Scheme == Uri.UriSchemeHttp && !address.IsLoopback && !AllowUnencryptedHttp)
+                throw new InvalidOperationException(
+                    $"Hub address '{address}' uses http to another machine. Use https, or set AllowUnencryptedHttp inside a trusted private network.");
+        }
         if (string.IsNullOrWhiteSpace(SharedSecret) || SharedSecret.Length < HelloSignature.MinimumSecretLength)
             throw new InvalidOperationException(
                 $"TickerNet.Worker needs a SharedSecret of at least {HelloSignature.MinimumSecretLength} characters, the same as the hub's.");
