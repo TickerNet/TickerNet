@@ -11,7 +11,6 @@
         <Authors>Arcenox LLC</Authors>
         <Copyright>Copyright 2025-present Arcenox LLC</Copyright>
         <PackageTags>ticker;queue;cron;time;scheduler;fire-and-forget</PackageTags>
-        <PackageIcon>icon.jpg</PackageIcon>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <LangVersion>default</LangVersion>
 
@@ -23,10 +22,6 @@
         <Deterministic>true</Deterministic>
         <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     </PropertyGroup>
-
-    <ItemGroup>
-        <None Include="..\..\icon.jpg" Pack="true" PackagePath="\" />
-    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.102" PrivateAssets="All" />

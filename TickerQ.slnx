@@ -7,11 +7,6 @@
   <Folder Name="/.Solution Items/">
     <File Path="Directory.Build.props" />
   </Folder>
-  <Folder Name="/.Solution Items/workflows/">
-    <File Path=".github/workflows/build.yml" />
-    <File Path=".github/workflows/pr.yaml" />
-    <File Path=".github/workflows/publish.yml" />
-  </Folder>
   <Folder Name="/benchmarks/">
     <Project Path="benchmarks/TickerQ.Benchmarks/TickerQ.Benchmarks.csproj" />
   </Folder>
@@ -32,11 +27,6 @@
     <Project Path="src/TickerQ.SourceGenerator/TickerQ.SourceGenerator.csproj" />
     <Project Path="src/TickerQ.Utilities/TickerQ.Utilities.csproj" />
     <Project Path="src/TickerQ/TickerQ.csproj" />
-  </Folder>
-  <Folder Name="/hub/">
-    <File Path="hub/Directory.Build.props" />
-    <Project Path="hub/remoteExecutor/TickerQ.RemoteExecutor/TickerQ.RemoteExecutor.csproj" />
-    <Project Path="hub/sdks/dotnet/TickerQ.SDK/TickerQ.SDK.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/TickerQ.Caching.StackExchangeRedis.Tests/TickerQ.Caching.StackExchangeRedis.Tests.csproj" />
