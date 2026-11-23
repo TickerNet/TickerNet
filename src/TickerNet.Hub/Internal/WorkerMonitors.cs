@@ -108,6 +108,7 @@ internal sealed class WorkerPauseMonitor<TTimeTicker, TCronTicker>(
 
     private void OnRegistryChanged()
     {
+        logger.LogDebug("Workers changed; reconciling in {Seconds} s", Debounce.TotalSeconds);
         var next = new CancellationTokenSource();
         var previous = Interlocked.Exchange(ref _pending, next);
         previous?.Cancel();
@@ -129,6 +130,10 @@ internal sealed class WorkerPauseMonitor<TTimeTicker, TCronTicker>(
             {
                 // Superseded by a newer change.
             }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Debounced reconcile failed");
+            }
         });
     }
 
@@ -144,6 +149,7 @@ internal sealed class WorkerPauseMonitor<TTimeTicker, TCronTicker>(
 
     internal async Task ReconcileAsync(CancellationToken cancellationToken)
     {
+        logger.LogDebug("Reconcile requested; pausing allowed from {PauseNotBefore:O}", _pauseNotBefore);
         await writeGate.Gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -158,6 +164,9 @@ internal sealed class WorkerPauseMonitor<TTimeTicker, TCronTicker>(
             foreach (var cron in crons)
             {
                 var shouldPause = ShouldPause(cron.Function);
+                logger.LogDebug("Cron {Function}: paused={Paused} shouldPause={ShouldPause} published={Published} canRun={CanRun}",
+                    cron.Function, cron.IsSystemPaused, shouldPause, catalog.IsPublished(cron.Function),
+                    registry.CanRun(RemoteFunctionName.GetNodeName(cron.Function), RemoteFunctionName.GetFunctionName(cron.Function)));
                 if (cron.IsSystemPaused == shouldPause) continue;
                 if (shouldPause && DateTime.UtcNow < _pauseNotBefore) continue;
                 cron.IsSystemPaused = shouldPause;
