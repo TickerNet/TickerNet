@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADR 0011: Publish packages from CI with NuGet trusted publishing</title>
+<meta name="description" content="Pushing a version tag on main builds, tests and publishes every package to NuGet from GitHub Actions, using trusted publishing instead of a stored API key.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../remote-workers.html">Remote workers</a></li>
+        <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="../contributing.html">Contributing</a></li>
+        <li><a href="../governance.html">Governance</a></li>
+        <li><a href="index.html" aria-current="page">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>ADR 0011</h2>
+    <ol><li><a href="#context"><span class="n">01</span><span>Context</span></a></li><li><a href="#decision"><span class="n">02</span><span>Decision</span></a></li><li><a href="#alternatives"><span class="n">03</span><span>Alternatives considered</span></a></li><li><a href="#consequences"><span class="n">04</span><span>Consequences</span></a></li><li><a href="#where"><span class="n">05</span><span>Where it lives</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol>
+    <p class="rail-back"><a href="index.html">← All decisions</a></p>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">ADR 0011 · Code and packages</p>
+      <h1>Publish packages from CI with NuGet trusted publishing</h1>
+      <p class="lede">Pushing a version tag on <code>main</code> builds, tests and publishes every TickerNet package to NuGet from GitHub Actions. The workflow gets a short-lived NuGet key through trusted publishing, so no API key is stored anywhere.</p>
+      <dl class="adr-meta">
+        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Decided</dt><dd>2026-11-23</dd></div>
+        <div><dt>Affects</dt><dd><code>.github/workflows/release.yaml</code>, <code>src/Directory.Build.props</code>, package READMEs, <code>assets/tickernet-icon.png</code></dd></div>
+      </dl>
+      <p class="adr-related">Related: <a href="0006-version-independently-dotnet-10.html">ADR 0006</a> Version independently and target .NET 10 only, <a href="0007-sponsor-and-home.html">ADR 0007</a> Omniscient AI sponsors TickerNet, which lives in its own GitHub organization</p>
+    </header>
+    <section class="step" id="context">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
+      <div class="prose"><p>TickerNet's packages weren't on NuGet. ADR 0005 removed TickerQ's publishing workflow, which used upstream secrets. A release process should be repeatable, should publish only tested code from <code>main</code>, and shouldn't depend on a long-lived API key that can leak or expire. The <code>TickerNet.</code> package ID prefix also needs protecting, as the pledge in <code>GOVERNANCE.md</code> promises.</p></div>
+    </section>
+    <section class="step" id="decision">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Decision</h2></div>
+      <div class="prose"><ul>
+        <li><code>.github/workflows/release.yaml</code> runs when a tag <code>vMAJOR.MINOR.PATCH</code> or <code>vMAJOR.MINOR.PATCH-label</code> is pushed. It refuses a tag that isn't on <code>main</code>. It builds the dashboard and every package with the tag's version, runs every test, packs, checks that all 9 packages are there, publishes them to nuget.org, and creates a GitHub release with the packages attached. A tag with a label (for example <code>-preview.2</code>) makes a prerelease.</li>
+        <li>Publishing uses NuGet trusted publishing: the workflow trades GitHub's OIDC token for a short-lived NuGet API key with <code>NuGet/login</code>. The policy on nuget.org names this repository, <code>release.yaml</code> and the <code>nuget</code> environment. The repository variable <code>NUGET_USER</code> names the nuget.org account that owns the policy. No NuGet key is stored in GitHub.</li>
+        <li>The job runs in the <code>nuget</code> GitHub environment, which only <code>v*</code> tags can deploy to.</li>
+        <li>The tag sets the version; <code>Version</code> in <code>src/Directory.Build.props</code> is the default for local builds.</li>
+        <li>Every package carries the TickerNet icon (<code>assets/tickernet-icon.png</code>) and a README written for nuget.org: absolute links, no images or GitHub-only markup. The core package uses <code>src/TickerNet/README.md</code> instead of the repository README.</li>
+        <li>The source generator is never packed on its own (<code>IsPackable</code> is false); it ships inside the <code>TickerNet</code> package.</li>
+        <li>The <code>TickerNet.</code> ID prefix is reserved on nuget.org for the account that publishes.</li>
+      </ul></div>
+    </section>
+    <section class="step" id="alternatives">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Alternatives considered</h2></div>
+      <div class="prose"><ul>
+        <li><strong>A NuGet API key in a repository secret.</strong> Rejected: a long-lived key can leak through a workflow change and has to be rotated by hand.</li>
+        <li><strong>Publishing from a maintainer's machine.</strong> Rejected: not repeatable, and it skips the tests and the check that the code is on <code>main</code>.</li>
+        <li><strong>Publishing on every push to <code>main</code>.</strong> Rejected: releases should be deliberate, with a chosen version.</li>
+      </ul></div>
+    </section>
+    <section class="step" id="consequences">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
+      <div class="prose"><ul>
+        <li>Before the first release, a maintainer sets up the nuget.org account, the trusted publishing policy, the <code>NUGET_USER</code> variable and the prefix reservation (<code>CONTRIBUTING.md</code>, Releasing). Until then a tag fails at the setup check, before anything is published.</li>
+        <li>Adding or removing a package means updating the package count check in <code>release.yaml</code>.</li>
+        <li>Anyone who can push a <code>v*</code> tag for a commit on <code>main</code> can publish, so tag rights are release rights.</li>
+      </ul></div>
+    </section>
+    <section class="step" id="where">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
+      <div class="prose"><ul><li><code>.github/workflows/release.yaml</code></li><li><code>src/Directory.Build.props</code> (icon), <code>src/TickerNet.SourceGenerator/TickerNet.SourceGenerator.csproj</code> (not packable)</li><li><code>src/TickerNet/README.md</code>, <code>src/TickerNet.Caching.StackExchangeRedis/README.md</code> and the other package READMEs</li><li><code>assets/tickernet-icon.png</code></li><li><code>CONTRIBUTING.md</code>, Releasing</li></ul></div>
+    </section>
+    <section class="step" id="sources">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
+      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/blob/main/.github/workflows/release.yaml"><code>release.yaml</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/CONTRIBUTING.md"><code>CONTRIBUTING.md</code></a></li></ul></div>
+    </section>
+    <nav class="pager" aria-label="Decisions"><a href="0010-accept-tickerq-names.html"><small>Previous</small>ADR 0010: Accept TickerQ's names where moving would otherwise break</a><a class="next" href="index.html"><small>Back</small>All decisions</a></nav>
+    <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="../assets/site.js"></script>
+</body>
+</html>

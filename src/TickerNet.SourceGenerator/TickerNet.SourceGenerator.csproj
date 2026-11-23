@@ -5,6 +5,8 @@
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <AssemblyName>TickerNet.SourceGenerator</AssemblyName>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <!-- Ships inside the TickerNet package as an analyzer, never as a package of its own. -->
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>

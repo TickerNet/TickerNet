@@ -16,6 +16,9 @@ test it. This file holds the rules for coding agents.
   and workers on a local port, one test at a time.
 - `samples/`, `benchmarks/`: example apps and BenchmarkDotNet runs.
 - `site/`: the docs site on GitHub Pages, including the ADR log in `site/decisions/`.
+- `.github/workflows/`: `ci.yaml` (build and test), `dco.yaml` (sign-off check), `pages.yaml` (docs site) and
+  `release.yaml` (publishes to NuGet on a `v*` tag; see CONTRIBUTING.md, Releasing). `assets/tickernet-icon.png` is
+  the package icon.
 - `src/Directory.Build.props`: version, target framework (.NET 10) and package metadata for every package.
 
 ## Build and test

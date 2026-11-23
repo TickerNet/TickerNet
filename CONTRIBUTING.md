@@ -64,6 +64,35 @@ dotnet test TickerNet.slnx -c Release --no-build
 
 Pull requests are merged with squash and merge.
 
+## Releasing
+
+Maintainers release by pushing a version tag on `main`. `.github/workflows/release.yaml` builds the dashboard and
+every package with the tag's version, runs all tests, publishes the 9 packages to nuget.org and creates a GitHub
+release with them attached ([ADR 0011](https://tickernet.github.io/TickerNet/decisions/0011-nuget-trusted-publishing.html)).
+
+```bash
+git switch main && git pull
+git tag -a v1.0.0-preview.1 -m "TickerNet 1.0.0-preview.1"
+git push origin v1.0.0-preview.1
+```
+
+A tag with a label after the version (`-preview.1`, `-rc.1`) is published as a prerelease. A tag that isn't on
+`main` is refused.
+
+Publishing uses NuGet trusted publishing, so no API key is stored in GitHub. Set it up once, before the first release:
+
+1. On nuget.org, sign in with the account that will own the packages (or create a `TickerNet` organization and
+   publish as its member).
+2. Under **Trusted Publishing**, add a GitHub Actions policy: repository owner `TickerNet`, repository `TickerNet`,
+   workflow file `release.yaml`, environment `nuget`.
+3. In this repository, add the Actions variable `NUGET_USER` (Settings → Secrets and variables → Actions →
+   Variables) with that nuget.org account's username.
+4. Ask nuget.org to reserve the `TickerNet.` ID prefix for that account (support@nuget.org, or the reserved-prefix
+   request form), so nobody else can publish packages named `TickerNet.*`.
+
+The `nuget` GitHub environment already exists and only `v*` tags can deploy to it. Until step 3 is done, a release
+fails at its setup check, before anything is published.
+
 ## Reporting issues
 
 Use [GitHub Issues](https://github.com/TickerNet/TickerNet/issues) for bugs and feature requests. Include the
