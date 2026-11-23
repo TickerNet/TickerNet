@@ -4,9 +4,16 @@ TickerNet exists because the scheduler it was forked from moved from an open-sou
 This document makes sure TickerNet itself can never take that step, while leaving everyone free to build what they
 like on top of it.
 
+## In short: two promises
+
+| Build anything on it | Open source, forever |
+| --- | --- |
+| Use, change and redistribute TickerNet under **MIT or Apache-2.0**, whichever you choose. Fork it, build closed-source or commercial products on it, and keep your changes private. Nothing in this document adds conditions to that. | Every TickerNet release stays **MIT OR Apache-2.0**: no paid edition, no source-available version, no license keys and no CLA. Omniscient AI has made this pledge irrevocably. |
+
 ## Sponsor and steward
 
-[Omniscient AI](https://omniscient.to) (Omniscient AI Private Limited) sponsors TickerNet. As steward it:
+[Omniscient AI](https://omniscient.to) (Omniscient AI Private Limited) set up the TickerNet fork, maintains it and
+sponsors it. As steward it:
 
 - funds maintainer time and the project's running costs;
 - holds the project's name, the `TickerNet` GitHub organization, the docs site and the `TickerNet` package IDs on
@@ -15,7 +22,24 @@ like on top of it.
 The steward does not own contributors' work. Contributors keep the copyright in what they write and license it to
 everyone under the project license (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
-## Open-source pledge
+## Your freedom to build on TickerNet
+
+The project license is MIT OR Apache-2.0, at your option. Under either one you may:
+
+- use TickerNet in any product, open source or proprietary, free or paid;
+- fork it, change it and publish your own version under a different name;
+- build derivative works and license them on any terms the license you chose allows, including proprietary terms;
+- keep your changes to yourself.
+
+What the license asks in return is small: keep the copyright and license notices (and, if you choose Apache-2.0, follow
+its notice and change-marking terms), and accept that the software comes without warranty. The pledge below is a
+promise TickerNet makes about itself. It adds no conditions to the license, and no future change to this document can
+take these freedoms away from code already released.
+
+The only limit outside the license is the name: products built on TickerNet can't be published as "TickerNet".
+[TRADEMARKS.md](TRADEMARKS.md) explains the name rules.
+
+## Open-source pledge: TickerNet stays open source forever
 
 Omniscient AI, as steward, and every maintainer of TickerNet, make this pledge to TickerNet's users and contributors.
 It is irrevocable.
@@ -36,17 +60,11 @@ It is irrevocable.
 Paid services around TickerNet, such as support, consulting or hosting, are fine. They never change TickerNet's
 license or decide which features TickerNet gets.
 
-## What the pledge does not limit
-
-The pledge binds the project, not its users. Under MIT or Apache-2.0 anyone may fork TickerNet, change it, and build
-open-source, proprietary or commercial products on it, and keep their changes private. The one thing they may not do
-is publish such a product under the TickerNet name. [TRADEMARKS.md](TRADEMARKS.md) explains the name rules.
-
 ## How decisions are made
 
 - Maintainers review and merge pull requests. A change goes in when a maintainer approves it and nobody with a good
   reason objects.
 - Decisions that pick between real alternatives, add or remove a package or public interface, or set a rule other
   changes must follow get an architecture decision record on the docs site (`site/decisions/`).
-- This document changes only through a pull request with an ADR. Changes may add to the pledge or make it clearer.
-  They may never weaken it.
+- This document changes only through a pull request with an ADR. Changes may add to the pledge, to the freedoms
+  above, or make them clearer. They may never weaken either.

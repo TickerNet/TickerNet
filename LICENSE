@@ -7,6 +7,12 @@ TickerNet is a fork of TickerQ by Arcenox LLC, taken from commit
 Arcenox LLC licensed under MIT OR Apache-2.0. The Arcenox LLC copyright
 notices below cover that original work. See NOTICE.
 
+Both licenses let you use, modify and distribute TickerNet and build derivative
+works from it, including proprietary and commercial ones. TickerNet's
+open-source pledge (GOVERNANCE.md) binds only the TickerNet project itself:
+every TickerNet release stays MIT OR Apache-2.0, forever. The pledge adds no
+conditions to either license below.
+
 ---
 
                                  Apache License

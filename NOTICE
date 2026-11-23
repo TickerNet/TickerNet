@@ -1,7 +1,10 @@
 TickerNet
 Copyright 2026-present Omniscient AI Private Limited and the TickerNet contributors
 
-TickerNet is sponsored by Omniscient AI (https://omniscient.to).
+TickerNet is maintained and sponsored by Omniscient AI (https://omniscient.to).
+The Omniscient AI name and logos (site/assets/sponsor/) are trademarks of
+Omniscient AI Private Limited. They are not licensed under the MIT License or
+the Apache License 2.0 and are included only to credit the sponsor.
 
 This product is a fork of TickerQ (https://github.com/Arcenox-co/TickerQ).
 Copyright 2025-present Arcenox LLC.

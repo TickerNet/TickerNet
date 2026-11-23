@@ -19,6 +19,12 @@ meaning one thing: the open-source TickerNet, released under the pledge in [GOVE
 - Publish packages whose IDs start with `TickerNet.` unless they come from this project.
 - Suggest that the TickerNet project or Omniscient AI endorses your product when it doesn't.
 
+## Omniscient AI's name and logos
+
+The Omniscient AI logos in `site/assets/sponsor/` credit TickerNet's sponsor. They are trademarks of Omniscient AI
+Private Limited and are not covered by the MIT or Apache-2.0 license. Remove them from forks and derivatives, and
+don't use them to suggest that Omniscient AI endorses your product.
+
 ## TickerQ
 
 TickerNet is a fork of TickerQ by Arcenox LLC. TickerQ is Arcenox LLC's name. We use it only to describe where

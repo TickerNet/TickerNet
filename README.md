@@ -11,12 +11,31 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green?style=flat-square" alt="License: MIT OR Apache-2.0" /></a>
 </p>
 
+<p align="center">
+  <sub>MAINTAINED AND SPONSORED BY</sub><br />
+  <a href="https://omniscient.to">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="site/assets/sponsor/omniscient-logo-horizontal-dark-bg.svg" />
+      <img src="site/assets/sponsor/omniscient-logo-horizontal-light-bg.svg" alt="Omniscient AI" height="44" />
+    </picture>
+  </a>
+</p>
+
 ---
 
 TickerNet is a fork of [TickerQ](https://github.com/Arcenox-co/TickerQ), taken from its last open-source commit before
-TickerQ moved to a commercial license. TickerNet is, and will stay, MIT OR Apache-2.0: the
-[open-source pledge](GOVERNANCE.md#open-source-pledge) means no TickerNet release will ever be source-available or
-paid-only. You remain free to build anything on it, proprietary products included.
+TickerQ moved to a commercial license. [Omniscient AI](https://omniscient.to) set up the fork, maintains it and funds
+its development, and makes two promises on the project's behalf:
+
+> [!TIP]
+> **Build anything on it.** Use, change and redistribute TickerNet under **MIT or Apache-2.0**, whichever you choose.
+> Fork it, build closed-source or commercial products on it, and keep your changes private. Nothing in TickerNet's
+> governance adds conditions to that. See [your freedom to build on TickerNet](GOVERNANCE.md#your-freedom-to-build-on-tickernet).
+
+> [!IMPORTANT]
+> **Open source, forever.** Every TickerNet release stays **MIT OR Apache-2.0**: no paid edition, no source-available
+> version, no license keys and no CLA. Omniscient AI has made this an
+> [irrevocable pledge](GOVERNANCE.md#open-source-pledge-tickernet-stays-open-source-forever).
 
 > **Preview.** TickerNet is at `1.0.0-preview.1` and isn't on NuGet yet. Until the first release, reference the
 > projects from source. The package names below are the ones the first release will use.
@@ -118,9 +137,14 @@ Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) fi
 
 ## Governance and sponsor
 
-TickerNet is sponsored by **[Omniscient AI](https://omniscient.to)**, which funds its maintenance and holds the
-project name on the community's behalf. [GOVERNANCE.md](GOVERNANCE.md) sets out the open-source pledge and how
-decisions are made, and [TRADEMARKS.md](TRADEMARKS.md) how the name may be used.
+<a href="https://omniscient.to"><img src="site/assets/sponsor/omniscient-mark-gradient.svg" alt="" height="28" align="left" /></a>
+TickerNet is maintained and sponsored by **[Omniscient AI](https://omniscient.to)** (Omniscient AI Private Limited).
+Omniscient AI set up the fork, funds maintainer time and the project's running costs, and holds the TickerNet name,
+GitHub organization, docs site and package IDs for the community under the open-source pledge.
+
+[GOVERNANCE.md](GOVERNANCE.md) sets out your freedom to build on TickerNet, the pledge and how decisions are made.
+[TRADEMARKS.md](TRADEMARKS.md) explains how the TickerNet name may be used. The Omniscient AI name and logos are
+Omniscient AI's trademarks and are not covered by the project license.
 
 ## License
 
