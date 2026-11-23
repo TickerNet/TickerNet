@@ -10,6 +10,7 @@
         <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
         <PackageTags>ticker;queue;cron;time;scheduler;fire-and-forget</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageIcon>tickernet-icon.png</PackageIcon>
         <LangVersion>default</LangVersion>
 
         <!-- Source Link -->
@@ -20,6 +21,10 @@
         <Deterministic>true</Deterministic>
         <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)..\assets\tickernet-icon.png" Pack="true" PackagePath="\" Visible="false" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.102" PrivateAssets="All" />
