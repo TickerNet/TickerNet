@@ -1,51 +1,38 @@
-<h1 align="center">
-  <img src="https://tickernet.net/tickernet-logo.svg" alt="TickerNet Logo" width="140" />
-  <br />
-  TickerNet
-</h1>
+<h1 align="center">TickerNet</h1>
 
 <p align="center">
-  <strong>The modern job scheduler for .NET</strong><br />
-  Source-generated task scheduling with built-in persistence, cron & time-based execution, and real-time monitoring.
+  <strong>An open-source background job scheduler for .NET</strong><br />
+  Source-generated jobs, cron and one-off scheduling, your own database, and a live dashboard.
 </p>
 
 <p align="center">
-  <a href="https://www.nuget.org/packages/tickernet"><img src="https://img.shields.io/nuget/dt/tickernet.svg?style=flat-square" alt="NuGet Downloads" /></a>
-  <a href="https://www.nuget.org/packages/tickernet"><img src="https://img.shields.io/nuget/vpre/tickernet.svg?style=flat-square" alt="NuGet Version" /></a>
-  <a href="https://github.com/Arcenox-co/TickerNet/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/Arcenox-co/TickerNet/build.yml?branch=main&style=flat-square" alt="Build Status" /></a>
-  <a href="https://tickernet.net"><img src="https://img.shields.io/badge/docs-tickernet.net-blue?style=flat-square" alt="Documentation" /></a>
-  <a href="https://discord.gg/ZJemWvp9MK"><img src="https://img.shields.io/badge/discord-TickerNet-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord" /></a>
-  <a href="https://opencollective.com/tickernet"><img src="https://opencollective.com/tickernet/tiers/badge.svg?style=flat-square" alt="OpenCollective" /></a>
+  <a href="https://github.com/tickernet/TickerNet/actions/workflows/ci.yaml"><img src="https://img.shields.io/github/actions/workflow/status/tickernet/TickerNet/ci.yaml?branch=main&style=flat-square" alt="Build status" /></a>
+  <a href="https://tickernet.github.io/TickerNet/"><img src="https://img.shields.io/badge/docs-tickernet.github.io-blue?style=flat-square" alt="Documentation" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green?style=flat-square" alt="License: MIT OR Apache-2.0" /></a>
 </p>
 
 ---
 
-## Why TickerNet?
+TickerNet is a fork of [TickerQ](https://github.com/Arcenox-co/TickerQ), taken from its last open-source commit before
+TickerQ moved to a commercial license. TickerNet is, and will stay, MIT OR Apache-2.0: the
+[open-source pledge](GOVERNANCE.md#open-source-pledge) means no TickerNet release will ever be source-available or
+paid-only. You remain free to build anything on it, proprietary products included.
 
-| | |
-|---|---|
-| **Zero reflection, AOT ready** | Source generators at compile time. No runtime reflection, no magic strings, fully trimmable. |
-| **Your database** | EF Core (PostgreSQL, SQL Server, SQLite, MySQL) or Redis. No separate storage. |
-| **Real-time dashboard** | Built-in SignalR dashboard. Monitor, inspect, manage — no paid add-ons. |
-| **Multi-node** | Redis heartbeats, dead-node cleanup, lock-based coordination. Just add instances. |
-| **Minimal setup** | `AddTickerNet()` → decorate a method → schedule. Minutes, not hours. |
+> **Preview.** TickerNet is at `1.0.0-preview.1` and isn't on NuGet yet. Until the first release, reference the
+> projects from source. The package names below are the ones the first release will use.
 
 ## Features
 
-- **Time & cron scheduling** — one-off and recurring jobs
-- **Source-generated** — compile-time function registration for maximum performance
-- **Dual persistence** — EF Core (PostgreSQL, SQL Server, SQLite, MySQL) or Redis
-- **Live dashboard** — real-time UI with SignalR — [screenshots](https://tickernet.net/features/dashboard.html#dashboard-screenshots)
-- **Retry & throttling** — configurable retry policies with backoff
-- **Dependency injection** — first-class DI support
-- **Multi-node** — distributed coordination via Redis heartbeats and dead-node cleanup
-- **Hub** — centralized scheduling across applications via [TickerNet Hub](https://hub.tickernet.net)
+- **Time and cron scheduling**: one-off jobs at a set time, and recurring jobs from cron expressions.
+- **Source-generated**: jobs are registered at compile time, with no runtime reflection, so apps can be trimmed and
+  compiled ahead of time.
+- **Your own storage**: EF Core (PostgreSQL, SQL Server, SQLite, MySQL), Redis or MongoDB.
+- **Live dashboard**: a SignalR dashboard to watch, inspect and manage jobs.
+- **Retries and throttling**: retry policies with backoff.
+- **Several nodes**: Redis heartbeats, dead-node cleanup and lock-based coordination.
+- **OpenTelemetry**: tracing for job runs.
 
-## Quick Start
-
-```bash
-dotnet add package TickerNet
-```
+## Quick start
 
 ### 1. Register services
 
@@ -59,7 +46,7 @@ app.UseTickerNet();
 app.Run();
 ```
 
-### 2. Create a job
+### 2. Write a job
 
 ```csharp
 using TickerNet.Utilities.Base;
@@ -92,46 +79,54 @@ public class MyService(ITimeTickerManager<TimeTickerEntity> manager)
 }
 ```
 
+The [getting started guide](https://tickernet.github.io/TickerNet/getting-started.html) covers storage, cron jobs, the
+dashboard and OpenTelemetry.
+
 ## Packages
 
-| Package | Description |
-|---------|------------|
-| [`TickerNet`](https://www.nuget.org/packages/TickerNet) | Core scheduler engine |
-| [`TickerNet.Utilities`](https://www.nuget.org/packages/TickerNet.Utilities) | Shared types, entities, and interfaces |
-| [`TickerNet.EntityFrameworkCore`](https://www.nuget.org/packages/TickerNet.EntityFrameworkCore) | EF Core persistence provider |
-| [`TickerNet.Caching.StackExchangeRedis`](https://www.nuget.org/packages/TickerNet.Caching.StackExchangeRedis) | Redis persistence and distributed coordination |
-| [`TickerNet.Dashboard`](https://www.nuget.org/packages/TickerNet.Dashboard) | Real-time dashboard UI |
-| [`TickerNet.Instrumentation.OpenTelemetry`](https://www.nuget.org/packages/TickerNet.Instrumentation.OpenTelemetry) | OpenTelemetry tracing |
-| [`TickerNet.SourceGenerator`](https://www.nuget.org/packages/TickerNet.SourceGenerator) | Compile-time function registration |
+| Package | What it does |
+| --- | --- |
+| `TickerNet` | Core scheduler engine (includes the source generator) |
+| `TickerNet.Utilities` | Shared types, entities and interfaces |
+| `TickerNet.EntityFrameworkCore` | EF Core persistence |
+| `TickerNet.Caching.StackExchangeRedis` | Redis persistence and coordination between nodes |
+| `TickerNet.MongoDB` | MongoDB persistence |
+| `TickerNet.Dashboard` | Live dashboard |
+| `TickerNet.Instrumentation.OpenTelemetry` | OpenTelemetry tracing |
+| `TickerNet.SourceGenerator` | Compile-time job registration |
 
-> **Note:** All packages are versioned together. Always update all packages to the same version.
+All packages share one version. Keep them on the same version.
 
-## TickerNet Hub
+## Coming from TickerQ
 
-Centralized scheduling across applications — [hub.tickernet.net](https://hub.tickernet.net)
+TickerNet starts from TickerQ's last open-source code (see [NOTICE](NOTICE)), so moving from TickerQ 10.4 or earlier
+is mostly a rename: `TickerQ` becomes `TickerNet` in package IDs, namespaces and API names (`AddTickerQ` becomes
+`AddTickerNet`). EF Core table and schema names are unchanged. The
+[migration guide](https://tickernet.github.io/TickerNet/migrating-from-tickerq.html) lists everything that changed.
+Features from TickerQ's commercial versions are not part of TickerNet.
 
 ## Documentation
 
-Full documentation at **[tickernet.net](https://tickernet.net)** — docs are open-source at [TickerNet-UI](https://github.com/Arcenox-co/TickerNet-UI).
-
-## Sponsors & Backers
-
-Support TickerNet through [OpenCollective](https://opencollective.com/tickernet).
-
-<a href="https://opencollective.com/tickernet"><img src="https://opencollective.com/tickernet/backers.svg?width=890" /></a>
+The docs site is at **[tickernet.github.io/TickerNet](https://tickernet.github.io/TickerNet/)**: getting started,
+migrating from TickerQ, a contributor guide that walks through the code, governance, and the project's
+architecture decision records. Its source is the [`site/`](site/) folder.
 
 ## Contributing
 
-PRs, ideas, and issues are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) and sign the [CLA](CLA.md) before submitting a pull request.
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first. In short: sign off every commit
+(`git commit -s`), and never copy or adapt anything from TickerQ's commercial versions.
 
-## Contributors
+## Governance and sponsor
 
-Thanks to all our wonderful contributors! See [CONTRIBUTORS.md](CONTRIBUTORS.md) for details.
-
-<a href="https://github.com/Arcenox-co/TickerNet/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Arcenox-co/TickerNet" />
-</a>
+TickerNet is sponsored by **[Omniscient AI](https://omniscient.to)**, which funds its maintenance and holds the
+project name on the community's behalf. [GOVERNANCE.md](GOVERNANCE.md) sets out the open-source pledge and how
+decisions are made, and [TRADEMARKS.md](TRADEMARKS.md) how the name may be used.
 
 ## License
 
-Dual licensed under **MIT** and **Apache 2.0** © [Arcenox LLC](https://arcenox.com)
+Licensed under either the [MIT License or the Apache License 2.0](LICENSE), at your option.
+
+Copyright 2025-present Arcenox LLC (the original TickerQ code).
+Copyright 2026-present Omniscient AI Private Limited and the TickerNet contributors.
+
+TickerNet is not affiliated with or endorsed by Arcenox LLC.

@@ -1,9 +1,9 @@
 ﻿<Project>
 
     <PropertyGroup>
-        <Authors>Albert Kunushevci</Authors>
-        <Company>Arcenox LLC</Company>
-        <Copyright>Copyright © 2025 Arcenox LLC</Copyright>
+        <Authors>Omniscient AI and the TickerNet contributors</Authors>
+        <Company>Omniscient AI Private Limited</Company>
+        <Copyright>Copyright 2025-present Arcenox LLC; 2026-present Omniscient AI Private Limited and the TickerNet contributors</Copyright>
     </PropertyGroup>
 
 </Project>

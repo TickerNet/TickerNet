@@ -1,0 +1,28 @@
+TickerNet
+Copyright 2026-present Omniscient AI Private Limited and the TickerNet contributors
+
+TickerNet is sponsored by Omniscient AI (https://omniscient.to).
+
+This product is a fork of TickerQ (https://github.com/Arcenox-co/TickerQ).
+Copyright 2025-present Arcenox LLC.
+
+TickerNet was forked from TickerQ commit
+3acd0f314a351817a3159d7d29a3798c8612a263 (5 July 2026). That commit is the
+last commit on TickerQ's main branch distributed under the MIT License or the
+Apache License 2.0. It is four commits after the TickerQ 10.4.0 package, which
+was built from commit c6ed1e7daa90ab3f4c65b40319a153126a910093. TickerQ's git
+history up to that commit is kept in this repository so every original change
+keeps its author.
+
+TickerQ versions from 10.5.0 onward, and its main branch from commit
+13a9b544 (19 October 2026), are distributed by Arcenox LLC under a commercial
+license. No code, tests, documentation or other material from those versions
+is included in TickerNet. CONTRIBUTING.md explains how contributors keep it
+that way.
+
+The MongoDB persistence provider (src/TickerNet.MongoDB) was contributed to
+TickerQ by Alex Brown before the fork.
+
+TickerNet is not affiliated with, sponsored by or endorsed by Arcenox LLC.
+TickerQ is a name of Arcenox LLC and is used here only to describe where
+TickerNet came from.

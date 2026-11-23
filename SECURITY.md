@@ -1,23 +1,19 @@
-# Security Policy
+# Security policy
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
-If you discover a security vulnerability in TickerNet, please report it responsibly.
+Please don't report security problems in a public issue. Use GitHub's private vulnerability reporting instead:
+open the repository's **Security** tab and choose **Report a vulnerability**
+(https://github.com/tickernet/TickerNet/security/advisories/new).
 
-**Do not open a public issue.**
+Include what the problem is, how to reproduce it, and what an attacker could do with it. We'll acknowledge the
+report, keep you updated while we work on a fix, and credit you in the advisory unless you'd rather we didn't.
 
-Email **contact@tickernet.net** with:
-- Description of the vulnerability
-- Steps to reproduce
-- Impact assessment
+## Supported versions
 
-We will acknowledge your report within 48 hours and aim to release a fix within 7 days for critical issues.
-
-## Supported Versions
+TickerNet is in preview. Security fixes go into the latest release only.
 
 | Version | Supported |
-|---------|-----------|
-| 10.x    | Yes       |
-| 9.x     | Yes       |
-| 8.x     | Yes       |
-| < 8.0   | No        |
+| --- | --- |
+| Latest 1.x preview | Yes |
+| Older previews | No |

@@ -1,6 +1,6 @@
 # TickerNet.MongoDB
 
-MongoDB persistence provider for [TickerNet](https://tickernet.net/). Drop-in alternative to `TickerNet.EntityFrameworkCore` — use one or the other, not both.
+MongoDB persistence provider for [TickerNet](https://github.com/tickernet/TickerNet). Drop-in alternative to `TickerNet.EntityFrameworkCore` — use one or the other, not both.
 
 Uses the official `MongoDB.Driver` directly. No EF Core, no ODM.
 

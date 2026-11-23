@@ -1,6 +1,11 @@
-TickerQ is dual-licensed under the Apache License 2.0 and the MIT License.
+TickerNet is dual-licensed under the Apache License 2.0 and the MIT License.
 
 You may choose either license to use this software.
+
+TickerNet is a fork of TickerQ by Arcenox LLC, taken from commit
+3acd0f314a351817a3159d7d29a3798c8612a263, the last version of TickerQ that
+Arcenox LLC licensed under MIT OR Apache-2.0. The Arcenox LLC copyright
+notices below cover that original work. See NOTICE.
 
 ---
 
@@ -175,6 +180,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 END OF TERMS AND CONDITIONS
 
 Copyright 2025-present Arcenox LLC
+Copyright 2026-present Omniscient AI Private Limited and the TickerNet contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -193,6 +199,7 @@ limitations under the License.
                                  MIT License
 
 Copyright (c) 2025-present Arcenox LLC
+Copyright (c) 2026-present Omniscient AI Private Limited and the TickerNet contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

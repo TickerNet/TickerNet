@@ -2,7 +2,6 @@
 
 	<PropertyGroup>
 		<PackageId>TickerNet.MongoDB</PackageId>
-		<Authors>Arcenox; Alex Brown</Authors>
 		<Description>MongoDB persistence provider for TickerNet. Uses the official MongoDB.Driver — no EF Core, no ODM.</Description>
 		<PackageTags>$(PackageTags);mongodb;mongo</PackageTags>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
