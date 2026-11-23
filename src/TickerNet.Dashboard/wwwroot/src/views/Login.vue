@@ -3,7 +3,7 @@
     <div class="login-card">
       <div class="login-header">
         <div class="logo-section">
-          <img src="@/assets/arcenox-logo.svg" alt="TickerNet" class="logo" />
+          <img src="@/assets/tickernet-logo.svg" alt="TickerNet" class="logo" />
           <h1 class="app-title">TickerNet Dashboard</h1>
         </div>
         <p class="login-subtitle">Please authenticate to access the dashboard</p>
