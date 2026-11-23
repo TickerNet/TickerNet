@@ -43,6 +43,12 @@ own that speaks only HTTP/2.
 - Runs go only to workers that offer the function. A run that never reached a worker, for example because the worker
   was stopping, goes to another worker without using a retry.
 
+## Several scheduler instances
+
+Run `AddTickerNetHub` on every instance (same store, same shared secret) and give each worker every instance's
+address in `HubAddresses`. Whichever instance picks up a due job sends it to a worker connected to it. Each address
+must reach one instance, not a load balancer in front of several.
+
 ## Options
 
 | Option | Default | Meaning |

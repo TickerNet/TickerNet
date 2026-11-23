@@ -55,6 +55,8 @@ internal sealed class HubTestHost : IAsyncDisposable
         {
             hub.SharedSecret = Secret;
             hub.WorkerWaitTimeout = TimeSpan.FromSeconds(5);
+            // Test workers send a heartbeat every second.
+            hub.WorkerTimeout = TimeSpan.FromSeconds(4);
             configure?.Invoke(hub);
         }));
 

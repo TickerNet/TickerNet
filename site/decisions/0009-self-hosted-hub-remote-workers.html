@@ -41,7 +41,7 @@
       <h1>Run jobs on remote workers through a self-hosted hub</h1>
       <p class="lede">Two new packages let job code run in separate worker processes with no hosted service: <code>TickerNet.Hub</code> turns the scheduler into the hub, and <code>TickerNet.Worker</code> connects to it. Workers and hub prove a shared secret to each other, a worker only touches its own node's jobs, and the scheduler sends one attempt at a time and keeps retries, status and history. The hooks TickerQ's remote executor used keep working.</p>
       <dl class="adr-meta">
-        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Status</dt><dd><span class="adr-status amended">Amended</span> 2026-11-23: workers can connect to several scheduler instances (<code>HubAddresses</code>), so one instance no longer has to run the hub alone; the hub waits <code>WorkerTimeout</code> after it starts before pausing cron jobs; the dashboard shows the pause.</dd></div>
         <div><dt>Decided</dt><dd>2026-11-23</dd></div>
         <div><dt>Affects</dt><dd><code>src/TickerNet.Hub</code>, <code>src/TickerNet.Worker</code>, <code>src/TickerNet.Utilities</code>, <code>src/TickerNet</code> (including <code>TickerNetDispatcher</code>), the four stores, <code>tests/TickerNet.Hub.Tests</code>, <code>samples/</code></dd></div>
       </dl>
@@ -95,7 +95,7 @@
         <li>Behaviour change in the core, for all apps: jobs dispatched straight away no longer run with the caller's <code>CancellationToken</code>, but with the host's stopping token. TickerQ, and TickerNet before this change, used the caller's token. Code that relied on cancelling such a job through that token must use <code>TickerCancellationTokenManager.RequestTickerCancellationById</code>. The <a href="../migrating-from-tickerq.html#before">migration guide</a> notes it.</li>
         <li>Extra properties on custom entity subclasses can't be changed from workers; change them on the scheduler.</li>
         <li><code>TickerQ.SDK</code> workers can't connect: the gRPC package and service names differ, the authentication is new, and the SDK only connects through TickerQ Hub. Workers move to <code>TickerNet.Worker</code>. Jobs stored as <code>function@node</code> carry over.</li>
-        <li>Limits in this preview: one scheduler instance should run the hub, workers can't read jobs other than their current runs' requests, there is no per-run log forwarding to the dashboard, and <code>SkipIfAlreadyRunning()</code> only sees runs on the same worker.</li>
+        <li>Limits in this preview: with several scheduler instances every worker must list each instance's address, workers can't read jobs other than their current runs' requests, there is no per-run log forwarding to the dashboard, and <code>SkipIfAlreadyRunning()</code> only sees runs on the same worker.</li>
         <li>Rule for later changes to <code>worker.proto</code>: never reuse a field number, reserve the numbers of removed fields, and raise <code>HelloSignature.ProtocolVersion</code> for an incompatible change.</li>
         <li><code>TickerNet.Utilities</code> and <code>TickerNet</code> expose internals to <code>TickerNet.Hub</code>, <code>TickerNet.Worker</code> and <code>TickerNet.Hub.Tests</code>.</li>
       </ul></div>

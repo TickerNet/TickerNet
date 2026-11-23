@@ -67,9 +67,15 @@ internal sealed class WorkerPauseMonitor<TTimeTicker, TCronTicker>(
     private CancellationTokenSource? _pending;
     private CancellationToken _stopping;
 
+    // Workers need a moment to reconnect after this scheduler starts. Until WorkerTimeout has passed
+    // the monitor only resumes cron jobs, so a restart (or one instance of several restarting)
+    // doesn't briefly pause every remote cron job.
+    private DateTime _pauseNotBefore = DateTime.MaxValue;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _stopping = stoppingToken;
+        _pauseNotBefore = DateTime.UtcNow + options.WorkerTimeout;
         if (!options.PauseCronTickersWhileOffline)
         {
             try { await ReconcileAsync(stoppingToken).ConfigureAwait(false); }
@@ -81,6 +87,11 @@ internal sealed class WorkerPauseMonitor<TTimeTicker, TCronTicker>(
         try
         {
             await ReconcileAsync(stoppingToken).ConfigureAwait(false);
+            var untilPausing = _pauseNotBefore - DateTime.UtcNow;
+            if (untilPausing > TimeSpan.Zero)
+                await Task.Delay(untilPausing, stoppingToken).ConfigureAwait(false);
+            await ReconcileAsync(stoppingToken).ConfigureAwait(false);
+
             using var timer = new PeriodicTimer(Sweep);
             while (await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false))
                 await ReconcileAsync(stoppingToken).ConfigureAwait(false);
@@ -148,6 +159,7 @@ internal sealed class WorkerPauseMonitor<TTimeTicker, TCronTicker>(
             {
                 var shouldPause = ShouldPause(cron.Function);
                 if (cron.IsSystemPaused == shouldPause) continue;
+                if (shouldPause && DateTime.UtcNow < _pauseNotBefore) continue;
                 cron.IsSystemPaused = shouldPause;
                 changed.Add(cron);
             }
