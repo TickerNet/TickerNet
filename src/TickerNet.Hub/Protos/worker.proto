@@ -1,0 +1,273 @@
+syntax = "proto3";
+
+// =============================================================================
+//  TickerNet worker protocol, version 1
+//
+//  One bidirectional gRPC stream between a worker node (client, TickerNet.Worker)
+//  and the scheduler that runs TickerNet.Hub (server). The worker opens the
+//  stream, so it needs only outbound access to the scheduler.
+//
+//    1. The worker opens OpenWorkerStream with four request headers that prove
+//       it knows the shared secret: tickernet-node, tickernet-nonce,
+//       tickernet-timestamp and tickernet-signature (base64 HMAC-SHA256, see
+//       HelloSignature in TickerNet.Hub). The hub checks them before it reads
+//       anything from the stream, and rejects a timestamp more than 5 minutes
+//       off or a nonce it has seen.
+//    2. The worker sends Hello within 10 seconds: the same node, nonce and
+//       timestamp, the functions it can run, and an HMAC over all of it.
+//    3. The hub checks the Hello, replies with HelloAck (signed, so the worker
+//       knows the hub has the secret too), then registers the worker.
+//    4. When a job for "function@node" is due, the scheduler runs it as usual and
+//       the hub sends ExecuteFunction to one connected worker for that node. The
+//       worker runs the function once and replies with ExecutionResult. Retries,
+//       status and history stay on the scheduler.
+//    5. Code on the worker that schedules jobs sends add/update/remove requests
+//       on the same stream; the hub answers with OperationResult. A worker can
+//       only touch jobs for its own node.
+//    6. A stopping worker sends Draining, finishes its runs and disconnects.
+//    7. The worker sends Heartbeat every 15 seconds by default. The hub drops a
+//       worker it hasn't heard from within its WorkerTimeout.
+//
+//  Message shapes and field numbers follow the worker stream in TickerQ's remote
+//  executor at TickerNet's fork point (commit 3acd0f31). Field numbers for parts
+//  TickerNet doesn't use are reserved so they are never reused.
+// =============================================================================
+
+option csharp_namespace = "TickerNet.Hub.Protocol.V1";
+
+package tickernet.worker.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service WorkerHub {
+  rpc OpenWorkerStream(stream WorkerEvent) returns (stream HubCommand);
+}
+
+// ---- Worker → hub ----
+message WorkerEvent {
+  oneof payload {
+    Hello hello = 1;
+    Heartbeat heartbeat = 2;
+    Draining draining = 3;
+
+    // Replies to hub commands.
+    ExecutionResult execution_result = 10;
+    CommandAck ack = 11;
+
+    // Jobs scheduled by code on the worker, answered with OperationResult.
+    AddTimeTickersRequest add_time_tickers = 20;
+    UpdateTimeTickersRequest update_time_tickers = 21;
+    RemoveTimeTickersRequest remove_time_tickers = 22;
+    InsertCronTickersRequest insert_cron_tickers = 23;
+    UpdateCronTickersRequest update_cron_tickers = 24;
+    RemoveCronTickersRequest remove_cron_tickers = 25;
+
+    // Request payload lookups, answered with BytesResult.
+    GetTimeTickerRequestRequest get_time_ticker_request = 33;
+    GetCronTickerOccurrenceRequestRequest get_cron_occurrence_request = 34;
+  }
+
+  // Status updates from the worker (30-32) and per-run log lines (35) are not
+  // used: the scheduler records status itself.
+  reserved 30, 31, 32, 35;
+}
+
+// ---- Hub → worker ----
+message HubCommand {
+  oneof payload {
+    HelloAck hello_ack = 1;
+    Heartbeat heartbeat = 2;
+    Disconnect disconnect = 3;
+
+    ExecuteFunction execute_function = 10;
+    CancelExecution cancel_execution = 13;
+
+    OperationResult operation_result = 90;
+    BytesResult bytes_result = 91;
+  }
+
+  // Resync (11) and remove-function (12) commands came from a hosted hub.
+  reserved 11, 12;
+}
+
+// =============================================================================
+//  Connection
+// =============================================================================
+
+message Hello {
+  // Groups interchangeable workers. Functions are scheduled as "function@node".
+  string node_name = 2;
+  // Version of the TickerNet.Worker package, for diagnostics.
+  string worker_version = 3;
+  // Most functions this worker runs at once; 0 means no limit.
+  int32 max_concurrency = 4;
+
+  // Proof of the shared secret: base64 HMAC-SHA256 over the canonical Hello
+  // (see HelloSignature in TickerNet.Hub). The hub rejects a Hello whose
+  // unix_seconds is more than 5 minutes off, or whose nonce it has seen.
+  string nonce = 5;
+  int64 unix_seconds = 6;
+  string signature = 7;
+
+  // Functions this worker can run, by their own names (no "@node").
+  repeated FunctionDescriptor functions = 8;
+
+  // Protocol version the worker speaks. This file describes version 1.
+  int32 protocol_version = 9;
+
+  // Field 1 carried a hosted-hub API key.
+  reserved 1;
+}
+
+message FunctionDescriptor {
+  string name = 1;
+  // Cron expression from [TickerFunction], empty if none.
+  string cron_expression = 2;
+  // TickerTaskPriority value.
+  int32 priority = 3;
+  // Most runs of this function at once on one worker; 0 means no limit.
+  int32 max_concurrency = 4;
+  // Request type name and example JSON, shown in the dashboard.
+  string request_type = 5;
+  string request_example_json = 6;
+}
+
+message HelloAck {
+  string worker_id = 1;
+  // Base64 HMAC-SHA256 over the worker's nonce and worker_id, proving the hub
+  // knows the shared secret.
+  string signature = 5;
+
+  // Fields 2-4 carried hosted-hub environment and application ids.
+  reserved 2, 3, 4;
+}
+
+message Heartbeat {
+  int64 unix_ms = 1;
+}
+
+// The worker is stopping: send it no new runs. It finishes the runs it has,
+// then disconnects.
+message Draining {
+  string reason = 1;
+}
+
+message Disconnect {
+  string reason = 1;
+}
+
+// =============================================================================
+//  Running functions (hub → worker → hub)
+// =============================================================================
+
+message ExecuteFunction {
+  string request_id = 1;
+  string ticker_id = 2;
+  // The function's own name, without "@node".
+  string function_name = 3;
+  // TickerType value.
+  int32 type = 4;
+  // Which attempt this is: 0 for the first run, 1 for the first retry, and so on.
+  int32 retry_count = 5;
+  bool is_due = 6;
+  google.protobuf.Timestamp scheduled_for = 7;
+  // The job's stored request, so the worker doesn't have to fetch it.
+  bytes request_payload = 8;
+  // The owning cron job for a cron occurrence, or the parent of a chained job.
+  string parent_id = 11;
+
+  // Retries are run by the scheduler, so the worker runs one attempt.
+  reserved 9, 10;
+}
+
+message ExecutionResult {
+  string request_id = 1;
+  bool success = 2;
+  // Failure message, or the reason for a cancel or skip.
+  string error = 3;
+  // The function stopped because the hub sent CancelExecution.
+  bool cancelled = 4;
+  // The function asked to stop early (TerminateExecutionException), for example
+  // to skip a cron occurrence while another one is still running.
+  bool terminated = 5;
+  // TickerStatus the scheduler should record when terminated is true.
+  int32 terminated_status = 6;
+  // Exception type and stack trace from the worker, for the job's history.
+  string error_type = 7;
+  string error_stack_trace = 8;
+  // The worker didn't start the run (it is stopping, or doesn't have the
+  // function). The hub sends the run to another worker.
+  bool rejected = 9;
+}
+
+message CancelExecution {
+  string request_id = 1;
+  string ticker_id = 2;
+}
+
+message CommandAck {
+  string request_id = 1;
+  bool success = 2;
+  string error = 3;
+}
+
+// =============================================================================
+//  Jobs scheduled by code on the worker (worker → hub)
+// =============================================================================
+
+message AddTimeTickersRequest {
+  string request_id = 1;
+  // JSON array of time jobs (System.Text.Json).
+  bytes entities_json = 2;
+}
+
+message UpdateTimeTickersRequest {
+  string request_id = 1;
+  bytes entities_json = 2;
+}
+
+message RemoveTimeTickersRequest {
+  string request_id = 1;
+  repeated string ids = 2;
+}
+
+message InsertCronTickersRequest {
+  string request_id = 1;
+  // JSON array of cron jobs (System.Text.Json).
+  bytes entities_json = 2;
+}
+
+message UpdateCronTickersRequest {
+  string request_id = 1;
+  bytes entities_json = 2;
+}
+
+message RemoveCronTickersRequest {
+  string request_id = 1;
+  repeated string ids = 2;
+}
+
+message GetTimeTickerRequestRequest {
+  string request_id = 1;
+  string ticker_id = 2;
+}
+
+message GetCronTickerOccurrenceRequestRequest {
+  string request_id = 1;
+  string ticker_id = 2;
+}
+
+message OperationResult {
+  string request_id = 1;
+  bool success = 2;
+  int32 affected = 3;
+  string error = 4;
+}
+
+message BytesResult {
+  string request_id = 1;
+  bool success = 2;
+  bool found = 3;
+  bytes payload = 4;
+  string error = 5;
+}

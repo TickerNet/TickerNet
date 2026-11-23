@@ -18,6 +18,7 @@
       <ul class="topnav">
         <li><a href="../index.html">Home</a></li>
         <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../remote-workers.html">Remote workers</a></li>
         <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
         <li><a href="../contributing.html">Contributing</a></li>
         <li><a href="../governance.html">Governance</a></li>
@@ -39,9 +40,9 @@
       <h1>Architecture decisions</h1>
       <p class="lede">Why TickerNet is shaped the way it is. Each record covers one decision: the situation at the time, what was chosen, what else was on the table, and what it costs. Read the ones that touch your change before you make it.</p>
       <dl class="adr-meta">
-        <div><dt>Records</dt><dd>8</dd></div>
+        <div><dt>Records</dt><dd>10</dd></div>
         <div><dt>Accepted</dt><dd>8</dd></div>
-        <div><dt>Amended since</dt><dd>0</dd></div>
+        <div><dt>Amended since</dt><dd>2</dd></div>
         <div><dt>Superseded</dt><dd>0</dd></div>
       </dl>
       <details class="mobile-toc">
@@ -67,7 +68,7 @@
           <tr><td><span class="adr-status superseded">Superseded</span></td><td>Replaced by a later decision, which the record links to. Kept for the history.</td></tr>
         </tbody>
       </table></div>
-      <div class="why"><b>The first records.</b> ADRs 0001 to 0008 were written on 23 November 2026, when the fork was set up, from the repository's history and files. Every fact cites a commit or file. Where a reason was never written down, the record says "Not recorded".</div>
+      <div class="why"><b>The first records.</b> ADRs 0001 to 0008 were written on 23 November 2026, when the fork was set up, from the repository's history and files. ADRs 0009 and 0010 followed the same day, before the repository went public, and amended 0005 and 0002. Every fact cites a commit or file. Where a reason was never written down, the record says "Not recorded".</div>
     </section>
 
     <section class="step" id="origin">
@@ -86,13 +87,15 @@
 
     <section class="step" id="code">
       <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Code and packages</h2>
-        <p class="step-sub">Names, what was removed from upstream, versions and target frameworks.</p></div>
+        <p class="step-sub">Names, what was removed from upstream and what came back, compatibility with TickerQ, versions and target frameworks.</p></div>
       <div class="tbl-wrap"><table class="adr-table">
         <thead><tr><th>ADR</th><th>Decision</th><th>Decided</th><th>Status</th></tr></thead>
         <tbody>
-          <tr><td>0002</td><td><a href="0002-name-tickernet-rename-everything.html">Name the project TickerNet and rename everything</a></td><td>2026-11-23</td><td><span class="adr-status accepted">Accepted</span></td></tr>
-          <tr><td>0005</td><td><a href="0005-drop-tickerq-hub.html">Drop the TickerQ Hub integration</a></td><td>2026-11-23</td><td><span class="adr-status accepted">Accepted</span></td></tr>
+          <tr><td>0002</td><td><a href="0002-name-tickernet-rename-everything.html">Name the project TickerNet and rename everything</a></td><td>2026-11-23</td><td><span class="adr-status amended">Amended</span></td></tr>
+          <tr><td>0005</td><td><a href="0005-drop-tickerq-hub.html">Drop the TickerQ Hub integration</a></td><td>2026-11-23</td><td><span class="adr-status amended">Amended</span></td></tr>
           <tr><td>0006</td><td><a href="0006-version-independently-dotnet-10.html">Version independently and target .NET 10 only</a></td><td>2026-11-23</td><td><span class="adr-status accepted">Accepted</span></td></tr>
+          <tr><td>0009</td><td><a href="0009-self-hosted-hub-remote-workers.html">Run jobs on remote workers through a self-hosted hub</a></td><td>2026-11-23</td><td><span class="adr-status accepted">Accepted</span></td></tr>
+          <tr><td>0010</td><td><a href="0010-accept-tickerq-names.html">Accept TickerQ's names where moving would otherwise break</a></td><td>2026-11-23</td><td><span class="adr-status accepted">Accepted</span></td></tr>
         </tbody>
       </table></div>
     </section>

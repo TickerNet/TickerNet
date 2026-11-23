@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="coverlet.collector" Version="6.0.4" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+        <PackageReference Include="xunit" Version="2.9.3" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Xunit" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\TickerNet\TickerNet.csproj" />
+        <ProjectReference Include="..\..\src\TickerNet.Utilities\TickerNet.Utilities.csproj" />
+        <ProjectReference Include="..\..\src\TickerNet.Hub\TickerNet.Hub.csproj" />
+        <!-- The worker compiles its own internal copy of the protocol types, so it gets an alias. -->
+        <ProjectReference Include="..\..\src\TickerNet.Worker\TickerNet.Worker.csproj" Aliases="worker" />
+    </ItemGroup>
+
+</Project>

@@ -16,7 +16,7 @@ namespace TickerNet.Utilities.DashboardDtos
         public TickerStatus? LastRunStatus { get; set; }
         public DateTime? LastRunAt { get; set; }
         public bool IsEnabled { get; set; }
-        /// <summary>True when the SDK node owning this cron's function is currently offline.</summary>
+        /// <summary>True when the worker node hosting this cron's function is offline.</summary>
         public bool IsSystemPaused { get; set; }
     }
 }

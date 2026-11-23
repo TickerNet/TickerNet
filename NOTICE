@@ -26,6 +26,11 @@ that way.
 The MongoDB persistence provider (src/TickerNet.MongoDB) was contributed to
 TickerQ by Alex Brown before the fork.
 
+TickerNet.Hub and TickerNet.Worker (src/TickerNet.Hub, src/TickerNet.Worker)
+are based on the worker stream in TickerQ's remote executor and .NET SDK as
+they were at the fork point (hub/ in commit 3acd0f31). They connect workers
+straight to a TickerNet scheduler and do not use or connect to TickerQ Hub.
+
 TickerNet is not affiliated with, sponsored by or endorsed by Arcenox LLC.
 TickerQ is a name of Arcenox LLC and is used here only to describe where
 TickerNet came from.

@@ -27,7 +27,7 @@ namespace TickerNet.Utilities.DashboardDtos
         public int Retries { get; set; }
         public string ExceptionMessage { get; set; }
         /// <summary>
-        /// Reason the run was Skipped (e.g. "SDK offline"). Persisted on the
+        /// Reason the run was Skipped (e.g. "worker node offline"). Persisted on the
         /// row separate from <see cref="ExceptionMessage"/> because the
         /// scheduler routes Skip details there. Surfaces in the dashboard's
         /// log panel as a synthetic fallback line when the run produced no

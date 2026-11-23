@@ -79,6 +79,20 @@ services.AddTickerNet<MyTimeTicker, MyCronTicker>(config =>
 - `SetBackendDomain(domain)` - Set backend API domain
 - `SetCorsPolicy(policy)` - Configure CORS
 - `SetGroupName(name)` - Set OpenAPI group name for dashboard endpoints
+- `DisableTickerQPathRedirect()` - Stop redirecting TickerQ's old dashboard address (see below)
+
+## Coming from TickerQ
+
+TickerQ served the dashboard at `/tickerq/dashboard`. TickerNet redirects GET and HEAD requests for that address,
+and anything under it, to the same page under the dashboard's base path (`/tickernet/dashboard` by default). The
+rest of the path and the query string are kept, so old links and bookmarks still work. The redirect is temporary
+(HTTP 302), so browsers don't cache it. Turn it off with `DisableTickerQPathRedirect()`. It is never added when
+the base path is `/tickerq/dashboard` itself.
+
+Saved sign-ins and the chosen dashboard time zone also carry over. When the dashboard opens, it copies the old
+browser-storage keys (`tickerq_basic_auth`, `tickerq_api_key`, `tickerq_host_access_key`, `tickerq_bearer_token`
+and `tickerq:dashboard:timezone`) to their `tickernet` names, then removes the old keys. It copies a value only
+when the new key isn't set yet.
 
 ## 🔒 How It Works
 

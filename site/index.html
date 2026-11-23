@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TickerNet docs</title>
-<meta name="description" content="TickerNet is an open-source background job scheduler for .NET: time and cron jobs, source-generated registration, EF Core, Redis or MongoDB storage, and a live dashboard.">
+<meta name="description" content="TickerNet is an open-source background job scheduler for .NET: time and cron jobs, source-generated registration, EF Core, Redis or MongoDB storage, remote workers and a live dashboard.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -18,6 +18,7 @@
       <ul class="topnav">
         <li><a href="index.html" aria-current="page">Home</a></li>
         <li><a href="getting-started.html">Getting started</a></li>
+        <li><a href="remote-workers.html">Remote workers</a></li>
         <li><a href="migrating-from-tickerq.html">Migrating from TickerQ</a></li>
         <li><a href="contributing.html">Contributing</a></li>
         <li><a href="governance.html">Governance</a></li>
@@ -44,7 +45,7 @@
     <header class="hero">
       <p class="eyebrow">TickerNet · open-source job scheduler for .NET</p>
       <h1>Background jobs for .NET, open source for good</h1>
-      <p class="lede">TickerNet runs one-off and recurring jobs inside your .NET app. A job is a plain method with a <code>[TickerFunction]</code> attribute. A source generator registers it at compile time. Jobs can be kept in memory, in your EF Core database, in Redis or in MongoDB, and a built-in dashboard shows them live.</p>
+      <p class="lede">TickerNet runs one-off and recurring jobs inside your .NET app. A job is a plain method with a <code>[TickerFunction]</code> attribute. A source generator registers it at compile time. Jobs can be kept in memory, in your EF Core database, in Redis or in MongoDB, and a built-in dashboard shows them live. Job code can also run in separate worker processes that connect to the scheduler.</p>
       <dl class="adr-meta" aria-label="Project facts">
         <div><dt>Version</dt><dd><code>1.0.0-preview.1</code></dd></div>
         <div><dt>Runs on</dt><dd>.NET 10</dd></div>
@@ -78,10 +79,11 @@
         <p class="step-sub">Pick the page that matches what you came to do.</p></div>
       <div class="cards">
         <a class="card" href="getting-started.html"><span class="tagline">Use it</span><b>Getting started</b><span>Add TickerNet to an app, write a job, schedule time and cron jobs, pick a store, and turn on the dashboard and tracing.</span></a>
+        <a class="card" href="remote-workers.html"><span class="tagline">Scale it out</span><b>Remote workers</b><span>Run job code in separate processes that connect to the scheduler. No hosted service: the scheduler is the hub.</span></a>
         <a class="card" href="migrating-from-tickerq.html"><span class="tagline">Coming from TickerQ</span><b>Migrating from TickerQ</b><span>Package IDs, namespaces and renamed API, diagnostic IDs, and every stored or external name that changed, with what stays the same.</span></a>
         <a class="card" href="contributing.html"><span class="tagline">Change it</span><b>Contributing</b><span>Set up, build and test, then follow one job through the code from the source generator to the dashboard. The DCO and clean-room rules.</span></a>
         <a class="card" href="governance.html"><span class="tagline">Trust it</span><b>Governance</b><span>Who looks after TickerNet, the pledge that keeps every release open source, and how the name may be used.</span></a>
-        <a class="card" href="decisions/index.html"><span class="tagline">Why it's built this way</span><b>Architecture decisions</b><span>One record per decision: the fork point, the name, the license and pledge, the clean-room rule, versioning and this site.</span></a>
+        <a class="card" href="decisions/index.html"><span class="tagline">Why it's built this way</span><b>Architecture decisions</b><span>One record per decision: the fork point, the name, the license and pledge, the clean-room rule, versioning, this site, remote workers and compatibility with TickerQ.</span></a>
       </div>
     </section>
 
@@ -96,6 +98,7 @@
           <li><strong>Limits per function.</strong> Set a priority and a maximum number of concurrent runs per function. <code>LongRunning</code> jobs get their own thread instead of the shared worker pool.</li>
           <li><strong>Your choice of store.</strong> Jobs live in memory unless you add a store: Entity Framework Core (with TickerNet's own <code>DbContext</code> or yours), Redis, or MongoDB.</li>
           <li><strong>Several nodes.</strong> Each node locks the jobs it takes. With Redis added, nodes send heartbeats and the jobs of a node that stops are released for the others.</li>
+          <li><strong>Remote workers.</strong> With <code>TickerNet.Hub</code> in the scheduler and <code>TickerNet.Worker</code> in another app, job code runs in that app. Workers connect to the scheduler over one gRPC stream and prove a shared secret; there is no hosted service. The scheduler keeps the jobs, retries, status and dashboard. See <a href="remote-workers.html">Remote workers</a>.</li>
           <li><strong>Live dashboard.</strong> <code>TickerNet.Dashboard</code> serves a web UI and HTTP API from your ASP.NET Core app, updated over SignalR, with basic, API key, host or custom sign-in.</li>
           <li><strong>Logs and traces.</strong> Job events always go to <code>ILogger</code>. Turn on the <code>TickerNet</code> ActivitySource to get OpenTelemetry spans.</li>
           <li><strong>Trimming and AOT.</strong> The core, Utilities, Redis and Dashboard packages are marked AOT-compatible, and request payloads can use a source-generated JSON context.</li>
@@ -124,6 +127,8 @@
           <tr><td><code>TickerNet.Caching.StackExchangeRedis</code></td><td>Redis caching and distributed synchronization provider for TickerNet job scheduler using StackExchange.Redis</td><td>Yes</td></tr>
           <tr><td><code>TickerNet.MongoDB</code></td><td>MongoDB persistence provider for TickerNet. Uses the official MongoDB.Driver — no EF Core, no ODM.</td><td>Yes</td></tr>
           <tr><td><code>TickerNet.Dashboard</code></td><td>Dashboard UI for visualizing and monitoring TickerNet scheduled jobs.</td><td>Yes</td></tr>
+          <tr><td><code>TickerNet.Hub</code></td><td>Lets a TickerNet scheduler run jobs on separate worker processes. Workers connect to the scheduler with TickerNet.Worker; no hosted service is involved.</td><td>Yes</td></tr>
+          <tr><td><code>TickerNet.Worker</code></td><td>Runs TickerNet jobs in a separate worker process. The worker connects to a scheduler that uses TickerNet.Hub, declares its [TickerFunction] functions, and runs them when the scheduler sends them.</td><td>Yes</td></tr>
           <tr><td><code>TickerNet.Instrumentation.OpenTelemetry</code></td><td>OpenTelemetry instrumentation package for TickerNet job scheduler with distributed tracing support</td><td>Yes</td></tr>
           <tr><td><code>TickerNet.SourceGenerator</code></td><td>No package ID or description. The Roslyn source generator and analyzer for <code>[TickerFunction]</code> methods.</td><td>No. Its DLL is packed into <code>TickerNet</code> under <code>analyzers/dotnet/cs</code>.</td></tr>
         </tbody>

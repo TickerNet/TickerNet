@@ -375,8 +375,11 @@ internal abstract class BaseRedisPersistenceProvider<TTimeTicker, TCronTicker>
 
         var existingList = await Serializer.LoadAllFromSetAsync<TCronTicker>(CronIdsKey, CronKey, cancellationToken).ConfigureAwait(false);
 
+        // Remote functions (`function@node`) are never treated as orphans: their
+        // worker nodes may not have connected yet, and TickerNet.Hub manages
+        // their seeded crons.
         var orphanedToDelete = existingList
-            .Where(c => !allRegisteredFunctions.Contains(c.Function))
+            .Where(c => !RemoteFunctionName.IsRemote(c.Function) && !allRegisteredFunctions.Contains(c.Function))
             .Select(c => c.Id).ToArray();
 
         foreach (var id in orphanedToDelete)

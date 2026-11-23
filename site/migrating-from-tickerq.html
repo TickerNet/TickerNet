@@ -18,6 +18,7 @@
       <ul class="topnav">
         <li><a href="index.html">Home</a></li>
         <li><a href="getting-started.html">Getting started</a></li>
+        <li><a href="remote-workers.html">Remote workers</a></li>
         <li><a href="migrating-from-tickerq.html" aria-current="page">Migrating from TickerQ</a></li>
         <li><a href="contributing.html">Contributing</a></li>
         <li><a href="governance.html">Governance</a></li>
@@ -38,6 +39,7 @@
       <li><a href="#diagnostics"><span class="n">03</span><span>Source generator and diagnostics</span></a></li>
       <li><a href="#stored"><span class="n">04</span><span>Stored and external names</span></a></li>
       <li><a href="#ef-migrations"><span class="n">05</span><span>EF Core migrations</span></a></li>
+      <li><a href="#tickerq-hub"><span class="n">06</span><span>Coming from TickerQ Hub</span></a></li>
       <li><a href="#checklist"><span class="n">↓</span><span>Checklist</span></a></li>
     </ol>
   </nav>
@@ -55,6 +57,7 @@
           <li><a href="#diagnostics">Source generator and diagnostics</a></li>
           <li><a href="#stored">Stored and external names</a></li>
           <li><a href="#ef-migrations">EF Core migrations</a></li>
+          <li><a href="#tickerq-hub">Coming from TickerQ Hub</a></li>
           <li><a href="#checklist">Checklist</a></li>
         </ol>
       </details>
@@ -67,7 +70,8 @@
           <li><strong>Which TickerQ.</strong> This guide is for TickerQ 10.4.x and earlier open-source releases. It was checked against the TickerQ code at the fork point, commit <code>3acd0f31</code>, which is four commits after the 10.4.0 package.</li>
           <li><strong>.NET 10 first.</strong> TickerNet targets .NET 10 only. If you are on a TickerQ 8.x or 9.x release for .NET 8 or 9, move your app to .NET 10 first (<a href="decisions/0006-version-independently-dotnet-10.html">ADR 0006</a>).</li>
           <li><strong>Not on NuGet yet.</strong> Until the first release, reference TickerNet's projects as <a href="getting-started.html#packages">Getting started</a> shows.</li>
-          <li><strong>No TickerQ Hub.</strong> TickerNet has no counterpart to TickerQ.SDK or TickerQ.RemoteExecutor, which connect to TickerQ Hub, a hosted service with its own terms (<a href="decisions/0005-drop-tickerq-hub.html">ADR 0005</a>).</li>
+          <li><strong>One behaviour change: jobs started at once outlive the call that added them.</strong> When a job is dispatched straight away, for example a time job added with <code>AddAsync</code> or <code>AddBatchAsync</code> for now or the next second, or a cron run started from the dashboard, it no longer runs with the <code>CancellationToken</code> you passed to that call. It runs with the host's stopping token. In TickerQ, cancelling that token, for example by the end of the HTTP request that added the job, could cancel the job or leave it <code>InProgress</code>. To cancel one job, use <code>TickerCancellationTokenManager.RequestTickerCancellationById</code>.</li>
+          <li><strong>TickerQ Hub.</strong> TickerQ Hub, a hosted service with its own terms, isn't supported (<a href="decisions/0005-drop-tickerq-hub.html">ADR 0005</a>). If you ran jobs on remote workers with <code>TickerQ.RemoteExecutor</code> and <code>TickerQ.SDK</code>, TickerNet does it without a hosted service: <code>TickerNet.Hub</code> in the scheduler and <code>TickerNet.Worker</code> in the workers. Jobs stored as <code>function@node</code> keep working. See <a href="#tickerq-hub">section 06</a> and <a href="remote-workers.html">Remote workers</a>.</li>
         </ul>
       </div>
       <div class="warnbox"><b>TickerQ 10.5.0 and later are a different product.</b> They are released under a commercial license, as are the matching 8.5.0, 9.5.0 and 11.5.0 builds. Nothing from those versions is in TickerNet, and features added there do not exist here. This guide does not cover them.</div>
@@ -76,7 +80,7 @@
 
     <section class="step" id="packages">
       <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Packages</h2>
-        <p class="step-sub">Each TickerQ package has a TickerNet package of the same shape. All are version <code>1.0.0-preview.1</code>.</p></div>
+        <p class="step-sub">Each TickerQ package has a TickerNet package of the same shape, except the two remote-execution packages, which have replacements. All are version <code>1.0.0-preview.1</code>.</p></div>
       <div class="tbl-wrap"><table class="wrap">
         <thead><tr><th>TickerQ package</th><th>TickerNet package</th><th>Notes</th></tr></thead>
         <tbody>
@@ -87,6 +91,8 @@
           <tr><td><code>TickerQ.Dashboard</code></td><td><code>TickerNet.Dashboard</code></td><td></td></tr>
           <tr><td><code>TickerQ.Instrumentation.OpenTelemetry</code></td><td><code>TickerNet.Instrumentation.OpenTelemetry</code></td><td></td></tr>
           <tr><td>none in 10.4.0</td><td><code>TickerNet.MongoDB</code></td><td>The MongoDB store was added to TickerQ after the 10.4.0 package, at the fork point.</td></tr>
+          <tr><td><code>TickerQ.RemoteExecutor</code></td><td><code>TickerNet.Hub</code></td><td>A replacement, not a rename. It goes in the scheduler, and workers connect to it directly instead of through TickerQ Hub. See <a href="#tickerq-hub">section 06</a>.</td></tr>
+          <tr><td><code>TickerQ.SDK</code></td><td><code>TickerNet.Worker</code></td><td>A replacement, not a rename. It goes in each worker app. TickerQ's Node SDK has no counterpart.</td></tr>
         </tbody>
       </table></div>
     </section>
@@ -156,22 +162,22 @@
 
     <section class="step" id="stored">
       <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Stored and external names</h2>
-        <p class="step-sub">Checked by comparing the code at <code>3acd0f31</code> with <code>main</code>. Anything with "tickerq" in it, in any case, changed; nothing else did.</p></div>
+        <p class="step-sub">Checked by comparing the code at <code>3acd0f31</code> with <code>main</code>. Anything with "tickerq" in it, in any case, changed; nothing else did. For the dashboard address and its saved sign-ins, TickerNet still accepts the old names on its own; for trace names, it can on request.</p></div>
       <h3>Changed</h3>
       <div class="tbl-wrap"><table class="wrap">
         <thead><tr><th>Name</th><th>TickerQ</th><th>TickerNet</th><th>What to do</th></tr></thead>
         <tbody>
           <tr><td>Redis <code>InstanceName</code> default: the prefix for node heartbeats (<code>hb:{node}</code>), the node list (<code>nodes:registry</code>) and the cron expression cache (<code>cron:expressions</code>)</td><td><code>tickerq:</code></td><td><code>tickernet:</code></td><td>Upgrade every node at once: a TickerQ node and a TickerNet node don't see each other's heartbeats. To keep the old prefix, set <code>InstanceName = "tickerq:"</code> in <code>AddStackExchangeRedis</code>. Old heartbeat and node-list keys expire on their own; <code>tickerq:cron:expressions</code> has no expiry, so delete it by hand.</td></tr>
           <tr><td>DI key for the Redis <code>IConnectionMultiplexer</code>, <code>IDatabase</code> and <code>IDistributedCache</code></td><td><code>"tickerq"</code></td><td><code>"tickernet"</code></td><td>Change any <code>[FromKeyedServices("tickerq")]</code> or <code>GetRequiredKeyedService(..., "tickerq")</code> in your code.</td></tr>
-          <tr><td>Dashboard default path</td><td><code>/tickerq/dashboard</code></td><td><code>/tickernet/dashboard</code></td><td>Update links, bookmarks and proxy or access rules, or keep the old path with <code>SetBasePath("/tickerq/dashboard")</code>.</td></tr>
+          <tr><td>Dashboard default path</td><td><code>/tickerq/dashboard</code></td><td><code>/tickernet/dashboard</code></td><td>Nothing for links and bookmarks: GET and HEAD requests to <code>/tickerq/dashboard</code> and anything under it get a temporary redirect (302) to the same page under the dashboard's base path, with the query string kept. Turn this off with <code>DisableTickerQPathRedirect()</code> in <code>AddDashboard</code>. Proxy and access rules still need the new path, or keep the old path with <code>SetBasePath("/tickerq/dashboard")</code>.</td></tr>
           <tr><td>Dashboard config scripts</td><td><code>__tickerq-config.js</code>, <code>__tickerq-preload.js</code></td><td><code>__tickernet-config.js</code>, <code>__tickernet-preload.js</code></td><td>Update proxy rules or content security policies that name them.</td></tr>
           <tr><td>Dashboard browser global</td><td><code>window.TickerQConfig</code></td><td><code>window.TickerNetConfig</code></td><td>Only matters if you changed the dashboard's web app.</td></tr>
-          <tr><td>Dashboard browser storage keys</td><td><code>tickerq_basic_auth</code>, <code>tickerq_api_key</code>, <code>tickerq_host_access_key</code>, <code>tickerq_bearer_token</code>, <code>tickerq:dashboard:timezone</code></td><td><code>tickernet_basic_auth</code>, <code>tickernet_api_key</code>, <code>tickernet_host_access_key</code>, <code>tickernet_bearer_token</code>, <code>tickernet:dashboard:timezone</code></td><td>Users sign in again, and their chosen dashboard time zone resets.</td></tr>
+          <tr><td>Dashboard browser storage keys</td><td><code>tickerq_basic_auth</code>, <code>tickerq_api_key</code>, <code>tickerq_host_access_key</code>, <code>tickerq_bearer_token</code>, <code>tickerq:dashboard:timezone</code></td><td><code>tickernet_basic_auth</code>, <code>tickernet_api_key</code>, <code>tickernet_host_access_key</code>, <code>tickernet_bearer_token</code>, <code>tickernet:dashboard:timezone</code></td><td>Nothing. When the dashboard opens, it copies each old key to its new name (only if the new key isn't set yet) and removes the old key, so users stay signed in and keep their chosen time zone.</td></tr>
           <tr><td>Dashboard CORS policy name</td><td><code>TickerQ_Dashboard_CORS</code></td><td><code>TickerNet_Dashboard_CORS</code></td><td>Only matters if your code refers to the policy.</td></tr>
           <tr><td>Dashboard OpenAPI tag</td><td><code>TickerQ Dashboard</code></td><td><code>TickerNet Dashboard</code></td><td>Update OpenAPI filters that use it.</td></tr>
-          <tr><td>ActivitySource name</td><td><code>TickerQ</code></td><td><code>TickerNet</code></td><td>Change <code>AddSource("TickerQ")</code> to <code>AddSource("TickerNet")</code>.</td></tr>
-          <tr><td>Span names</td><td><code>tickerq.job.execute.*</code>, <code>tickerq.job.enqueued</code> and the other <code>tickerq.job.*</code> and <code>tickerq.seeding.*</code> spans, <code>tickerq.job_request_serialization.failed</code></td><td>The same with <code>tickernet.</code> in front</td><td>Update trace queries, dashboards and alerts.</td></tr>
-          <tr><td>Span tags</td><td><code>tickerq.job.id</code>, <code>tickerq.job.function</code>, <code>tickerq.job.type</code> and the other <code>tickerq.*</code> tags</td><td><code>tickernet.job.id</code>, <code>tickernet.job.function</code>, <code>tickernet.job.type</code>, …</td><td>Same as span names.</td></tr>
+          <tr><td>ActivitySource name</td><td><code>TickerQ</code></td><td><code>TickerNet</code></td><td>Change <code>AddSource("TickerQ")</code> to <code>AddTickerNetSource()</code> (the same as <code>AddSource("TickerNet")</code>). The instrumentation scope reported to your tracing backend is <code>TickerNet</code> either way, so filters on the scope name need to change.</td></tr>
+          <tr><td>Span names</td><td><code>tickerq.job.execute.*</code>, <code>tickerq.job.enqueued</code> and the other <code>tickerq.job.*</code> and <code>tickerq.seeding.*</code> spans, <code>tickerq.job_request_serialization.failed</code></td><td>The same with <code>tickernet.</code> in front</td><td>Update trace queries, dashboards and alerts, or keep the old names: with the <code>TickerNet.Instrumentation.OpenTelemetry</code> package, call <code>AddTickerNetSource(useTickerQNames: true)</code> on the tracer provider, before any exporter. Spans are then exported as <code>tickerq.*</code>. Off by default.</td></tr>
+          <tr><td>Span tags</td><td><code>tickerq.job.id</code>, <code>tickerq.job.function</code>, <code>tickerq.job.type</code> and the other <code>tickerq.*</code> tags</td><td><code>tickernet.job.id</code>, <code>tickernet.job.function</code>, <code>tickernet.job.type</code>, …</td><td>Same as span names: <code>AddTickerNetSource(useTickerQNames: true)</code> exports them as <code>tickerq.*</code>.</td></tr>
           <tr><td>Log messages</td><td><code>TickerQ Job enqueued: …</code>, <code>TickerQ Job completed: …</code> and the rest</td><td><code>TickerNet Job enqueued: …</code>, <code>TickerNet Job completed: …</code>, …</td><td>Update log searches and alerts that match on the text.</td></tr>
           <tr><td>Logger categories</td><td><code>TickerQ.*</code></td><td><code>TickerNet.*</code></td><td>Change <code>Logging:LogLevel:TickerQ</code> to <code>Logging:LogLevel:TickerNet</code>.</td></tr>
           <tr><td>Worker thread names</td><td><code>TickerQ.Worker-{n}</code></td><td><code>TickerNet.Worker-{n}</code></td><td>Seen only in debuggers and profilers.</td></tr>
@@ -208,6 +214,22 @@
 dotnet ef migrations remove</code></pre></div>
     </section>
 
+    <section class="step" id="tickerq-hub">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Coming from TickerQ Hub</h2>
+        <p class="step-sub">Only if you ran jobs on remote workers with <code>TickerQ.RemoteExecutor</code> and <code>TickerQ.SDK</code>.</p></div>
+      <div class="prose">
+        <p>TickerNet has no hosted hub: the scheduler is the hub. <a href="remote-workers.html">Remote workers</a> covers set-up and behaviour in full, and <a href="decisions/0009-self-hosted-hub-remote-workers.html">ADR 0009</a> records the design.</p>
+        <ul>
+          <li><strong>Scheduler.</strong> Replace <code>TickerQ.RemoteExecutor</code> with <code>TickerNet.Hub</code>: call <code>AddTickerNetHub</code> with a shared secret inside <code>AddTickerNet</code>, and <code>app.MapTickerNetHub()</code>. The scheduler must accept HTTP/2.</li>
+          <li><strong>Workers.</strong> Replace <code>TickerQ.SDK</code> with <code>TickerNet.Worker</code>: call <code>AddTickerNetWorker</code> with the scheduler's address, the same shared secret and a node name. Workers connect to the scheduler, not to TickerQ Hub, and need no hub API key. <code>TickerQ.SDK</code> can't connect to a TickerNet scheduler.</li>
+          <li><strong>Use the same node names.</strong> Stored jobs named <code>function@node</code> run on the TickerNet worker whose node name matches, with the same spelling.</li>
+          <li><strong>Data.</strong> No change: the <code>function@node</code> naming rule and the <code>IsSystemPaused</code> cron column work as before.</li>
+          <li><strong>Code.</strong> <code>SdkOfflineSkipException</code> still works but is obsolete; use <code>WorkerOfflineException</code>. The <code>TickerFunctionProvider</code> hooks are kept.</li>
+          <li><strong>Behaviour.</strong> The scheduler, not the worker, now runs retries and records every status. Logs from a function stay in the worker's own logging; they aren't forwarded to the dashboard.</li>
+        </ul>
+      </div>
+    </section>
+
     <section class="step" id="checklist">
       <div class="step-head"><span class="step-num">↓</span><h2 class="step-title">Checklist</h2></div>
       <ul class="checklist">
@@ -217,12 +239,14 @@ dotnet ef migrations remove</code></pre></div>
         <li><span><code>TQ0nn</code> suppressions and severities now say <code>TN0nn</code>.</span></li>
         <li><span>EF Core migration files compile, and a check migration comes out empty.</span></li>
         <li><span>Redis: you chose to keep or change the <code>InstanceName</code> prefix, and changed any <code>"tickerq"</code> keyed-service lookups.</span></li>
-        <li><span>Dashboard: links and proxy rules use the new path, or you set the old one. Users know to sign in again.</span></li>
-        <li><span>Tracing listens to <code>TickerNet</code>; trace and log queries, alerts and log levels use the new names.</span></li>
+        <li><span>Dashboard: proxy and access rules use the new path, or you set the old one. Old links redirect on their own.</span></li>
+        <li><span>Tracing listens to <code>TickerNet</code> with <code>AddTickerNetSource()</code>. Trace queries and alerts use the new names, or you turned on <code>useTickerQNames: true</code>. Log searches and log levels use the new names.</span></li>
+        <li><span>If you used TickerQ Hub: the scheduler uses <code>TickerNet.Hub</code>, workers use <code>TickerNet.Worker</code> with the same node names and the shared secret, and <code>SdkOfflineSkipException</code> is replaced with <code>WorkerOfflineException</code>.</span></li>
+        <li><span>Code that cancelled a just-added job through the token passed to <code>AddAsync</code> now uses <code>TickerCancellationTokenManager.RequestTickerCancellationById</code>.</span></li>
         <li><span>All nodes are upgraded in the same deployment.</span></li>
       </ul>
     </section>
-    <nav class="pager" aria-label="Pages"><a href="getting-started.html"><small>Previous</small>Getting started</a><a class="next" href="contributing.html"><small>Next</small>Contributing</a></nav>
+    <nav class="pager" aria-label="Pages"><a href="remote-workers.html"><small>Previous</small>Remote workers</a><a class="next" href="contributing.html"><small>Next</small>Contributing</a></nav>
     <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
   </main>
 </div>

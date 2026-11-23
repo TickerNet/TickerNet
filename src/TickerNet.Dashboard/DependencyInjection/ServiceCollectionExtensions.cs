@@ -58,6 +58,10 @@ namespace TickerNet.Dashboard.DependencyInjection
             // Validate and normalize base path
             var basePath = NormalizeBasePath(config.BasePath);
 
+            // Send links and bookmarks to TickerQ's old dashboard address to the current one.
+            if (config.RedirectTickerQPath)
+                app.UseTickerQPathRedirect(basePath);
+
             // Extract inline preload script from embedded index.html at startup.
             // Serving it as an external file allows CSP script-src 'self' without 'unsafe-inline'.
             string preloadScript = null;
@@ -179,6 +183,40 @@ namespace TickerNet.Dashboard.DependencyInjection
                         await context.Response.WriteAsync(htmlContent);
                     }
                 });
+            });
+        }
+
+        /// <summary>The dashboard's default address in TickerQ.</summary>
+        internal const string TickerQDashboardPath = "/tickerq/dashboard";
+
+        /// <summary>
+        /// Redirects GET and HEAD requests for TickerQ's old dashboard address (<c>/tickerq/dashboard</c> and
+        /// anything under it) to the same page under <paramref name="basePath"/>, keeping the rest of the path and
+        /// the query string. Uses a temporary redirect (302) so browsers don't cache it. Does nothing when
+        /// <paramref name="basePath"/> is the old address or sits under it, which would otherwise loop.
+        /// </summary>
+        internal static void UseTickerQPathRedirect(this IApplicationBuilder app, string basePath)
+        {
+            basePath = NormalizeBasePath(basePath);
+            if (new PathString(basePath).StartsWithSegments(TickerQDashboardPath, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            app.Use(async (context, next) =>
+            {
+                var request = context.Request;
+                if ((HttpMethods.IsGet(request.Method) || HttpMethods.IsHead(request.Method))
+                    && request.Path.StartsWithSegments(TickerQDashboardPath, StringComparison.OrdinalIgnoreCase, out var remainingPath))
+                {
+                    var pathBase = request.PathBase.HasValue ? request.PathBase.Value : string.Empty;
+                    var target = CombinePathBase(pathBase, basePath).TrimEnd('/') + remainingPath.Value;
+                    if (target.Length == 0)
+                        target = "/";
+
+                    context.Response.Redirect(target + request.QueryString.Value, permanent: false);
+                    return;
+                }
+
+                await next();
             });
         }
 

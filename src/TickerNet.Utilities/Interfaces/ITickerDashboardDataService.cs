@@ -10,8 +10,8 @@ using TickerNet.Utilities.Models;
 namespace TickerNet.Utilities.Interfaces
 {
     /// <summary>
-    /// Public dashboard query service producing flat DTOs for the Hub dashboard.
-    /// Shared by the embedded dashboard and the RemoteExecutor's dashboard endpoints.
+    /// Public dashboard query service producing flat DTOs. Kept from TickerQ, where it also
+    /// served the remote executor's dashboard endpoints.
     /// </summary>
     public interface ITickerDashboardDataService<TTimeTicker, TCronTicker>
         where TTimeTicker : TimeTickerEntity<TTimeTicker>, new()

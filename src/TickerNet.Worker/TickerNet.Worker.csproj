@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PackageId>TickerNet.Worker</PackageId>
+    <Title>TickerNet Worker</Title>
+    <Description>Runs TickerNet jobs in a separate worker process. The worker connects to a scheduler that uses TickerNet.Hub, declares its [TickerFunction] functions, and runs them when the scheduler sends them.</Description>
+    <PackageTags>$(PackageTags);hub;workers;remote;distributed;grpc</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.31.1" />
+    <PackageReference Include="Grpc.Tools" Version="2.76.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(DotNetAbstractionsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(DotNetAbstractionsVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- One protocol definition and one Hello signer, shared with TickerNet.Hub. -->
+    <Protobuf Include="..\TickerNet.Hub\Protos\worker.proto" Link="Protos\worker.proto" GrpcServices="Client" Access="Internal" />
+    <Compile Include="..\TickerNet.Hub\Protocol\HelloSignature.cs" Link="Protocol\HelloSignature.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TickerNet\TickerNet.csproj" />
+    <ProjectReference Include="..\TickerNet.Utilities\TickerNet.Utilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>TickerNet.Hub.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>

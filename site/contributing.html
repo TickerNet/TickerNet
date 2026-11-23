@@ -18,6 +18,7 @@
       <ul class="topnav">
         <li><a href="index.html">Home</a></li>
         <li><a href="getting-started.html">Getting started</a></li>
+        <li><a href="remote-workers.html">Remote workers</a></li>
         <li><a href="migrating-from-tickerq.html">Migrating from TickerQ</a></li>
         <li><a href="contributing.html" aria-current="page">Contributing</a></li>
         <li><a href="governance.html">Governance</a></li>
@@ -76,7 +77,7 @@ cd TickerNet</code></pre></div>
     <section class="step" id="map">
       <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Repository map</h2>
         <p class="step-sub">One solution, <code>TickerNet.slnx</code>. Shared build settings for every package are in <code>src/Directory.Build.props</code>.</p></div>
-      <div class="map" role="img" aria-label="The repository has src with eight projects, tests with five test projects, and samples, benchmarks, site and GitHub workflows.">
+      <div class="map" role="img" aria-label="The repository has src with ten projects, tests with six test projects, and samples, benchmarks, site and GitHub workflows.">
         <div class="band core">
           <div class="band-head"><b>src/ · the packages</b><span>net10.0 · version 1.0.0-preview.1</span></div>
           <div class="chips">
@@ -87,7 +88,9 @@ cd TickerNet</code></pre></div>
             <span class="chip">TickerNet.Caching.StackExchangeRedis<small>Redis store, Lua scripts, node heartbeats</small></span>
             <span class="chip">TickerNet.MongoDB<small>MongoDB store, class maps, index setup</small></span>
             <span class="chip">TickerNet.Dashboard<small>HTTP API, SignalR hub, sign-in, Vue app in wwwroot/</small></span>
-            <span class="chip">TickerNet.Instrumentation.OpenTelemetry<small>ActivitySource tracing</small></span>
+            <span class="chip">TickerNet.Instrumentation.OpenTelemetry<small>ActivitySource tracing, optional TickerQ trace names</small></span>
+            <span class="chip">TickerNet.Hub<small>worker endpoint in the scheduler, gRPC protocol, remote dispatch</small></span>
+            <span class="chip">TickerNet.Worker<small>worker client, runs remote functions, sends job changes to the scheduler</small></span>
           </div>
         </div>
         <div class="connector"><span><b>tested by</b> one xUnit project per area</span></div>
@@ -99,6 +102,7 @@ cd TickerNet</code></pre></div>
             <span class="chip">TickerNet.Caching.StackExchangeRedis.Tests<small>Redis store and registration</small></span>
             <span class="chip">TickerNet.MongoDB.Tests<small>MongoDB store, needs Docker</small></span>
             <span class="chip">TickerNet.SourceGenerator.Tests<small>generated code</small></span>
+            <span class="chip">TickerNet.Hub.Tests<small>a real scheduler and workers over HTTP/2 on loopback, protocol checks</small></span>
             <span class="chip">wwwroot/src/__tests__<small>dashboard web app tests, run with npm test</small></span>
           </div>
         </div>
@@ -106,7 +110,7 @@ cd TickerNet</code></pre></div>
         <div class="band ext">
           <div class="band-head"><b>Everything else</b><span>samples · benchmarks · docs · CI</span></div>
           <div class="chips">
-            <span class="chip">samples/<small>WebApi, Console, WorkerService, ApplicationDbContext, MongoDB, Dashboard.ReflectionFree</small></span>
+            <span class="chip">samples/<small>WebApi, Console, WorkerService, ApplicationDbContext, MongoDB, Dashboard.ReflectionFree, Hub and HubWorker</small></span>
             <span class="chip">benchmarks/TickerNet.Benchmarks<small>BenchmarkDotNet; Comparisons/ runs the same work in Hangfire and Quartz.NET</small></span>
             <span class="chip">site/<small>this site and the ADR log in site/decisions/</small></span>
             <span class="chip">.github/workflows<small>ci.yaml, dco.yaml, pages.yaml</small></span>
@@ -217,6 +221,18 @@ show      TickerNetNotificationHubSender ─► TickerNetNotificationHub (Signal
           <li>Without the dashboard, events go to <code>src/TickerNet.Utilities/Temps/NoOpTickerNetNotificationHubSender.cs</code>. <code>AddDashboard</code> (<code>src/TickerNet.Dashboard/DependencyInjection/ServiceExtensions.cs</code>) swaps in <code>Hubs/TickerNetNotificationHubSender.cs</code>, which sends events such as <code>UpdateTimeTickerNotification</code> and <code>UpdateCronTickerNotification</code> to clients of <code>Hubs/TickerNetNotificationHub.cs</code>.</li>
           <li><code>DependencyInjection/ServiceCollectionExtensions.cs</code> builds the dashboard branch: embedded static files from <code>wwwroot/dist</code>, <code>__tickernet-config.js</code>, CORS, sign-in (<code>Authentication/AuthMiddleware.cs</code>, <code>AuthService.cs</code>), the endpoints in <code>Endpoints/DashboardEndpoints.cs</code> under <code>api/</code>, the hub at <code>ticker-notification-hub</code>, and a fallback that serves the web app.</li>
           <li>Reads go through <code>Infrastructure/Dashboard/TickerDashboardRepository.cs</code> and <code>src/TickerNet.Utilities/Infrastructure/TickerDashboardDataService.cs</code>. In the web app, <code>wwwroot/src/services/signalr.ts</code> and <code>hub/</code> listen to the hub, and <code>services/http.ts</code> calls the API.</li>
+        </ul>
+      </div>
+      <h3>7 · Remote functions take one more hop</h3>
+      <div class="prose">
+        <p>When <code>TickerNet.Hub</code> is in the scheduler, a function named <code>function@node</code> runs in a worker process instead. Steps 2 to 5 are the same on the scheduler; only the delegate differs. <a href="remote-workers.html">Remote workers</a> describes the behaviour and <a href="decisions/0009-self-hosted-hub-remote-workers.html">ADR 0009</a> the design.</p>
+        <ul>
+          <li><strong>The protocol.</strong> <code>src/TickerNet.Hub/Protos/worker.proto</code> defines one bidirectional stream, <code>WorkerHub.OpenWorkerStream</code>. <code>src/TickerNet.Hub/Protocol/HelloSignature.cs</code> signs and checks the worker's Hello. <code>TickerNet.Worker</code> compiles both files through links in its project file, so the two sides can't drift apart. The generated types are internal in each assembly.</li>
+          <li><strong>The worker connects.</strong> <code>AddTickerNetWorker</code> in <code>src/TickerNet.Worker/TickerNetWorkerServiceExtensions.cs</code> turns off the background services and cron seeding and registers <code>Internal/WorkerClient.cs</code> and <code>Internal/RemotePersistenceProvider.cs</code>. Once the host has started, <code>WorkerClient</code> opens the stream and sends a Hello with the functions listed by <code>Internal/FunctionManifest.cs</code>, then sends heartbeats and reconnects with backoff.</li>
+          <li><strong>The scheduler registers it.</strong> <code>src/TickerNet.Hub/Internal/WorkerStreamService.cs</code> checks the call's signed headers with <code>HelloSignature</code> and <code>HelloReplayGuard</code> before reading the stream, then checks the Hello and sends a signed HelloAck. It adds the worker to <code>WorkerRegistry</code> and its functions to <code>RemoteFunctionCatalog</code>, which publishes the union of each node's functions as <code>function@node</code> with <code>TickerFunctionProvider.MergeRemoteFunctions</code>. <code>RemoteCronSeeder</code> seeds their cron jobs. <code>WorkerMonitors.cs</code> drops silent workers and pauses cron jobs no connected worker can run. Requests from the worker to add, change or remove jobs are checked against its own node in the same file.</li>
+          <li><strong>A run is sent.</strong> The scheduler loop and <code>TickerExecutionTaskHandler</code> run as in steps 3 and 4. The cached delegate for <code>function@node</code> comes from <code>Internal/RemoteDispatch.cs</code>: it waits for a worker that declared the function with <code>WorkerRegistry.WaitForWorkerAsync</code>, loads the stored request with <code>RemotePayloadLoader</code>, sends <code>ExecuteFunction</code> through <code>WorkerConnection.ExecuteAsync</code> and maps the <code>ExecutionResult</code> back to success or an exception. A run the worker rejected, or that couldn't be sent, goes to another worker. <code>Internal/HubTaskHandler.cs</code> wraps <code>ITickerExecutionTaskHandler</code> to supply that delegate to runs that have none yet.</li>
+          <li><strong>The worker runs it.</strong> <code>WorkerClient</code> looks the function up in its own <code>TickerFunctionProvider</code>, runs one attempt in a new DI scope within the concurrency limits, and replies. Jobs the worker's code adds go through <code>RemotePersistenceProvider</code> to the scheduler's managers.</li>
+          <li>Tests: <code>tests/TickerNet.Hub.Tests</code>. It references the worker project with the alias <code>worker</code>, because both assemblies contain the protocol types, and runs tests one at a time because <code>TickerFunctionProvider</code> is process-wide.</li>
         </ul>
       </div>
     </section>

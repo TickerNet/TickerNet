@@ -26,7 +26,13 @@ public class DashboardOptionsBuilder
 
     /// <summary>Tracks whether dashboard middleware has been applied to prevent double registration.</summary>
     internal bool MiddlewareApplied { get; set; }
-    
+
+    /// <summary>
+    /// Redirect the dashboard's old TickerQ address (<c>/tickerq/dashboard</c>) to <see cref="BasePath"/>.
+    /// On by default; turned off with <see cref="DisableTickerQPathRedirect"/>.
+    /// </summary>
+    internal bool RedirectTickerQPath { get; set; } = true;
+
     public void SetCorsPolicy(Action<CorsPolicyBuilder> corsPolicyBuilder)
         => CorsPolicyBuilder = corsPolicyBuilder;
     
@@ -35,6 +41,18 @@ public class DashboardOptionsBuilder
     
     public void SetBackendDomain(string backendDomain)
         => BackendDomain = backendDomain;
+
+    /// <summary>
+    /// Stop redirecting the dashboard's old TickerQ address. By default, GET and HEAD requests to
+    /// <c>/tickerq/dashboard</c> and anything under it get a temporary redirect (302) to the same page under the
+    /// dashboard's base path, so links and bookmarks from TickerQ keep working. The redirect is never added when
+    /// the base path is <c>/tickerq/dashboard</c> or sits under it.
+    /// </summary>
+    public DashboardOptionsBuilder DisableTickerQPathRedirect()
+    {
+        RedirectTickerQPath = false;
+        return this;
+    }
 
     /// <summary>Set OpenAPI group name for dashboard endpoints</summary>
     public void SetGroupName(string groupName)

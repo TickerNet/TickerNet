@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Remote workers · TickerNet docs</title>
+<meta name="description" content="Run TickerNet job code in separate worker processes. The scheduler is the hub: workers connect to it with TickerNet.Worker, and no hosted service is involved.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="getting-started.html">Getting started</a></li>
+        <li><a href="remote-workers.html" aria-current="page">Remote workers</a></li>
+        <li><a href="migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+        <li><a href="governance.html">Governance</a></li>
+        <li><a href="decisions/index.html">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>On this page</h2>
+    <ol>
+      <li><a href="#how"><span class="n">→</span><span>How it works</span></a></li>
+      <li><a href="#scheduler"><span class="n">01</span><span>Set up the scheduler</span></a></li>
+      <li><a href="#worker"><span class="n">02</span><span>Set up a worker</span></a></li>
+      <li><a href="#naming"><span class="n">03</span><span>Name and schedule remote jobs</span></a></li>
+      <li><a href="#behaviour"><span class="n">04</span><span>What happens when</span></a></li>
+      <li><a href="#security"><span class="n">05</span><span>Security</span></a></li>
+      <li><a href="#limits"><span class="n">06</span><span>Limits in this preview</span></a></li>
+      <li><a href="#tickerq-hub"><span class="n">07</span><span>Coming from TickerQ Hub</span></a></li>
+      <li><a href="#more"><span class="n">↓</span><span>Samples and decisions</span></a></li>
+    </ol>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">TickerNet · using it</p>
+      <h1>Remote workers</h1>
+      <p class="lede">Run job code in separate processes, such as a service that owns the code and its dependencies, while one scheduler keeps the jobs, the schedule and the dashboard. The scheduler is the hub: workers connect to it directly with <code>TickerNet.Worker</code>. No hosted service is involved. Every API name, option and default on this page comes from <code>src/TickerNet.Hub</code> and <code>src/TickerNet.Worker</code>.</p>
+      <details class="mobile-toc">
+        <summary>On this page</summary>
+        <ol>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#scheduler">Set up the scheduler</a></li>
+          <li><a href="#worker">Set up a worker</a></li>
+          <li><a href="#naming">Name and schedule remote jobs</a></li>
+          <li><a href="#behaviour">What happens when</a></li>
+          <li><a href="#security">Security</a></li>
+          <li><a href="#limits">Limits in this preview</a></li>
+          <li><a href="#tickerq-hub">Coming from TickerQ Hub</a></li>
+          <li><a href="#more">Samples and decisions</a></li>
+        </ol>
+      </details>
+    </header>
+
+    <section class="step" id="how">
+      <div class="step-head"><span class="step-num">→</span><h2 class="step-title">How it works</h2>
+        <p class="step-sub">Two packages. <code>TickerNet.Hub</code> goes in the scheduler, <code>TickerNet.Worker</code> in each app that runs job code.</p></div>
+      <div class="code"><div class="code-head"><span class="path">overview</span><span>one worker node, one scheduler</span></div>
+<pre><code class="plain">worker app                                     scheduler app
+TickerNet + TickerNet.Worker                   TickerNet + TickerNet.Hub (+ store, dashboard)
+
+[TickerFunction("SendReport")]
+AddTickerNetWorker(NodeName = "reports")
+   │  opens one gRPC stream over HTTP/2  ────►  MapTickerNetHub()
+   │  with signed tickernet-* headers           checks the headers before reading anything
+   │  Hello: node, functions, HMAC  ─────────►  checks the Hello
+   │  checks the hub's signature    ◄─────────  HelloAck, signed; registers SendReport@reports
+   │                                            stores and schedules jobs as usual
+   │                                            job SendReport@reports is due
+   │                                ◄─────────  ExecuteFunction: one attempt, with the payload
+   │  runs SendReport                           (waits)
+   │  ExecutionResult  ──────────────────────►  records Done, Failed, Cancelled or Skipped;
+   │                                            retries from the scheduler if retries are left
+   │  stopping: Draining, finish runs ───────►  sends it no new runs</code></pre></div>
+      <div class="prose">
+        <ul>
+          <li><strong>The worker dials out.</strong> It needs network access to the scheduler, but the scheduler never connects to the worker, so workers can sit behind NAT or in another cluster.</li>
+          <li><strong>The scheduler stays in charge.</strong> Storage, polling, locking, retries, cancelling, status, history, job event logs, tracing and the dashboard all stay on the scheduler. A worker runs one attempt at a time for each run it is sent and reports back.</li>
+          <li><strong>The scheduler's own job runner calls remote functions</strong> the same way it calls local ones, through a function delegate. For a remote function, that delegate sends the attempt to a worker and turns the result into the outcome the runner expects. Local and remote functions can live in the same scheduler.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step" id="scheduler">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Set up the scheduler</h2>
+        <p class="step-sub">Reference <code>TickerNet</code> and <code>TickerNet.Hub</code>. Call <code>AddTickerNetHub</code> inside <code>AddTickerNet</code>, and <code>MapTickerNetHub</code> on the app.</p></div>
+      <div class="code"><div class="code-head"><span class="path">Program.cs</span><span>scheduler, from samples/TickerNet.Sample.Hub</span></div>
+<pre><code class="language-csharp">using Microsoft.AspNetCore.Server.Kestrel.Core;
+using TickerNet.DependencyInjection;
+using TickerNet.Hub;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(kestrel =&gt;
+{
+    kestrel.ListenLocalhost(5080);                                                   // dashboard and API
+    kestrel.ListenLocalhost(5081, listen =&gt; listen.Protocols = HttpProtocols.Http2); // workers
+});
+
+builder.Services.AddTickerNet(options =&gt;
+{
+    options.AddTickerNetHub(hub =&gt;
+    {
+        // From your secret store or configuration, never from source code.
+        hub.SharedSecret = builder.Configuration["TickerNet:SharedSecret"]!;
+    });
+});
+
+var app = builder.Build();
+app.UseTickerNet();
+app.MapTickerNetHub();   // the endpoint workers connect to
+app.Run();</code></pre></div>
+      <div class="prose">
+        <ul>
+          <li><strong>HTTP/2.</strong> Workers speak gRPC, which needs HTTP/2. Over HTTPS, Kestrel's default endpoints offer HTTP/2 already. Without TLS, HTTP/2 (h2c) needs an endpoint of its own with <code>Protocols = HttpProtocols.Http2</code>, as above. Use HTTPS outside a trusted private network.</li>
+          <li><strong><code>MapTickerNetHub()</code></strong> maps the gRPC service at <code>/tickernet.worker.v1.WorkerHub/OpenWorkerStream</code> and returns an <code>IEndpointConventionBuilder</code>, so you can add conventions such as <code>.RequireHost(...)</code>. Calling it without <code>AddTickerNetHub</code> throws <code>InvalidOperationException</code>.</li>
+          <li><strong>The store.</strong> The scheduler keeps a normal TickerNet store: EF Core, Redis, MongoDB, or in memory for trying it out.</li>
+        </ul>
+      </div>
+      <h3>TickerNetHubOptions</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Option</th><th>Default</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code>SharedSecret</code></td><td>none, required</td><td>The secret every worker must prove it knows. At least 32 characters; <code>AddTickerNetHub</code> throws <code>InvalidOperationException</code> otherwise.</td></tr>
+          <tr><td><code>WorkerWaitTimeout</code></td><td>30 seconds</td><td>How long a due run waits for a connected worker of its node that declared the function and isn't stopping. After that the run is recorded as <code>Skipped</code> with a "worker node offline" reason. A run that never reached a worker is sent to another within the same wait.</td></tr>
+          <tr><td><code>ExecutionTimeout</code></td><td><code>null</code> (no limit)</td><td>Longest one attempt may take on a worker. When it passes, the scheduler sends a cancel to the worker and records a failure.</td></tr>
+          <tr><td><code>WorkerTimeout</code></td><td>45 seconds</td><td>A worker that sends nothing for this long is dropped and its connection closed. Workers send a heartbeat every 15 seconds by default.</td></tr>
+          <tr><td><code>SeedCronTickers</code></td><td><code>true</code></td><td>Create or update cron jobs for worker functions that have a cron expression in <code>[TickerFunction]</code>. The hub never deletes them.</td></tr>
+          <tr><td><code>PauseCronTickersWhileOffline</code></td><td><code>true</code></td><td>Pause a remote function's cron jobs while no connected worker that declares the function can take runs, and resume them when one can. When turned off, the hub clears any earlier pauses once at startup.</td></tr>
+          <tr><td><code>MaxMessageSize</code></td><td>16 MB</td><td>Largest message, in bytes, either side may send.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="step" id="worker">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Set up a worker</h2>
+        <p class="step-sub">Reference <code>TickerNet</code>, <code>TickerNet.Worker</code> and the source generator, write <code>[TickerFunction]</code> methods as usual, and call <code>AddTickerNetWorker</code>.</p></div>
+      <div class="code"><div class="code-head"><span class="path">Program.cs</span><span>worker, from samples/TickerNet.Sample.HubWorker</span></div>
+<pre><code class="language-csharp">using TickerNet.DependencyInjection;
+using TickerNet.Utilities.Base;
+using TickerNet.Worker;
+
+var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services.AddTickerNet(options =&gt; options.AddTickerNetWorker(worker =&gt;
+{
+    worker.HubAddress = new Uri(builder.Configuration["TickerNet:HubAddress"]!);   // e.g. https://scheduler.internal:5001
+    worker.SharedSecret = builder.Configuration["TickerNet:SharedSecret"]!;
+    worker.NodeName = "reports";                                                  // the same for every replica
+}));
+
+var host = builder.Build();
+host.UseTickerNet();
+await host.RunAsync();
+
+public class ReportJobs
+{
+    [TickerFunction("SendReport")]
+    public Task SendReportAsync(TickerFunctionContext context, CancellationToken cancellationToken)
+        =&gt; Task.CompletedTask;
+
+    // Gets a cron job on the scheduler, paused while no "reports" worker is connected.
+    [TickerFunction("NightlyCleanup", "0 3 * * *")]
+    public Task NightlyCleanupAsync(TickerFunctionContext context, CancellationToken cancellationToken)
+        =&gt; Task.CompletedTask;
+}</code></pre></div>
+      <div class="prose">
+        <ul>
+          <li><strong>Call <code>UseTickerNet()</code></strong> on the worker too. It builds the function list the worker offers. A worker with no functions logs a warning when it connects.</li>
+          <li><strong>Don't add a job store.</strong> A worker doesn't poll or store jobs: <code>AddTickerNetWorker</code> turns off the background services and cron seeding, and replaces the store with one that sends requests to the scheduler. Adding EF Core, Redis or MongoDB to a worker as well is not supported.</li>
+          <li><strong>Connecting.</strong> The worker waits for the host to start, then connects and reconnects on its own, waiting 1 second and doubling up to <code>MaxReconnectDelay</code>. If the scheduler refuses it (wrong secret, clock off, bad node name), or the server can't sign its reply because it doesn't have the secret, the worker logs an error and retries at the longest delay. If the scheduler has no worker endpoint, it logs that <code>app.MapTickerNetHub()</code> is missing.</li>
+          <li><strong>Plain HTTP.</strong> An <code>http</code> <code>HubAddress</code> that isn't loopback makes <code>AddTickerNetWorker</code> throw, unless you set <code>AllowUnencryptedHttp</code> for a trusted private network.</li>
+          <li><strong>Stopping.</strong> When the host stops, the worker sends <code>Draining</code>, so the scheduler sends it no new runs, and rejects any run that still arrives. It lets the runs it has finish and report, then disconnects. Runs still going after <code>ShutdownTimeout</code> are cancelled. Keep <code>ShutdownTimeout</code> below the host's shutdown timeout, which is 30 seconds by default.</li>
+        </ul>
+      </div>
+      <h3>TickerNetWorkerOptions</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Option</th><th>Default</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><code>HubAddress</code></td><td>none, required</td><td>Absolute <code>http</code> or <code>https</code> address of the scheduler's worker endpoint.</td></tr>
+          <tr><td><code>SharedSecret</code></td><td>none, required</td><td>The scheduler's <code>SharedSecret</code>. At least 32 characters.</td></tr>
+          <tr><td><code>NodeName</code></td><td>none, required</td><td>The worker's node: 1 to 100 characters, without <code>@</code> or whitespace. See <a href="#naming">naming</a>.</td></tr>
+          <tr><td><code>MaxConcurrency</code></td><td>0 (no limit)</td><td>Most runs this worker executes at once. Each function's own <code>maxConcurrency</code> from <code>[TickerFunction]</code> also applies, per worker.</td></tr>
+          <tr><td><code>HeartbeatInterval</code></td><td>15 seconds</td><td>How often the worker tells the scheduler it is alive. Keep it well under the scheduler's <code>WorkerTimeout</code>.</td></tr>
+          <tr><td><code>OperationTimeout</code></td><td>30 seconds</td><td>How long the worker waits for the scheduler to answer a request to add, change or remove jobs, or to send a stored request.</td></tr>
+          <tr><td><code>MaxReconnectDelay</code></td><td>30 seconds</td><td>Longest wait between reconnect attempts.</td></tr>
+          <tr><td><code>ShutdownTimeout</code></td><td>25 seconds</td><td>On shutdown, how long the worker waits for its runs to finish and report before it cancels them. Keep it below the host's shutdown timeout (30 seconds by default).</td></tr>
+          <tr><td><code>AllowUnencryptedHttp</code></td><td><code>false</code></td><td>Allow a plain <code>http</code> <code>HubAddress</code> on another machine. Without TLS the connection can be read and changed on the network, so only set it inside a trusted private network.</td></tr>
+          <tr><td><code>MaxMessageSize</code></td><td>16 MB</td><td>Largest message, in bytes, either side may send.</td></tr>
+          <tr><td><code>ConfigureChannel</code></td><td><code>null</code></td><td>An <code>Action&lt;GrpcChannelOptions&gt;</code> that changes the gRPC channel before it connects, for example to set an <code>HttpHandler</code> with a client certificate or a proxy.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="prose"><p>Both option classes are checked when you call <code>AddTickerNetHub</code> or <code>AddTickerNetWorker</code>, which throw <code>InvalidOperationException</code> with the reason if a required value is missing or out of range.</p></div>
+    </section>
+
+    <section class="step" id="naming">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Name and schedule remote jobs</h2>
+        <p class="step-sub">A remote function is stored and scheduled as <code>function@node</code>.</p></div>
+      <div class="prose">
+        <ul>
+          <li><strong><code>function@node</code>.</strong> When a worker of node <code>reports</code> connects with <code>SendReport</code>, the scheduler registers <code>SendReport@reports</code>. Names without <code>@</code> are local functions that run in the scheduler's own process. Several nodes can offer a function with the same name. <code>RemoteFunctionName</code> in <code>TickerNet.Utilities</code> has helpers for the rule: <code>IsRemote</code>, <code>Qualify</code>, <code>GetNodeName</code>, <code>GetFunctionName</code> and <code>IsValidNodeName</code>.</li>
+          <li><strong>Replicas share a node name.</strong> Workers with the same node name are replicas. Each run goes to one that declared the function and isn't stopping, preferring the one with the fewest runs in progress and rotating between equals. A node's function list is the union of what its workers have declared since the scheduler started, so during a rolling deploy a replica on another version never removes a function the others still offer, and runs of a new function go only to the replicas that have it.</li>
+          <li><strong>Spell node names the same way everywhere.</strong> Routing a run to a worker ignores case, but the stored function name uses the spelling of the first worker of that node to connect, so <code>SendReport@Reports</code> and <code>SendReport@reports</code> are different jobs.</li>
+          <li><strong>Local names with <code>@</code>.</strong> A local function whose own name contains <code>@</code> is left alone: the hub never replaces it and never pauses its cron jobs.</li>
+          <li><strong>Function names</strong> sent by a worker must be 1 to 200 characters without <code>@</code>, unique, and at most 10,000 per worker.</li>
+        </ul>
+      </div>
+      <h3>From the scheduler</h3>
+      <div class="prose"><p>Use the managers as for any job, with the remote name. The function must be known to the scheduler: a worker of that node has connected since the scheduler started.</p></div>
+      <div class="code"><div class="code-head"><span class="path">scheduler</span><span>a remote time job</span></div>
+<pre><code class="language-csharp">await timeTickers.AddAsync(new TimeTickerEntity
+{
+    Function = "SendReport@reports",
+    ExecutionTime = DateTime.UtcNow.AddMinutes(5),
+    Request = TickerHelper.CreateTickerRequest(new ReportRequest(42)),
+    Retries = 2
+});</code></pre></div>
+      <h3>From code on a worker</h3>
+      <div class="prose"><p>Inject <code>ITimeTickerManager&lt;TimeTickerEntity&gt;</code> or <code>ICronTickerManager&lt;CronTickerEntity&gt;</code> on the worker and use the worker's own function names. The worker adds its node name, including on chained child jobs, and the scheduler saves the job through its own managers, so validation, the dashboard and immediate dispatch work as usual. The job below is stored as <code>SendReport@reports</code>.</p></div>
+      <div class="code"><div class="code-head"><span class="path">worker</span><span>scheduling from a worker</span></div>
+<pre><code class="language-csharp">await timeTickers.AddAsync(new TimeTickerEntity
+{
+    Function = "SendReport",               // stored on the scheduler as "SendReport@reports"
+    ExecutionTime = DateTime.UtcNow.AddMinutes(5)
+});</code></pre></div>
+      <div class="prose">
+        <p>A worker may only touch its own node's jobs. The scheduler enforces this:</p>
+        <ul>
+          <li><strong>Add.</strong> Only <code>function@itsnode</code> jobs, children included. A job for another node's function, or for a local function, is refused. On added jobs the scheduler resets status, lock and history fields, so a worker can't add a job that looks done or locked.</li>
+          <li><strong>Update.</strong> Only its own node's jobs, and only the schedule fields. For time jobs: <code>Function</code> (still on the same node), <code>Description</code>, <code>ExecutionTime</code>, <code>Request</code>, <code>Retries</code>, <code>RetryIntervals</code> and <code>RunCondition</code>. For cron jobs: <code>Function</code>, <code>Description</code>, <code>Expression</code>, <code>Request</code>, <code>Retries</code>, <code>RetryIntervals</code> and <code>IsEnabled</code>. Extra properties on your own entity subclasses aren't updated from workers.</li>
+          <li><strong>Remove.</strong> Only its own node's jobs. A request that names another node's job is refused.</li>
+          <li><strong>Read.</strong> Only the stored request of a run it is executing, which is what <code>TickerRequestProvider.GetRequestAsync&lt;T&gt;</code> needs. Reading or querying jobs otherwise isn't available on a worker; those store methods throw <code>NotSupportedException</code>. Query jobs on the scheduler.</li>
+          <li><strong>Rate.</strong> The scheduler handles at most 8 of these requests from one worker at a time. Further messages from that worker wait until one finishes.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step" id="behaviour">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">What happens when</h2>
+        <p class="step-sub">Statuses are the usual <code>TickerStatus</code> values, recorded on the scheduler.</p></div>
+      <div class="tbl-wrap"><table class="wrap">
+        <thead><tr><th>Situation</th><th>What TickerNet does</th></tr></thead>
+        <tbody>
+          <tr><td>A run of <code>function@node</code> is due</td><td>The scheduler's job runner calls the function's delegate, which picks a connected worker of the node that declared the function and isn't stopping, and sends it one attempt, with the job's stored request. The worker runs the function in a new dependency injection scope and sends back the result. <code>TickerRequestProvider.GetRequestAsync&lt;T&gt;</code> on the worker reads the request that came with the run.</td></tr>
+          <tr><td>No worker of the node can take it</td><td>None is connected, or none of those connected declared the function or all are stopping. The run waits up to <code>WorkerWaitTimeout</code> for one that can. If none does, the run is <code>Skipped</code> with a "worker node offline" reason, and its retries are not used up.</td></tr>
+          <tr><td>A run never reached a worker</td><td>The connection closed before the run was sent, or the worker rejected it because it is stopping or doesn't have the function. The run goes to another worker of the node within <code>WorkerWaitTimeout</code>, without using a retry, and is skipped as above if none takes it.</td></tr>
+          <tr><td>Replicas declare different functions</td><td>The node's function list is the union of what its workers declared, and each run goes only to a worker that declared that function. A replica on an older or newer version doesn't remove functions the others offer.</td></tr>
+          <tr><td>The function throws on the worker</td><td>The run is <code>Failed</code>. The exception type and message from the worker go into the job's exception details; on the scheduler they arrive as a <code>RemoteExecutionException</code> carrying the worker's stack trace.</td></tr>
+          <tr><td>The job has retries</td><td>The scheduler runs the retry loop and waits <code>RetryIntervals</code> between attempts. Each attempt is sent on its own, so a retry can go to another replica. <code>context.RetryCount</code> on the worker says which attempt it is.</td></tr>
+          <tr><td>Someone cancels the run</td><td>Cancelling on the scheduler, from the dashboard or with <code>TickerCancellationTokenManager.RequestTickerCancellationById</code>, sends a cancel to the worker, which cancels the function's <code>CancellationToken</code>. The run is <code>Cancelled</code>. <code>context.RequestCancellation()</code> on the worker cancels it there.</td></tr>
+          <tr><td>The function skips itself</td><td>A <code>TerminateExecutionException</code> on the worker, for example from <code>SkipIfAlreadyRunning()</code>, records the status it carries, <code>Skipped</code> by default.</td></tr>
+          <tr><td>A run takes longer than <code>ExecutionTimeout</code></td><td>The scheduler stops waiting, sends a cancel to the worker and records a failure. Retries apply.</td></tr>
+          <tr><td>A worker stops</td><td>It sends <code>Draining</code>, so it gets no new runs; runs that still reach it are rejected and go to another worker. It finishes its runs, reports them and disconnects. Runs still going after its <code>ShutdownTimeout</code> are cancelled when it disconnects, so the scheduler records them like a disconnect during a run, below.</td></tr>
+          <tr><td>The worker disconnects during a run</td><td>The scheduler records a failure ("disconnected before the run finished") and retries if retries are left, possibly on another replica. The worker cancels the runs it still has, so they don't run twice.</td></tr>
+          <tr><td>A worker goes quiet without disconnecting</td><td>After <code>WorkerTimeout</code> without a message, the scheduler drops the worker. Its runs fail as above.</td></tr>
+          <tr><td>A worker function has a cron expression</td><td>When the worker connects, the scheduler creates or updates a cron job for <code>function@node</code>, as it does for its own <code>[TickerFunction]</code> cron functions. It never deletes one. While no connected worker that declares the function can take runs, its cron jobs are paused (<code>IsSystemPaused</code>), so no runs are created only to be skipped; they resume when one can. Cron jobs you add yourself for a remote function are paused and resumed the same way. A seeded cron job whose function no worker declares any more stays paused; remove it from the dashboard if you no longer want it. A worker that connects with no functions changes nothing.</td></tr>
+          <tr><td>The scheduler restarts</td><td>Remote functions are registered again as workers reconnect, and their cron jobs are paused until then. A run that comes due first still waits up to <code>WorkerWaitTimeout</code> for a worker. Cron seeding at startup no longer deletes seeded cron jobs for <code>function@node</code>, in any store.</td></tr>
+          <tr><td>The scheduler stops</td><td>The hub sends each worker a <code>Disconnect</code> and closes its stream straight away, so it doesn't hold up shutdown. Runs in progress on the workers are cancelled because their connection closed, and the workers keep trying to reconnect until the scheduler is back.</td></tr>
+          <tr><td>All workers of a node stop</td><td>The node's functions stay registered until the scheduler restarts, so jobs can still be added for them, and due runs wait, then skip, as above.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="step" id="security">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Security</h2>
+        <p class="step-sub">A worker can run code on the scheduler's schedule and add jobs, so treat the shared secret like any other credential.</p></div>
+      <div class="prose">
+        <ul>
+          <li><strong>Before the stream is read.</strong> The worker opens the stream with four request headers: <code>tickernet-node</code>, <code>tickernet-nonce</code>, <code>tickernet-timestamp</code> and <code>tickernet-signature</code>, a base64 HMAC-SHA256 over the node, nonce and timestamp. The scheduler checks that the timestamp is within 5 minutes, that the signature matches its <code>SharedSecret</code>, and that it hasn't seen the nonce, before it reads anything from the stream. A rejected worker is logged with its address.</li>
+          <li><strong>Hello.</strong> The worker's first message must arrive within 10 seconds and repeat the node, nonce and timestamp from the headers. Its own HMAC also covers the worker and protocol versions, the worker's concurrency limit, and each function's name, cron expression, priority and concurrency limit, so the function list can't be changed on the way. The scheduler rejects control characters and over-long values in these fields.</li>
+          <li><strong>Both sides prove the secret.</strong> The scheduler signs its HelloAck over the worker's nonce and the worker id it assigns. A worker refuses a server that can't, logging that it "didn't prove it knows the shared secret", so it never takes runs from a server pretending to be the scheduler.</li>
+          <li><strong>A worker only touches its own node.</strong> It can add, change and remove only <code>function@itsnode</code> jobs, change only their schedule fields, and read only the request of a run it is executing. See <a href="#naming">Name and schedule remote jobs</a>.</li>
+          <li><strong>Replays.</strong> Nonces are kept in the scheduler's memory. A restarted scheduler forgets them, and the 5-minute window limits how long a captured call could be replayed after that.</li>
+          <li><strong>Use TLS.</strong> The handshake proves who each side is, but doesn't encrypt anything. Use an <code>https</code> <code>HubAddress</code>; a plain <code>http</code> address to another machine needs <code>AllowUnencryptedHttp</code>, for trusted private networks only. For client certificates or a proxy, set <code>ConfigureChannel</code> on the worker.</li>
+          <li><strong>Restrict the endpoint.</strong> <code>MapTickerNetHub()</code> returns a convention builder: add <code>.RequireHost("workers.example.internal")</code>, an authorization policy, or serve it on an internal port only.</li>
+          <li><strong>Keep the secret out of code.</strong> Load it from your secret store or configuration on both sides. Use a long random value, for example from <code>openssl rand -base64 48</code>. To change it, update the scheduler and every worker together: workers with the old secret are refused until they restart with the new one.</li>
+          <li><strong>Versions.</strong> This is worker protocol version 1. The scheduler refuses a worker that speaks another version, so run matching TickerNet versions.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step" id="limits">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Limits in this preview</h2>
+        <p class="step-sub">Known gaps in <code>1.0.0-preview.1</code>.</p></div>
+      <div class="prose">
+        <ul>
+          <li><strong>One scheduler instance should run the hub.</strong> A worker connects to one address. If several scheduler instances share a store, a run picked up by an instance the worker isn't connected to waits, then is skipped.</li>
+          <li><strong>Workers can't read jobs.</strong> Queries and reads on a worker throw <code>NotSupportedException</code>; read jobs on the scheduler. A worker can read only the request of a run it is executing.</li>
+          <li><strong>Seeded cron jobs aren't cleaned up.</strong> The hub never deletes a seeded cron job, so one for a function that was removed from the workers stays, paused, until you delete it from the dashboard.</li>
+          <li><strong>New remote jobs need a known function.</strong> Right after the scheduler restarts, adding a job for <code>function@node</code> fails validation until a worker of that node has connected.</li>
+          <li><strong>No log forwarding.</strong> Log output from a function goes to the worker's own logging, not to the dashboard.</li>
+          <li><strong>The dashboard doesn't show the paused flag yet.</strong> A cron job paused while its node is offline still looks enabled; <code>IsSystemPaused</code> is in the API data and the store.</li>
+          <li><strong><code>SkipIfAlreadyRunning()</code> only sees runs on the same worker</strong> that belong to the same cron job, not runs on other replicas.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step" id="tickerq-hub">
+      <div class="step-head"><span class="step-num">07</span><h2 class="step-title">Coming from TickerQ Hub</h2>
+        <p class="step-sub">For apps that used TickerQ's remote executor and SDK at TickerNet's fork point.</p></div>
+      <div class="tbl-wrap"><table class="wrap">
+        <thead><tr><th>TickerQ</th><th>TickerNet</th></tr></thead>
+        <tbody>
+          <tr><td>TickerQ Hub, the hosted service</td><td>Not supported. The scheduler is the hub, so nothing else is needed.</td></tr>
+          <tr><td><code>TickerQ.RemoteExecutor</code> in the scheduler</td><td><code>TickerNet.Hub</code>: <code>AddTickerNetHub</code> and <code>MapTickerNetHub</code>.</td></tr>
+          <tr><td><code>TickerQ.SDK</code> in the worker</td><td><code>TickerNet.Worker</code>: <code>AddTickerNetWorker</code>, with the scheduler's address and the shared secret set on the worker instead of a hub API key.</td></tr>
+          <tr><td>Jobs stored as <code>function@node</code></td><td>Kept. They run on a TickerNet worker that uses the same node name.</td></tr>
+          <tr><td><code>CronTickerEntity.IsSystemPaused</code> and its column</td><td>Kept, with the same name and meaning, so the database needs no change.</td></tr>
+          <tr><td><code>SdkOfflineSkipException</code></td><td>Still works but is obsolete: it now derives from <code>WorkerOfflineException</code>, the new name, and both record a run as <code>Skipped</code>.</td></tr>
+          <tr><td><code>TickerFunctionProvider</code> hooks: <code>FunctionNodeResolver</code>, <code>ResolveNodeName</code>, <code>ReplaceFunctions</code>, <code>ReplaceRequestInfo</code>, <code>MergeRemoteFunctions</code>, <code>MergeRemoteRequestInfo</code></td><td>Kept. TickerNet.Hub uses <code>MergeRemoteFunctions</code> and <code>MergeRemoteRequestInfo</code>.</td></tr>
+          <tr><td>The SDK ran the retry loop and reported each status</td><td>The scheduler runs retries and records every status; the worker runs one attempt per message.</td></tr>
+          <tr><td>The worker-stream protocol</td><td>TickerNet's <code>worker.proto</code> keeps the message shapes and field numbers of TickerQ's worker stream and reserves the parts it doesn't use. It is not wire-compatible: the gRPC package and service are renamed, and <code>TickerQ.SDK</code> only connects through TickerQ Hub. Replace the SDK with <code>TickerNet.Worker</code>.</td></tr>
+          <tr><td>Per-run log forwarding to the hub's dashboard</td><td>Not available. See <a href="#limits">limits</a>.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="prose"><p>The rest of the move, such as package IDs and namespaces, is in <a href="migrating-from-tickerq.html">Migrating from TickerQ</a>.</p></div>
+    </section>
+
+    <section class="step" id="more">
+      <div class="step-head"><span class="step-num">↓</span><h2 class="step-title">Samples and decisions</h2></div>
+      <div class="prose">
+        <ul>
+          <li><strong>Samples.</strong> <code>samples/TickerNet.Sample.Hub</code> is a scheduler with the dashboard on port 5080 and the worker endpoint on port 5081. <code>samples/TickerNet.Sample.HubWorker</code> is a worker for node <code>reports</code>. Set the same <code>TickerNet:SharedSecret</code> for both, for example through the <code>TickerNet__SharedSecret</code> environment variable, run both, then post to <code>http://localhost:5080/send-report</code>.</li>
+          <li><strong>Tests.</strong> <code>tests/TickerNet.Hub.Tests</code> runs a real scheduler and workers on a local port.</li>
+          <li><strong>Decisions.</strong> <a href="decisions/0009-self-hosted-hub-remote-workers.html">ADR 0009</a> records this design. <a href="decisions/0005-drop-tickerq-hub.html">ADR 0005</a> records why the TickerQ Hub clients were removed, and <a href="decisions/0010-accept-tickerq-names.html">ADR 0010</a> the TickerQ names TickerNet still accepts.</li>
+        </ul>
+      </div>
+    </section>
+    <nav class="pager" aria-label="Pages"><a href="getting-started.html"><small>Previous</small>Getting started</a><a class="next" href="migrating-from-tickerq.html"><small>Next</small>Migrating from TickerQ</a></nav>
+    <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>

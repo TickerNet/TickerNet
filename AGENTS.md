@@ -9,8 +9,11 @@ test it. This file holds the rules for coding agents.
 - `src/`: the packages. `TickerNet` (core engine), `TickerNet.Utilities` (shared types, referenced by every other
   package), `TickerNet.SourceGenerator` (bundled into the core package as an analyzer), `TickerNet.EntityFrameworkCore`,
   `TickerNet.Caching.StackExchangeRedis`, `TickerNet.MongoDB`, `TickerNet.Dashboard` (ASP.NET Core host plus a Vue
-  app in `wwwroot/`, embedded from `wwwroot/dist`), `TickerNet.Instrumentation.OpenTelemetry`.
-- `tests/`: xUnit tests, one project per package. The MongoDB tests need Docker.
+  app in `wwwroot/`, embedded from `wwwroot/dist`), `TickerNet.Instrumentation.OpenTelemetry`, `TickerNet.Hub`
+  (lets worker processes connect to the scheduler; owns `Protos/worker.proto` and `Protocol/HelloSignature.cs`, which
+  `TickerNet.Worker` compiles in too) and `TickerNet.Worker` (the worker side).
+- `tests/`: xUnit tests, one project per package. The MongoDB tests need Docker. `TickerNet.Hub.Tests` runs a real hub
+  and workers on a local port, one test at a time.
 - `samples/`, `benchmarks/`: example apps and BenchmarkDotNet runs.
 - `site/`: the docs site on GitHub Pages, including the ADR log in `site/decisions/`.
 - `src/Directory.Build.props`: version, target framework (.NET 10) and package metadata for every package.

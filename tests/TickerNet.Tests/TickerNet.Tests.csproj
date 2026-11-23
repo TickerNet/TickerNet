@@ -27,6 +27,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\src\TickerNet.Caching.StackExchangeRedis\TickerNet.Caching.StackExchangeRedis.csproj" />
       <ProjectReference Include="..\..\src\TickerNet.Dashboard\TickerNet.Dashboard.csproj" />
+      <ProjectReference Include="..\..\src\TickerNet.Instrumentation.OpenTelemetry\TickerNet.Instrumentation.OpenTelemetry.csproj" />
       <ProjectReference Include="..\..\src\TickerNet.Utilities\TickerNet.Utilities.csproj" />
       <ProjectReference Include="..\..\src\TickerNet\TickerNet.csproj" />
     </ItemGroup>

@@ -18,6 +18,7 @@
       <ul class="topnav">
         <li><a href="../index.html">Home</a></li>
         <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../remote-workers.html">Remote workers</a></li>
         <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
         <li><a href="../contributing.html">Contributing</a></li>
         <li><a href="../governance.html">Governance</a></li>
@@ -40,11 +41,11 @@
       <h1>Name the project TickerNet and rename everything</h1>
       <p class="lede">The fork is called TickerNet. Every TickerQ name in the code, the packages and the diagnostics became TickerNet. Stored names did not contain TickerQ, so existing data carries over.</p>
       <dl class="adr-meta">
-        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Status</dt><dd><span class="adr-status amended">Amended</span> 2026-11-23: some external names changed by the rename keep working under their TickerQ names, as listed in <a href="0010-accept-tickerq-names.html">ADR 0010</a>.</dd></div>
         <div><dt>Decided</dt><dd>2026-11-23</dd></div>
         <div><dt>Affects</dt><dd><code>src/</code>, <code>tests/</code>, <code>samples/</code>, <code>benchmarks/</code>, <code>TickerNet.slnx</code></dd></div>
       </dl>
-      <p class="adr-related">Related: <a href="0001-fork-at-last-open-source-commit.html">ADR 0001</a> Fork TickerQ at its last open-source commit, <a href="0003-license-pledge-no-cla.html">ADR 0003</a> License MIT OR Apache-2.0 with an open-source pledge and no CLA</p>
+      <p class="adr-related">Related: <a href="0001-fork-at-last-open-source-commit.html">ADR 0001</a> Fork TickerQ at its last open-source commit, <a href="0003-license-pledge-no-cla.html">ADR 0003</a> License MIT OR Apache-2.0 with an open-source pledge and no CLA, <a href="0010-accept-tickerq-names.html">ADR 0010</a> Accept TickerQ's names where moving would otherwise break</p>
     </header>
     <section class="step" id="context">
       <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
@@ -60,7 +61,7 @@
     </section>
     <section class="step" id="consequences">
       <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
-      <div class="prose"><ul><li>Moving from TickerQ needs code changes: package references, namespaces, renamed API and diagnostic IDs. The <a href="../migrating-from-tickerq.html">migration guide</a> lists them.</li><li>Because the rename covered every letter case, some external names changed too: the default dashboard path, the Redis <code>InstanceName</code> default and keyed-service key, the ActivitySource, span and tag names, log text and the dashboard's browser storage keys. Monitoring, proxies and bookmarks that use them need updating.</li><li><code>TRADEMARKS.md</code> keeps the new name for the open-source project.</li></ul></div>
+      <div class="prose"><ul><li>Moving from TickerQ needs code changes: package references, namespaces, renamed API and diagnostic IDs. The <a href="../migrating-from-tickerq.html">migration guide</a> lists them.</li><li>Because the rename covered every letter case, some external names changed too: the default dashboard path, the Redis <code>InstanceName</code> default and keyed-service key, the ActivitySource, span and tag names, log text and the dashboard's browser storage keys. Monitoring, proxies and bookmarks that use them need updating. <em>Amended 2026-11-23:</em> old dashboard links now redirect, saved dashboard sign-ins carry over, and TickerQ trace names are available on request (<a href="0010-accept-tickerq-names.html">ADR 0010</a>).</li><li><code>TRADEMARKS.md</code> keeps the new name for the open-source project.</li></ul></div>
     </section>
     <section class="step" id="where">
       <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>

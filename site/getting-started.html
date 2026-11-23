@@ -18,6 +18,7 @@
       <ul class="topnav">
         <li><a href="index.html">Home</a></li>
         <li><a href="getting-started.html" aria-current="page">Getting started</a></li>
+        <li><a href="remote-workers.html">Remote workers</a></li>
         <li><a href="migrating-from-tickerq.html">Migrating from TickerQ</a></li>
         <li><a href="contributing.html">Contributing</a></li>
         <li><a href="governance.html">Governance</a></li>
@@ -72,6 +73,7 @@
           <li><strong>Node.js LTS, only to build the dashboard from source.</strong> Its web app is built into <code>wwwroot/dist</code> and embedded in the assembly.</li>
         </ul>
       </div>
+      <div class="why"><b>Job code in another process?</b> This page sets up jobs that run in the scheduler's own process. To run them in separate worker apps that connect to the scheduler, add <code>TickerNet.Hub</code> and <code>TickerNet.Worker</code> as <a href="remote-workers.html">Remote workers</a> shows, after you have the basics below working.</div>
     </section>
 
     <section class="step" id="packages">
@@ -275,7 +277,7 @@ public class ReportScheduler(
       <div class="prose">
         <ul>
           <li><strong>Results, not exceptions.</strong> Manager methods return a <code>TickerResult&lt;T&gt;</code> with <code>IsSucceeded</code>, <code>Result</code>, <code>Exception</code> and <code>AffectedRows</code>. An unknown function name or a cron expression that doesn't parse comes back as a failed result.</li>
-          <li><strong>Execution time.</strong> No <code>ExecutionTime</code> means now. UTC and local times are converted to UTC; a time with <code>DateTimeKind.Unspecified</code> is read in <code>SchedulerTimeZone</code>. A job due within the next second is handed straight to the workers instead of waiting for the scheduler loop.</li>
+          <li><strong>Execution time.</strong> No <code>ExecutionTime</code> means now. UTC and local times are converted to UTC; a time with <code>DateTimeKind.Unspecified</code> is read in <code>SchedulerTimeZone</code>. A job due within the next second is handed straight to the workers instead of waiting for the scheduler loop. It then runs with the host's lifetime, not the <code>CancellationToken</code> you passed, so the end of an HTTP request doesn't cancel it.</li>
           <li><strong>Retries.</strong> <code>Retries</code> is the number of extra attempts. <code>RetryIntervals</code> gives the wait before each one in seconds; without it each wait is 30 seconds.</li>
         </ul>
       </div>
@@ -437,7 +439,7 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracing =&gt; tracing.AddSource("TickerNet"));   // then add your exporter</code></pre></div>
       <div class="prose"><p>Each run is a span named <code>tickernet.job.execute.timeticker</code> or <code>tickernet.job.execute.crontickeroccurrence</code>. Events such as <code>tickernet.job.enqueued</code>, <code>.completed</code>, <code>.failed</code>, <code>.cancelled</code> and <code>.skipped</code> are separate spans. Tags start with <code>tickernet.job.</code>, for example <code>tickernet.job.id</code> and <code>tickernet.job.function</code>.</p></div>
     </section>
-    <nav class="pager" aria-label="Pages"><a href="index.html"><small>Previous</small>Home</a><a class="next" href="migrating-from-tickerq.html"><small>Next</small>Migrating from TickerQ</a></nav>
+    <nav class="pager" aria-label="Pages"><a href="index.html"><small>Previous</small>Home</a><a class="next" href="remote-workers.html"><small>Next</small>Remote workers</a></nav>
     <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
   </main>
 </div>

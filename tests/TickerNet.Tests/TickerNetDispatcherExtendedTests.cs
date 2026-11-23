@@ -254,10 +254,11 @@ public class TickerNetDispatcherExtendedTests
     }
 
     [Fact]
-    public async Task DispatchAsync_CancellationToken_IsPassedToQueueAsync()
+    public async Task DispatchAsync_CallerToken_IsNotUsedForTheJob()
     {
-        using var cts = new CancellationTokenSource();
-        var token = cts.Token;
+        // The caller's token (an HTTP request, a worker connection) must not cancel or strand
+        // jobs that are already marked InProgress; jobs run with the host's stopping token.
+        using var caller = new CancellationTokenSource();
 
         var context = new InternalFunctionContext
         {
@@ -267,12 +268,36 @@ public class TickerNetDispatcherExtendedTests
             TimeTickerChildren = []
         };
 
-        await _dispatcher.DispatchAsync([context], token);
+        await _dispatcher.DispatchAsync([context], caller.Token);
 
         await _taskScheduler.Received(1).QueueAsync(
             Arg.Any<Func<CancellationToken, Task>>(),
             Arg.Any<TickerTaskPriority>(),
-            Arg.Is(token));
+            Arg.Is<CancellationToken>(t => t != caller.Token));
+    }
+
+    [Fact]
+    public async Task DispatchAsync_UsesTheHostStoppingTokenForTheJob()
+    {
+        using var stopping = new CancellationTokenSource();
+        var lifetime = Substitute.For<Microsoft.Extensions.Hosting.IHostApplicationLifetime>();
+        lifetime.ApplicationStopping.Returns(stopping.Token);
+        var dispatcher = new TickerNetDispatcher(_taskScheduler, _taskHandler, new TickerFunctionConcurrencyGate(), lifetime);
+
+        var context = new InternalFunctionContext
+        {
+            TickerId = Guid.NewGuid(),
+            FunctionName = "Func1",
+            CachedPriority = TickerTaskPriority.Normal,
+            TimeTickerChildren = []
+        };
+
+        await dispatcher.DispatchAsync([context], CancellationToken.None);
+
+        await _taskScheduler.Received(1).QueueAsync(
+            Arg.Any<Func<CancellationToken, Task>>(),
+            Arg.Any<TickerTaskPriority>(),
+            Arg.Is(stopping.Token));
     }
 
     [Fact]

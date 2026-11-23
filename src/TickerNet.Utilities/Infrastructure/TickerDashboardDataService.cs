@@ -307,8 +307,7 @@ namespace TickerNet.Utilities.Infrastructure
         public Task<IList<(string NodeName, int JobCount)>> GetNodeJobsAsync(
             CancellationToken cancellationToken = default)
         {
-            // Per-node execution tracking was removed from the scheduler; node stats are
-            // derived from the Hub's NodeApplication registry instead.
+            // The scheduler doesn't track executions per node, so there are no node stats here.
             return Task.FromResult<IList<(string NodeName, int JobCount)>>(Array.Empty<(string, int)>());
         }
 
@@ -629,8 +628,7 @@ namespace TickerNet.Utilities.Infrastructure
 
         public Task<IList<NodeDto>> GetNodesAsync(CancellationToken cancellationToken = default)
         {
-            // Per-node execution tracking was removed from the scheduler; the Hub derives
-            // node presence from its NodeApplication registry.
+            // The scheduler doesn't track node presence here.
             return Task.FromResult<IList<NodeDto>>(Array.Empty<NodeDto>());
         }
 

@@ -12,12 +12,13 @@ namespace TickerNet.Utilities.Entities
         public virtual bool IsEnabled { get; set; } = true;
 
         /// <summary>
-        /// System-managed pause flag — set automatically when the SDK node
-        /// owning this cron's Function disconnects, cleared on reconnect.
-        /// Distinct from <see cref="IsEnabled"/> (user-managed) so the
-        /// dashboard can distinguish "user disabled this" from "auto-paused
-        /// while waiting for the SDK to come back". Polling skips a cron
-        /// when this is true even if IsEnabled is true.
+        /// System-managed pause flag. TickerNet.Hub sets it when no worker for the
+        /// node in this cron's Function (<c>function@node</c>) is connected, and
+        /// clears it when one connects. Distinct from <see cref="IsEnabled"/>
+        /// (user-managed) so the dashboard can tell "user disabled this" from
+        /// "paused while the worker node is offline". Polling skips a cron when
+        /// this is true even if IsEnabled is true. The column has the same name
+        /// TickerQ used, so existing databases need no change.
         /// </summary>
         public virtual bool IsSystemPaused { get; set; }
     }

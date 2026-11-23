@@ -1,3 +1,6 @@
+// Must stay the first import: renames TickerQ-era storage keys before anything reads them.
+import './legacyStorageMigration'
+
 import './assets/main.css'
 
 import { createApp } from 'vue'

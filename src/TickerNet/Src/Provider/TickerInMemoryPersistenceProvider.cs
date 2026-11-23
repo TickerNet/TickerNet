@@ -527,11 +527,10 @@ namespace TickerNet.Provider
 
             // Remove orphaned cron tickers whose function no longer exists in the
             // code definitions (#517). Limited to *seeded* crons (non-empty
-            // InitIdentifier) so dashboard-created crons targeting SDK / remote
-            // functions aren't wiped on scheduler restart — at boot the SDK
-            // hasn't synced its functions yet, so the registry wouldn't contain
-            // qualified `name@node` entries. See the EF provider's mirror
-            // comment for the full rationale.
+            // InitIdentifier) for local functions. Remote functions
+            // (`function@node`) are skipped: their worker nodes may not have
+            // connected yet, and TickerNet.Hub manages their seeded crons. See
+            // the EF provider's comment for the full rationale.
             var allRegisteredFunctions = TickerFunctionProvider.TickerFunctions.Keys
                 .ToHashSet(StringComparer.Ordinal);
 
@@ -539,6 +538,7 @@ namespace TickerNet.Provider
             foreach (var (id, ticker) in snapshot)
             {
                 if (!string.IsNullOrEmpty(ticker.InitIdentifier)
+                    && !RemoteFunctionName.IsRemote(ticker.Function)
                     && !allRegisteredFunctions.Contains(ticker.Function))
                     CronTickers.TryRemove(id, out _);
             }

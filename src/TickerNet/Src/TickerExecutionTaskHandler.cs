@@ -161,8 +161,8 @@ internal class TickerExecutionTaskHandler : ITickerExecutionTaskHandler
             IsDue = isDue,
             ScheduledFor = context.ExecutionTime,
             // Forward retry config so delegates that defer execution to a different
-            // process (e.g. the remote-dispatch delegate that ships work to the SDK)
-            // can pass it along — without these the SDK would see Retries=0.
+            // process (TickerNet.Hub's delegate that sends the job to a worker node)
+            // can pass it along. Without these the worker would see Retries=0.
             Retries = context.Retries,
             RetryIntervals = context.RetryIntervals,
             RequestCancelOperationAction = () => cancellationTokenSource.Cancel(),
@@ -202,19 +202,17 @@ internal class TickerExecutionTaskHandler : ITickerExecutionTaskHandler
 
                 if (context.CachedDelegate is null)
                 {
-                    // Qualified function name (`name@nodeName`) with no
-                    // matching delegate almost always means the SDK that
-                    // owns it is currently offline — its functions get
-                    // unregistered from TickerFunctionProvider when the
-                    // worker stream drops. Surface as SdkOfflineSkipException
-                    // so the run lands as Skipped (with the SDK-offline
-                    // reason persisted) instead of burning user retries on
-                    // something that can't run until the node is back.
-                    if (!string.IsNullOrEmpty(context.FunctionName) && context.FunctionName.Contains('@'))
+                    // A remote function name (`function@node`) with no delegate
+                    // means no worker for that node has registered it with this
+                    // scheduler. Surface as WorkerOfflineException so the run
+                    // lands as Skipped, with the reason persisted, instead of
+                    // spending retries on something that can't run until the
+                    // node is back.
+                    if (RemoteFunctionName.IsRemote(context.FunctionName))
                     {
-                        var node = context.FunctionName[(context.FunctionName.IndexOf('@') + 1)..];
-                        throw new SdkOfflineSkipException(
-                            $"SDK node '{node}' is offline (function '{context.FunctionName}' is not currently registered).");
+                        var node = RemoteFunctionName.GetNodeName(context.FunctionName);
+                        throw new WorkerOfflineException(
+                            $"Worker node '{node}' is offline (function '{context.FunctionName}' is not registered).");
                     }
                     throw new InvalidOperationException(
                         $"Ticker function '{context.FunctionName}' was not found in the registered functions. " +
@@ -282,13 +280,13 @@ internal class TickerExecutionTaskHandler : ITickerExecutionTaskHandler
                 TickerCancellationTokenManager.RemoveTickerCancellationToken(context.TickerId);
                 return;
             }
-            catch (SdkOfflineSkipException ex)
+            catch (WorkerOfflineException ex)
             {
-                // SDK node is offline and the transport-retry window
-                // expired. Don't burn the user's Retries budget — retrying
-                // is pointless while the node is down. Land on Skipped with
-                // the reason persisted so the dashboard can distinguish
-                // "would have run but SDK was offline" from "ran and broke".
+                // The worker node is offline (this also catches the obsolete
+                // SdkOfflineSkipException, which derives from it). Don't spend
+                // the job's retries: retrying is pointless while the node is
+                // down. Land on Skipped with the reason persisted so the
+                // dashboard can tell "couldn't run" from "ran and failed".
                 context.SetProperty(x => x.Status, TickerStatus.Skipped)
                     .SetProperty(x => x.ExecutedAt, _clock.UtcNow)
                     .SetProperty(x => x.ElapsedTime, stopWatch.ElapsedMilliseconds)

@@ -277,19 +277,18 @@ internal abstract class BasePersistenceProvider<TDbContext, TTimeTicker, TCronTi
         // (some providers like Devart MySQL don't assign type mappings to HashSet parameters).
         var allRegisteredFunctions = TickerFunctionProvider.TickerFunctions.Keys.ToList();
 
-        // Orphan cleanup is intentionally narrowed to *seeded* crons (those that
-        // carry an InitIdentifier from the code-defined-cron migration). Without
-        // this filter we'd delete every dashboard-created cron whose function
-        // is registered by an SDK / RemoteExecutor — at scheduler boot the SDK
-        // hasn't synced yet, so those qualified function names (`name@node`)
-        // wouldn't be in TickerFunctionProvider.TickerFunctions yet, and the
-        // user's cron would be wiped out on every restart.
+        // Orphan cleanup is narrowed to *seeded* crons (those that carry an
+        // InitIdentifier from the code-defined-cron migration) for local
+        // functions. Dashboard-created crons were never tied to a code
+        // definition, so "the code definition went away" doesn't apply to them.
         //
-        // Skipping non-seeded crons here is safe: they were never tied to a
-        // code definition in the first place, so "the code definition went
-        // away" doesn't apply to them.
+        // Remote functions (`function@node`) are skipped too: at scheduler boot
+        // their worker nodes haven't connected yet, so they aren't in
+        // TickerFunctionProvider.TickerFunctions, and TickerNet.Hub manages
+        // their seeded crons when each node connects.
         var orphanedCron = await cronSet
             .Where(c => !string.IsNullOrEmpty(c.InitIdentifier)
+                        && !c.Function.Contains("@")
                         && !allRegisteredFunctions.Contains(c.Function))
             .Select(c => c.Id)
             .ToArrayAsync(cancellationToken)

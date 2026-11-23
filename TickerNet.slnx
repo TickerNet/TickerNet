@@ -13,6 +13,8 @@
   <Folder Name="/samples/">
     <Project Path="samples/TickerNet.Sample.ApplicationDbContext/TickerNet.Sample.ApplicationDbContext.csproj" />
     <Project Path="samples/TickerNet.Sample.Console/TickerNet.Sample.Console.csproj" />
+    <Project Path="samples/TickerNet.Sample.Hub/TickerNet.Sample.Hub.csproj" />
+    <Project Path="samples/TickerNet.Sample.HubWorker/TickerNet.Sample.HubWorker.csproj" />
     <Project Path="samples/TickerNet.Sample.MongoDB/TickerNet.Sample.MongoDB.csproj" />
     <Project Path="samples/TickerNet.Sample.WebApi/TickerNet.Sample.WebApi.csproj" />
     <Project Path="samples/TickerNet.Sample.WorkerService/TickerNet.Sample.WorkerService.csproj" />
@@ -22,15 +24,18 @@
     <Project Path="src/TickerNet.Caching.StackExchangeRedis/TickerNet.Caching.StackExchangeRedis.csproj" />
     <Project Path="src/TickerNet.Dashboard/TickerNet.Dashboard.csproj" />
     <Project Path="src/TickerNet.EntityFrameworkCore/TickerNet.EntityFrameworkCore.csproj" />
+    <Project Path="src/TickerNet.Hub/TickerNet.Hub.csproj" />
     <Project Path="src/TickerNet.Instrumentation.OpenTelemetry/TickerNet.Instrumentation.OpenTelemetry.csproj" />
     <Project Path="src/TickerNet.MongoDB/TickerNet.MongoDB.csproj" />
     <Project Path="src/TickerNet.SourceGenerator/TickerNet.SourceGenerator.csproj" />
     <Project Path="src/TickerNet.Utilities/TickerNet.Utilities.csproj" />
+    <Project Path="src/TickerNet.Worker/TickerNet.Worker.csproj" />
     <Project Path="src/TickerNet/TickerNet.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/TickerNet.Caching.StackExchangeRedis.Tests/TickerNet.Caching.StackExchangeRedis.Tests.csproj" />
     <Project Path="tests/TickerNet.EntityFrameworkCore.Tests/TickerNet.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="tests/TickerNet.Hub.Tests/TickerNet.Hub.Tests.csproj" />
     <Project Path="tests/TickerNet.MongoDB.Tests/TickerNet.MongoDB.Tests.csproj" />
     <Project Path="tests/TickerNet.SourceGenerator.Tests/TickerNet.SourceGenerator.Tests.csproj" />
     <Project Path="tests/TickerNet.Tests/TickerNet.Tests.csproj" />

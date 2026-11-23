@@ -18,6 +18,7 @@
       <ul class="topnav">
         <li><a href="../index.html">Home</a></li>
         <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../remote-workers.html">Remote workers</a></li>
         <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
         <li><a href="../contributing.html">Contributing</a></li>
         <li><a href="../governance.html">Governance</a></li>
@@ -40,11 +41,11 @@
       <h1>Drop the TickerQ Hub integration</h1>
       <p class="lede">The client SDKs and remote executor for TickerQ Hub, a hosted service with its own terms, are removed, along with upstream-only CI and files. Hooks for them left in <code>src/</code> are a follow-up.</p>
       <dl class="adr-meta">
-        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Status</dt><dd><span class="adr-status amended">Amended</span> 2026-11-23: the hooks listed under Decision are kept and generalised, not removed, and remote execution returns without TickerQ Hub through <a href="0009-self-hosted-hub-remote-workers.html">ADR 0009</a>.</dd></div>
         <div><dt>Decided</dt><dd>2026-11-23</dd></div>
         <div><dt>Affects</dt><dd><code>hub/</code> (removed), <code>.github/workflows/</code>, <code>src/TickerNet.Utilities</code>, <code>src/TickerNet</code></dd></div>
       </dl>
-      <p class="adr-related">Related: <a href="0001-fork-at-last-open-source-commit.html">ADR 0001</a> Fork TickerQ at its last open-source commit, <a href="0006-version-independently-dotnet-10.html">ADR 0006</a> Version independently and target .NET 10 only</p>
+      <p class="adr-related">Related: <a href="0001-fork-at-last-open-source-commit.html">ADR 0001</a> Fork TickerQ at its last open-source commit, <a href="0006-version-independently-dotnet-10.html">ADR 0006</a> Version independently and target .NET 10 only, <a href="0009-self-hosted-hub-remote-workers.html">ADR 0009</a> Run jobs on remote workers through a self-hosted hub</p>
     </header>
     <section class="step" id="context">
       <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
@@ -60,15 +61,15 @@
     </section>
     <section class="step" id="consequences">
       <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
-      <div class="prose"><ul><li>TickerNet has no remote execution: a job runs only in a process that registered its function.</li><li>Some hooks are public API, and <code>IsSystemPaused</code> is a database column. Removing them changes the public API and, for the column, the schema, so it needs its own ADR (<code>AGENTS.md</code>, Public API).</li><li>TickerNet has its own CI: <code>ci.yaml</code>, <code>dco.yaml</code> and <code>pages.yaml</code>.</li></ul></div>
+      <div class="prose"><ul><li>Without the TickerQ Hub clients, TickerNet had no remote execution: a job ran only in a process that registered its function. <em>Amended 2026-11-23:</em> <a href="0009-self-hosted-hub-remote-workers.html">ADR 0009</a> adds remote workers through <code>TickerNet.Hub</code> and <code>TickerNet.Worker</code>, with no hosted service.</li><li>Some hooks are public API, and <code>IsSystemPaused</code> is a database column. Removing them changes the public API and, for the column, the schema, so it needs its own ADR (<code>AGENTS.md</code>, Public API). <em>Amended 2026-11-23:</em> they are kept. <code>SdkOfflineSkipException</code> is now an obsolete subclass of <code>WorkerOfflineException</code>. The <code>TickerFunctionProvider</code> members and the internal <code>Retries</code> and <code>RetryIntervals</code> stay, and TickerNet.Hub uses <code>MergeRemoteFunctions</code>, <code>MergeRemoteRequestInfo</code>, the <code>IsSystemPaused</code> column and the <code>function@node</code> naming rule.</li><li>TickerNet has its own CI: <code>ci.yaml</code>, <code>dco.yaml</code> and <code>pages.yaml</code>.</li></ul></div>
     </section>
     <section class="step" id="where">
       <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
-      <div class="prose"><ul><li><code>src/TickerNet.Utilities/Exceptions/SdkOfflineSkipException.cs</code></li><li><code>src/TickerNet.Utilities/TickerFunctionProvider.cs</code></li><li><code>src/TickerNet/Src/TickerExecutionTaskHandler.cs</code></li><li><code>src/TickerNet.Utilities/Entities/CronTickerEntity.cs</code> and <code>src/TickerNet.EntityFrameworkCore/Configurations/CronTickerConfigurations.cs</code></li><li><code>src/TickerNet.EntityFrameworkCore/Infrastructure/BasePersistenceProvider.cs</code>, <code>src/TickerNet.MongoDB/Infrastructure/TickerMongoPersistenceProvider.cs</code>, <code>src/TickerNet/Src/Provider/TickerInMemoryPersistenceProvider.cs</code></li></ul></div>
+      <div class="prose"><ul><li><code>src/TickerNet.Utilities/Exceptions/SdkOfflineSkipException.cs</code>, and since 2026-11-23 <code>Exceptions/WorkerOfflineException.cs</code> and <code>RemoteFunctionName.cs</code></li><li><code>src/TickerNet.Utilities/TickerFunctionProvider.cs</code></li><li><code>src/TickerNet/Src/TickerExecutionTaskHandler.cs</code></li><li><code>src/TickerNet.Utilities/Entities/CronTickerEntity.cs</code> and <code>src/TickerNet.EntityFrameworkCore/Configurations/CronTickerConfigurations.cs</code></li><li><code>src/TickerNet.EntityFrameworkCore/Infrastructure/BasePersistenceProvider.cs</code>, <code>src/TickerNet.MongoDB/Infrastructure/TickerMongoPersistenceProvider.cs</code>, <code>src/TickerNet/Src/Provider/TickerInMemoryPersistenceProvider.cs</code></li></ul></div>
     </section>
     <section class="step" id="sources">
       <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
-      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/commit/08b7fff"><code>08b7fff</code></a> Remove TickerQ Hub, upstream CI, CLA and caches</li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/AGENTS.md"><code>AGENTS.md</code></a></li></ul></div>
+      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/commit/08b7fff"><code>08b7fff</code></a> Remove TickerQ Hub, upstream CI, CLA and caches</li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/AGENTS.md"><code>AGENTS.md</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/commit/77d8048"><code>77d8048</code></a> Keep TickerQ's remote-function hooks and give them TickerNet names (the amendment)</li></ul></div>
     </section>
     <nav class="pager" aria-label="Decisions"><a href="0004-clean-room-tickerq-commercial.html"><small>Previous</small>ADR 0004: Keep a clean room around TickerQ's commercial versions</a><a class="next" href="0006-version-independently-dotnet-10.html"><small>Next</small>ADR 0006: Version independently and target .NET 10 only</a></nav>
     <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>

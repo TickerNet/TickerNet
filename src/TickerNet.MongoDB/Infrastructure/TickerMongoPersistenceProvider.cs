@@ -273,11 +273,10 @@ namespace TickerNet.MongoDB.Infrastructure
 
             var registeredFunctions = TickerFunctionProvider.TickerFunctions.Keys.ToHashSet(StringComparer.Ordinal);
 
-            // Orphan cleanup is intentionally narrowed to *seeded* crons (those with a non-empty
-            // InitIdentifier set by the code-defined-cron migration). Dashboard-created crons
-            // targeting SDK / RemoteExecutor functions have InitIdentifier == empty; the SDK may
-            // not have synced its qualified `name@node` keys into TickerFunctionProvider yet at
-            // boot, so wiping non-seeded crons would destroy user data. Mirrors the EF rationale.
+            // Orphan cleanup is narrowed to *seeded* crons (non-empty InitIdentifier) for local
+            // functions. Remote functions (`function@node`) are skipped: their worker nodes may not
+            // have connected yet at boot, and TickerNet.Hub manages their seeded crons. Mirrors the
+            // EF rationale.
             var fb = Builders<TCronTicker>.Filter;
             var orphans = await cronSet
                 .Find(fb.And(
@@ -288,7 +287,7 @@ namespace TickerNet.MongoDB.Infrastructure
                 .ConfigureAwait(false);
 
             var orphanIds = orphans
-                .Where(o => !registeredFunctions.Contains(o.Function))
+                .Where(o => !RemoteFunctionName.IsRemote(o.Function) && !registeredFunctions.Contains(o.Function))
                 .Select(o => o.Id)
                 .ToArray();
 

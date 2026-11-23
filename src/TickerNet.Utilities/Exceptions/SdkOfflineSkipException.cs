@@ -3,18 +3,12 @@ using System;
 namespace TickerNet.Utilities.Exceptions
 {
     /// <summary>
-    /// Signals that a ticker can't run right now because its target SDK node
-    /// is offline, and the framework should record the run as <c>Skipped</c>
-    /// (with this exception's message as the SkippedReason) instead of
-    /// <c>Failed</c>. Throwing this skips the user's <c>Retries</c> budget —
-    /// retrying is pointless while the node is down.
-    ///
-    /// Lives in <see cref="TickerNet.Utilities"/> rather than <see cref="TickerNet"/>
-    /// so the RemoteExecutor (which references Utilities, not the core
-    /// scheduler) can throw it from its dispatch delegate without taking a
-    /// new project reference.
+    /// Earlier name for <see cref="WorkerOfflineException"/>, from TickerQ's remote executor, where remote
+    /// worker processes were called SDK nodes. It still works: the scheduler handles it exactly like
+    /// <see cref="WorkerOfflineException"/>.
     /// </summary>
-    public sealed class SdkOfflineSkipException : Exception
+    [Obsolete("Use WorkerOfflineException. SdkOfflineSkipException is kept so code written against TickerQ's remote executor keeps compiling.")]
+    public sealed class SdkOfflineSkipException : WorkerOfflineException
     {
         public SdkOfflineSkipException(string message) : base(message) { }
     }

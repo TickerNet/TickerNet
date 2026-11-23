@@ -48,6 +48,35 @@ app.Run();
 `AddOtlpExporter` comes from the `OpenTelemetry.Exporter.OpenTelemetryProtocol` package. Any OpenTelemetry trace
 exporter works in its place.
 
+`tracing.AddTickerNetSource()` does the same as `AddSource("TickerNet")`.
+
+## Keeping TickerQ's trace names
+
+If you are moving from TickerQ and have trace queries, dashboards or alerts built on its names, export TickerNet's
+spans with those names:
+
+```csharp
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing
+        .AddTickerNetSource(useTickerQNames: true) // before any exporter
+        .AddOtlpExporter());
+```
+
+With `useTickerQNames: true`, span names and tag keys that start with `tickernet.` start with `tickerq.` instead
+(for example `tickernet.job.execute.timeticker` becomes `tickerq.job.execute.timeticker`, and `tickernet.job.id`
+becomes `tickerq.job.id`). Only spans from the `TickerNet` ActivitySource change. It is off by default.
+
+Order matters: the renaming happens when a span ends, in a processor that has to run before the exporter.
+Processors run in the order you add them, so call `AddTickerNetSource(useTickerQNames: true)` before
+`AddOtlpExporter()` or any other exporter. If you build the pipeline yourself, add `TickerQTraceNamesProcessor`
+with `AddProcessor` before the exporter.
+
+What stays the same either way:
+
+- The instrumentation scope (the ActivitySource name) is `TickerNet`. Filters on the scope name `TickerQ` need to
+  change.
+- Log messages (`TickerNet Job enqueued: …`) and logger categories (`TickerNet.*`) keep their TickerNet names.
+
 ## Trace Structure
 
 ### Job Execution Activities

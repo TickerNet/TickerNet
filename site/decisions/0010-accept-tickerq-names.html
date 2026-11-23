@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADR 0010: Accept TickerQ's names where moving would otherwise break</title>
+<meta name="description" content="Old dashboard links redirect, saved dashboard sign-ins carry over, TickerQ trace names are available on request, and TickerQ's remote-function names and column keep working; code-level names stay TickerNet.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../remote-workers.html">Remote workers</a></li>
+        <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="../contributing.html">Contributing</a></li>
+        <li><a href="../governance.html">Governance</a></li>
+        <li><a href="index.html" aria-current="page">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>ADR 0010</h2>
+    <ol><li><a href="#context"><span class="n">01</span><span>Context</span></a></li><li><a href="#decision"><span class="n">02</span><span>Decision</span></a></li><li><a href="#alternatives"><span class="n">03</span><span>Alternatives considered</span></a></li><li><a href="#consequences"><span class="n">04</span><span>Consequences</span></a></li><li><a href="#where"><span class="n">05</span><span>Where it lives</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol>
+    <p class="rail-back"><a href="index.html">← All decisions</a></p>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">ADR 0010 · Code and packages</p>
+      <h1>Accept TickerQ's names where moving would otherwise break</h1>
+      <p class="lede">Where the rename would break something a user didn't write in code, TickerNet keeps the old TickerQ name working. Old dashboard links redirect, saved dashboard sign-ins carry over, TickerQ trace names are available on request, and TickerQ's remote-function names and column keep working. Names in code stay TickerNet.</p>
+      <dl class="adr-meta">
+        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Decided</dt><dd>2026-11-23</dd></div>
+        <div><dt>Affects</dt><dd><code>src/TickerNet.Dashboard</code>, <code>src/TickerNet.Instrumentation.OpenTelemetry</code>, <code>src/TickerNet.Utilities</code>, <code>site/migrating-from-tickerq.html</code>, <code>README.md</code></dd></div>
+      </dl>
+      <p class="adr-related">Related: <a href="0002-name-tickernet-rename-everything.html">ADR 0002</a> Name the project TickerNet and rename everything, <a href="0009-self-hosted-hub-remote-workers.html">ADR 0009</a> Run jobs on remote workers through a self-hosted hub</p>
+    </header>
+    <section class="step" id="context">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
+      <div class="prose">
+        <p><a href="0002-name-tickernet-rename-everything.html">ADR 0002</a> replaced TickerQ with TickerNet in every letter case. Besides the code, that changed names that live outside a user's code: the dashboard's default path, its browser storage keys, the ActivitySource, span and tag names, log text, logger categories, and the Redis <code>InstanceName</code> default and keyed-service key. Bookmarks, signed-in dashboard sessions and trace dashboards would break on upgrade.</p>
+        <p>Before the repository went public, the maintainer asked for backward compatibility wherever the old names could keep working. TickerQ is Arcenox LLC's name (<code>TRADEMARKS.md</code>), so TickerNet uses it only to describe compatibility, not as its own API.</p>
+      </div>
+    </section>
+    <section class="step" id="decision">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Decision</h2></div>
+      <div class="prose"><ul>
+        <li><strong>Old dashboard links redirect, on by default.</strong> GET and HEAD requests to <code>/tickerq/dashboard</code> and anything under it, in any letter case, get a temporary redirect (302) to the same page under the configured base path. The rest of the path, the query string and the request's path base are kept. Other methods pass through. The redirect isn't added when the base path is <code>/tickerq/dashboard</code> or under it. <code>DashboardOptionsBuilder.DisableTickerQPathRedirect()</code> turns it off.</li>
+        <li><strong>Saved sign-ins and time zone carry over.</strong> When the dashboard web app starts, before anything reads storage, it copies <code>tickerq_basic_auth</code>, <code>tickerq_api_key</code>, <code>tickerq_host_access_key</code>, <code>tickerq_bearer_token</code> and <code>tickerq:dashboard:timezone</code> to their <code>tickernet</code> names, in local and session storage separately. A value is copied only if the new key isn't set, and the old key is removed either way. Blocked storage is ignored.</li>
+        <li><strong>TickerQ trace names, on request.</strong> <code>AddTickerNetSource(useTickerQNames: true)</code>, an extension on <code>TracerProviderBuilder</code> in <code>TickerNet.Instrumentation.OpenTelemetry</code>, adds the <code>TickerNet</code> source and <code>TickerQTraceNamesProcessor</code>. When a span from that source ends, the processor renames its name and tag keys from <code>tickernet.*</code> to <code>tickerq.*</code>, so it must be added before any exporter. The instrumentation scope stays <code>TickerNet</code>. Off by default; <code>AddTickerNetSource()</code> alone is the same as <code>AddSource("TickerNet")</code>.</li>
+        <li><strong>TickerQ's remote-function names keep working.</strong> Jobs named <code>function@node</code> (<code>RemoteFunctionName</code>) and the <code>IsSystemPaused</code> column keep their meaning. <code>SdkOfflineSkipException</code> stays as an obsolete subclass of <code>WorkerOfflineException</code>, and the <code>TickerFunctionProvider</code> hooks stay. <a href="0009-self-hosted-hub-remote-workers.html">ADR 0009</a> covers these.</li>
+        <li><strong>Not kept:</strong>
+          <ul>
+            <li>package IDs, namespaces, type and member names;</li>
+            <li><code>TQ0nn</code> diagnostic IDs;</li>
+            <li>log message text and logger categories;</li>
+            <li>the dashboard's config script names, <code>window.TickerQConfig</code>, CORS policy name and OpenAPI tag;</li>
+            <li>worker thread names;</li>
+            <li>the Redis <code>InstanceName</code> default and the <code>"tickerq"</code> keyed-service key. Setting <code>InstanceName = "tickerq:"</code> keeps the old prefix.</li>
+          </ul>
+          The <a href="../migrating-from-tickerq.html#stored">migration guide</a> lists each one with what to do.</li>
+      </ul></div>
+    </section>
+    <section class="step" id="alternatives">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Alternatives considered</h2></div>
+      <div class="prose"><ul>
+        <li><strong>Leave it to the migration guide.</strong> It already listed every changed name and how to keep the old value. Rejected by the maintainer, who asked for the old names to keep working where they can.</li>
+        <li><strong>Shims with TickerQ's namespaces and API names</strong>, such as an obsolete <code>AddTickerQ</code>. Rejected: it would put TickerQ's name back into TickerNet's API, which ADR 0002 avoided, and code needs changing anyway for the new package references.</li>
+        <li><strong>A permanent redirect (301 or 308).</strong> Rejected: browsers cache permanent redirects, so they would keep redirecting even after an app sets its base path back to <code>/tickerq/dashboard</code>.</li>
+        <li><strong>Emit spans under both names.</strong> Not chosen: a span has one name, so only tags could be doubled, and that doubles the tag volume. Renaming at export, on request, keeps existing queries working without changing the default for new users.</li>
+      </ul></div>
+    </section>
+    <section class="step" id="consequences">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
+      <div class="prose"><ul>
+        <li>After an upgrade from TickerQ, stored data, dashboard links and dashboard sign-ins keep working with no change. Trace dashboards and alerts keep working with one opt-in call. Code still needs the rename.</li>
+        <li>A few public names contain TickerQ: <code>DisableTickerQPathRedirect</code>, <code>TickerQTraceNamesProcessor</code>, the <code>useTickerQNames</code> parameter and the obsolete <code>SdkOfflineSkipException</code>. They only describe compatibility, as <code>TRADEMARKS.md</code> allows.</li>
+        <li>Every app with the dashboard answers requests under <code>/tickerq/dashboard</code> with a redirect unless it turns that off.</li>
+        <li>Rule for later compatibility work: anything that changes what new users see is opt-in; redirects and carrying over old data may be on by default. Each item is listed in the migration guide and the README's backward-compatibility table.</li>
+      </ul></div>
+    </section>
+    <section class="step" id="where">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
+      <div class="prose"><ul>
+        <li><code>src/TickerNet.Dashboard/DashboardOptionsBuilder.cs</code> and <code>src/TickerNet.Dashboard/DependencyInjection/ServiceCollectionExtensions.cs</code></li>
+        <li><code>src/TickerNet.Dashboard/wwwroot/src/utilities/legacyStorage.ts</code>, <code>wwwroot/src/legacyStorageMigration.ts</code> and <code>wwwroot/src/main.ts</code></li>
+        <li><code>src/TickerNet.Instrumentation.OpenTelemetry/TracerProviderBuilderExtensions.cs</code> and <code>TickerQTraceNamesProcessor.cs</code></li>
+        <li><code>src/TickerNet.Utilities/RemoteFunctionName.cs</code>, <code>Exceptions/WorkerOfflineException.cs</code> and <code>Exceptions/SdkOfflineSkipException.cs</code></li>
+        <li><code>tests/TickerNet.Tests/DashboardTickerQPathRedirectTests.cs</code>, <code>tests/TickerNet.Tests/TickerQTraceNamesProcessorTests.cs</code>, <code>wwwroot/src/__tests__/legacyStorage.test.ts</code></li>
+        <li><code>site/migrating-from-tickerq.html</code> and <code>README.md</code></li>
+      </ul></div>
+    </section>
+    <section class="step" id="sources">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
+      <div class="prose"><ul>
+        <li><a href="https://github.com/TickerNet/TickerNet/commit/bfd3df7"><code>bfd3df7</code></a> Keep TickerQ dashboard links and sign-ins working</li>
+        <li><a href="https://github.com/TickerNet/TickerNet/commit/52f6e0c"><code>52f6e0c</code></a> Add an opt-in way to export spans with TickerQ's names</li>
+        <li><a href="https://github.com/TickerNet/TickerNet/commit/d61200c"><code>d61200c</code></a> Say which TickerQ names TickerNet still accepts in the migration guide</li>
+        <li><a href="https://github.com/TickerNet/TickerNet/commit/77d8048"><code>77d8048</code></a> Keep TickerQ's remote-function hooks and give them TickerNet names</li>
+        <li><a href="https://github.com/TickerNet/TickerNet/blob/main/TRADEMARKS.md"><code>TRADEMARKS.md</code></a></li>
+      </ul></div>
+    </section>
+    <nav class="pager" aria-label="Decisions"><a href="0009-self-hosted-hub-remote-workers.html"><small>Previous</small>ADR 0009: Run jobs on remote workers through a self-hosted hub</a><a class="next" href="index.html"><small>Back</small>All decisions</a></nav>
+    <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="../assets/site.js"></script>
+</body>
+</html>

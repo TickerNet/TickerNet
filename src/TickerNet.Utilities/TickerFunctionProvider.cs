@@ -39,9 +39,10 @@ namespace TickerNet.Utilities
         public static bool IsBuilt { get; private set; }
 
         /// <summary>
-        /// Optional resolver returning the owning node name for a function. Set by the
-        /// RemoteExecutor during startup so scheduling code can persist which SDK node
-        /// a ticker belongs to. Returns empty string for locally-registered functions.
+        /// Optional resolver returning the worker node that hosts a function, or an empty string
+        /// for a local function. Kept from TickerQ's remote executor, which set it at startup;
+        /// TickerNet itself names remote functions <c>function@node</c> (see
+        /// <see cref="RemoteFunctionName"/>) and doesn't need it.
         /// </summary>
         public static Func<string, string> FunctionNodeResolver { get; set; }
 
@@ -76,8 +77,7 @@ namespace TickerNet.Utilities
         /// <summary>
         /// Replaces the entire frozen function registry with the provided dictionary.
         /// Unlike <see cref="RegisterFunctions"/>, this REMOVES entries that are absent
-        /// from the new set — required for resync-style flows (e.g. RemoteExecutor pulling
-        /// the latest active functions from the Hub after a toggle).
+        /// from the new set, for flows that rebuild the whole registry at runtime.
         ///
         /// <para><b>Prefer <see cref="MergeRemoteFunctions"/></b> when you only want to
         /// rewrite the remote slice and leave local source-gen registrations alone.
@@ -109,11 +109,11 @@ namespace TickerNet.Utilities
         /// <summary>
         /// Rewrites only the <i>remote</i> slice of the function registry, preserving
         /// every entry that <paramref name="isCurrentlyRemote"/> returns <c>false</c> for.
-        /// Used by the RemoteExecutor's periodic Hub sync — it knows which keys belong to
-        /// remote SDK nodes (via <c>RemoteFunctionRegistry</c>) and replaces only those,
-        /// so local <c>[TickerFunction]</c> registrations from source-gen are never wiped.
+        /// TickerNet.Hub calls it whenever a worker node connects, passing
+        /// <see cref="RemoteFunctionName.IsRemote"/>, so local <c>[TickerFunction]</c>
+        /// registrations from the source generator are never wiped.
         /// </summary>
-        /// <param name="remoteFunctions">Fresh remote slice from the Hub. Keyed by the qualified name (<c>bare@node</c>).</param>
+        /// <param name="remoteFunctions">Fresh remote slice, keyed by the remote name (<c>function@node</c>).</param>
         /// <param name="isCurrentlyRemote">Returns true for keys currently tracked as remote. Those entries are dropped before the new slice is applied.</param>
         public static void MergeRemoteFunctions(
             IDictionary<string, (string cronExpression, TickerTaskPriority Priority, TickerFunctionDelegate Delegate, int MaxConcurrency)> remoteFunctions,

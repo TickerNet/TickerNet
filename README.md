@@ -49,6 +49,8 @@ its development, and makes two promises on the project's behalf:
 - **Live dashboard**: a SignalR dashboard to watch, inspect and manage jobs.
 - **Retries and throttling**: retry policies with backoff.
 - **Several nodes**: Redis heartbeats, dead-node cleanup and lock-based coordination.
+- **Remote workers**: run job code in separate worker processes that connect to your scheduler. The scheduler is the
+  hub, so there's no hosted service to sign up for.
 - **OpenTelemetry**: tracing for job runs.
 
 ## Quick start
@@ -101,6 +103,36 @@ public class MyService(ITimeTickerManager<TimeTickerEntity> manager)
 The [getting started guide](https://tickernet.github.io/TickerNet/getting-started.html) covers storage, cron jobs, the
 dashboard and OpenTelemetry.
 
+## Run jobs on worker processes
+
+A scheduler can send jobs to separate worker processes, for example to keep slow or resource-hungry jobs out of your
+web app. Add `TickerNet.Hub` to the scheduler and `TickerNet.Worker` to each worker. Workers connect to the scheduler
+over gRPC and prove they know a shared secret; keep the secret in your configuration or secret store.
+
+```csharp
+// Scheduler
+builder.Services.AddTickerNet(options =>
+    options.AddTickerNetHub(hub => hub.SharedSecret = builder.Configuration["TickerNet:SharedSecret"]!));
+// ...
+app.UseTickerNet();
+app.MapTickerNetHub();
+```
+
+```csharp
+// Worker
+builder.Services.AddTickerNet(options => options.AddTickerNetWorker(worker =>
+{
+    worker.HubAddress = new Uri("https://scheduler.internal:5001");
+    worker.SharedSecret = builder.Configuration["TickerNet:SharedSecret"]!;
+    worker.NodeName = "reports";
+}));
+```
+
+A `[TickerFunction("SendReport")]` on the worker is scheduled on the scheduler as `SendReport@reports`. Retries, status,
+history and the dashboard stay on the scheduler. The
+[remote workers guide](https://tickernet.github.io/TickerNet/remote-workers.html) covers setup, security and what
+happens when a worker goes offline.
+
 ## Packages
 
 | Package | What it does |
@@ -112,6 +144,8 @@ dashboard and OpenTelemetry.
 | `TickerNet.MongoDB` | MongoDB persistence |
 | `TickerNet.Dashboard` | Live dashboard |
 | `TickerNet.Instrumentation.OpenTelemetry` | OpenTelemetry tracing |
+| `TickerNet.Hub` | Lets worker processes connect to the scheduler and run its jobs |
+| `TickerNet.Worker` | Runs jobs in a worker process connected to a scheduler with `TickerNet.Hub` |
 
 The source generator (`src/TickerNet.SourceGenerator`) ships inside the `TickerNet` package as an analyzer, so there's
 nothing extra to install. All packages share one version. Keep them on the same version.
@@ -120,14 +154,31 @@ nothing extra to install. All packages share one version. Keep them on the same 
 
 TickerNet starts from TickerQ's last open-source code (see [NOTICE](NOTICE)), so moving from TickerQ 10.4 or earlier
 is mostly a rename: `TickerQ` becomes `TickerNet` in package IDs, namespaces and API names (`AddTickerQ` becomes
-`AddTickerNet`). EF Core table and schema names are unchanged. The
-[migration guide](https://tickernet.github.io/TickerNet/migrating-from-tickerq.html) lists everything that changed.
-Features from TickerQ's commercial versions are not part of TickerNet.
+`AddTickerNet`). Features from TickerQ's commercial versions are not part of TickerNet.
+
+### Backward compatibility
+
+TickerNet keeps working with what your TickerQ app already stored, linked to or monitored:
+
+| What | What TickerNet does |
+| --- | --- |
+| Your data | Nothing to migrate. EF Core schema and tables, MongoDB collections, Redis job keys and stored requests are unchanged. Keep your EF Core migration IDs as they are. |
+| Dashboard links | Old `/tickerq/dashboard` links and bookmarks redirect to the new `/tickernet/dashboard` path. Turn this off with `AddDashboard(d => d.DisableTickerQPathRedirect())`. |
+| Dashboard sign-ins | Saved dashboard sign-ins and the chosen time zone carry over, so users don't sign in again. |
+| Traces | Opt in to keep TickerQ's span names and tags (`tickerq.*`) for existing trace queries and alerts: `tracing.AddTickerNetSource(useTickerQNames: true)`, added before your exporter. |
+| Redis node prefix | Keep TickerQ's prefix with `InstanceName = "tickerq:"`, or upgrade every node at once. |
+| TickerQ Hub jobs | Jobs that TickerQ's remote executor stored as `function@node` run on a TickerNet worker with the same node name, and the `IsSystemPaused` column is unchanged. TickerQ Hub itself isn't used: `TickerNet.Hub` replaces the remote executor and `TickerNet.Worker` replaces `TickerQ.SDK`, both self-hosted. |
+| Remote-execution API | `SdkOfflineSkipException` still works but is obsolete; use `WorkerOfflineException`. The `TickerFunctionProvider` hooks for remote functions are kept. |
+
+What you change: package references, namespaces and API names, diagnostic IDs (`TQ0nn` becomes `TN0nn`), and any log
+searches or logger-category settings that use the text "TickerQ". The
+[migration guide](https://tickernet.github.io/TickerNet/migrating-from-tickerq.html) lists every change, with a
+one-pass rename command and a checklist.
 
 ## Documentation
 
 The docs site is at **[tickernet.github.io/TickerNet](https://tickernet.github.io/TickerNet/)**: getting started,
-migrating from TickerQ, a contributor guide that walks through the code, governance, and the project's
+remote workers, migrating from TickerQ, a contributor guide that walks through the code, governance, and the project's
 architecture decision records. Its source is the [`site/`](site/) folder.
 
 ## Contributing
