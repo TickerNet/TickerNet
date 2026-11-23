@@ -6,6 +6,7 @@ using TickerNet.Utilities;
 
 namespace TickerNet.Tests;
 
+[Collection(TickerHelperGlobalStateCollection.Name)]
 public class JsonExampleGeneratorTests
 {
     private static readonly JsonSerializerOptions DeserializeOptions = new()

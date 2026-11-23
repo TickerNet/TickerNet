@@ -4,6 +4,7 @@ using TickerNet.Utilities;
 
 namespace TickerNet.Tests;
 
+[Collection(TickerHelperGlobalStateCollection.Name)]
 public class TickerHelperTests : IDisposable
 {
     // Store original state so we can restore after each test
