@@ -2,18 +2,29 @@ namespace TickerNet.Tests;
 
 public class RestartThrottleManagerTests
 {
+    // The debounce window is 50 ms. On a busy machine (CI runs test classes in parallel) the timer
+    // can fire much later, so these tests wait for the callback with a generous timeout instead of
+    // sleeping a fixed time, and then check that no second callback follows.
+    private static readonly TimeSpan Generous = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan Settle = TimeSpan.FromMilliseconds(300);
+
+    private static async Task WaitUntilAsync(Func<bool> condition, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (!condition() && DateTime.UtcNow < deadline)
+            await Task.Delay(10);
+    }
+
     [Fact]
     public async Task RequestRestart_TriggersCallback_AfterDebounceWindow()
     {
-        var triggered = false;
-        using var manager = new RestartThrottleManager(() => triggered = true);
+        var triggerCount = 0;
+        using var manager = new RestartThrottleManager(() => Interlocked.Increment(ref triggerCount));
 
         manager.RequestRestart();
 
-        // Debounce window is 50ms, give some extra time
-        await Task.Delay(200);
-
-        Assert.True(triggered);
+        await WaitUntilAsync(() => Volatile.Read(ref triggerCount) > 0, Generous);
+        Assert.Equal(1, Volatile.Read(ref triggerCount));
     }
 
     [Fact]
@@ -27,9 +38,10 @@ public class RestartThrottleManagerTests
         manager.RequestRestart();
         manager.RequestRestart();
 
-        await Task.Delay(200);
+        await WaitUntilAsync(() => Volatile.Read(ref triggerCount) > 0, Generous);
+        await Task.Delay(Settle);
 
-        Assert.Equal(1, triggerCount);
+        Assert.Equal(1, Volatile.Read(ref triggerCount));
     }
 
     [Fact]
@@ -39,15 +51,14 @@ public class RestartThrottleManagerTests
         using var manager = new RestartThrottleManager(() => Interlocked.Increment(ref triggerCount));
 
         manager.RequestRestart();
-        await Task.Delay(30); // Less than debounce window (50ms)
-        manager.RequestRestart(); // Should reset the timer
-        await Task.Delay(30); // Still less than full window from second request
+        await Task.Delay(30); // Less than the debounce window
+        manager.RequestRestart(); // Resets the timer
 
-        // Should not have triggered yet since timer was reset
-        // After full debounce from the last request it should trigger
-        await Task.Delay(100);
+        // Requests inside one window still produce a single callback.
+        await WaitUntilAsync(() => Volatile.Read(ref triggerCount) > 0, Generous);
+        await Task.Delay(Settle);
 
-        Assert.Equal(1, triggerCount);
+        Assert.Equal(1, Volatile.Read(ref triggerCount));
     }
 
     [Fact]
