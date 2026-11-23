@@ -93,9 +93,9 @@ dashboard and OpenTelemetry.
 | `TickerNet.MongoDB` | MongoDB persistence |
 | `TickerNet.Dashboard` | Live dashboard |
 | `TickerNet.Instrumentation.OpenTelemetry` | OpenTelemetry tracing |
-| `TickerNet.SourceGenerator` | Compile-time job registration |
 
-All packages share one version. Keep them on the same version.
+The source generator (`src/TickerNet.SourceGenerator`) ships inside the `TickerNet` package as an analyzer, so there's
+nothing extra to install. All packages share one version. Keep them on the same version.
 
 ## Coming from TickerQ
 
