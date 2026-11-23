@@ -20,56 +20,33 @@ dotnet add package TickerNet.Instrumentation.OpenTelemetry
 
 ## Usage
 
-### Basic Setup
+Turn on the instrumentation in TickerNet's options, then tell OpenTelemetry to listen to the `TickerNet`
+ActivitySource and send spans to the exporter you use:
 
 ```csharp
-using TickerNet.Instrumentation.OpenTelemetry;
 using OpenTelemetry.Trace;
+using TickerNet.DependencyInjection;
+using TickerNet.Instrumentation.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure OpenTelemetry with TickerNet ActivitySource
-builder.Services.AddOpenTelemetry()
-    .WithTracing(tracing =>
-    {
-        tracing.AddSource("TickerNet") // Add TickerNet ActivitySource
-               .AddConsoleExporter()
-               .AddJaegerExporter();
-    });
+builder.Services.AddTickerNet(options =>
+{
+    options.AddOpenTelemetryInstrumentation();
+});
 
-// Add TickerNet with OpenTelemetry instrumentation
-builder.Services.AddTickerNet<MyTimeTicker, MyCronTicker>(options => { })
-    .AddOperationalStore(ef => { })
-    .AddOpenTelemetryInstrumentation(); // 👈 Enable tracing
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing
+        .AddSource("TickerNet")
+        .AddOtlpExporter());
 
 var app = builder.Build();
+app.UseTickerNet();
 app.Run();
 ```
 
-### With Jaeger
-
-```csharp
-builder.Services.AddOpenTelemetry()
-    .WithTracing(tracing =>
-    {
-        tracing.AddTickerNetInstrumentation()
-               .AddJaegerExporter(options =>
-               {
-                   options.Endpoint = new Uri("http://localhost:14268/api/traces");
-               });
-    });
-```
-
-### With Application Insights
-
-```csharp
-builder.Services.AddOpenTelemetry()
-    .WithTracing(tracing =>
-    {
-        tracing.AddTickerNetInstrumentation()
-               .AddAzureMonitorTraceExporter();
-    });
-```
+`AddOtlpExporter` comes from the `OpenTelemetry.Exporter.OpenTelemetryProtocol` package. Any OpenTelemetry trace
+exporter works in its place.
 
 ## Trace Structure
 
