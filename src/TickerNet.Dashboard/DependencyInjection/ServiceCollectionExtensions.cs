@@ -212,8 +212,10 @@ namespace TickerNet.Dashboard.DependencyInjection
                 {
                     var pathBase = request.PathBase.HasValue ? request.PathBase.Value : string.Empty;
                     var target = CombinePathBase(pathBase, basePath).TrimEnd('/') + remainingPath.Value;
-                    if (target.Length == 0)
-                        target = "/";
+
+                    // Keep the redirect on this site. With a root base path, "/tickerq/dashboard//other.example" (or
+                    // "/\other.example") would otherwise become a protocol-relative URL that browsers send elsewhere.
+                    target = "/" + target.TrimStart('/', '\\');
 
                     context.Response.Redirect(target + request.QueryString.Value, permanent: false);
                     return;
