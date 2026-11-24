@@ -430,6 +430,37 @@ app.Run();</code></pre></div>
       </table></div>
       <div class="prose"><p>Also on <code>DashboardOptionsBuilder</code>: <code>SetCorsPolicy(...)</code>, <code>SetBackendDomain(...)</code>, <code>SetGroupName(...)</code> for an OpenAPI group, and the <code>PreDashboardMiddleware</code>, <code>CustomMiddleware</code> and <code>PostDashboardMiddleware</code> hooks.</p></div>
       <div class="prose"><p><strong>CORS.</strong> Without <code>SetCorsPolicy(...)</code>, the dashboard accepts only same-origin requests, which is all its own web app needs. If you use <code>SetBackendDomain(...)</code> and no policy, it allows any origin with credentials so a separately hosted front end keeps working, and logs a warning; set a policy that names the origins that serve the dashboard.</p></div>
+      <div class="prose">
+        <p><strong>Middleware and <code>PathBase</code>.</strong> The dashboard runs in its own request branch below <code>UseTickerNet()</code>. When the branch matches its base path it moves the matched segment from <code>Request.Path</code> into <code>Request.PathBase</code>, as <code>Map()</code> does: with <code>SetBasePath("/jobs")</code> and a request for <code>/jobs/api/jobs</code>, <code>PathBase</code> is <code>/jobs</code> and <code>Path</code> is <code>/api/jobs</code>. Custom middleware or authentication handlers that match <code>Request.Path</code> alone stop matching inside the branch; match the full path instead.</p>
+      </div>
+      <div class="code"><div class="code-head"><span class="path">Program.cs</span><span>matching the full path inside the dashboard branch</span></div>
+<pre><code class="language-csharp">options.AddDashboard(dashboard =&gt;
+{
+    dashboard.SetBasePath("/jobs");
+    dashboard.PreDashboardMiddleware = branch =&gt;
+    {
+        branch.Use(async (context, next) =&gt;
+        {
+            var fullPath = $"{context.Request.PathBase}{context.Request.Path}";
+            if (fullPath.StartsWith("/jobs/api", StringComparison.OrdinalIgnoreCase))
+            {
+                // ...
+            }
+            await next();
+        });
+    };
+});</code></pre></div>
+      <div class="prose"><p>The host pipeline above <code>UseTickerNet()</code> still sees the original <code>Path</code> with an empty <code>PathBase</code>.</p></div>
+      <div class="prose"><p><strong>IIS and WebDAV.</strong> The WebDAV module answers <code>PUT</code> and <code>DELETE</code> from the dashboard's API with <code>405 Method Not Allowed</code>, so editing and deleting jobs fails. The dashboard does not use WebDAV; remove it in <code>web.config</code>:</p></div>
+      <div class="code"><div class="code-head"><span class="path">web.config</span><span>remove the WebDAV module and handler</span></div>
+<pre><code class="language-xml">&lt;system.webServer&gt;
+  &lt;modules&gt;
+    &lt;remove name="WebDAVModule" /&gt;
+  &lt;/modules&gt;
+  &lt;handlers&gt;
+    &lt;remove name="WebDAV" /&gt;
+  &lt;/handlers&gt;
+&lt;/system.webServer&gt;</code></pre></div>
       <div class="warnbox"><b>Lock it down before you deploy.</b> Out of the box the dashboard has no sign-in: anyone who can reach the URL can see, add, run and delete jobs. TickerNet logs a warning at startup until you pick a sign-in method or call <code>WithNoAuth()</code>.</div>
     </section>
 
