@@ -9,9 +9,14 @@ updates:
     groups:
       nuget-minor-and-patch:
         update-types: [minor, patch]
+        exclude-patterns:
+          - Microsoft.CodeAnalysis*
     ignore:
       # The source generator builds against the oldest Roslyn it supports, so newer compilers can load it.
-      - dependency-name: Microsoft.CodeAnalysis.*
+      # Listed by exact name as well as by pattern: the pattern alone didn't stop a grouped update.
+      - dependency-name: Microsoft.CodeAnalysis.CSharp
+      - dependency-name: Microsoft.CodeAnalysis.Analyzers
+      - dependency-name: Microsoft.CodeAnalysis*
       # .NET packages follow the target framework through $(DotNetVersion); they move with a new framework, not here.
       - dependency-name: Microsoft.Extensions.*
       - dependency-name: Microsoft.EntityFrameworkCore*
