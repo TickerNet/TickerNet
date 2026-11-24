@@ -537,6 +537,7 @@ const getVisiblePageNumbers = () => {
                   size="x-small"
                   variant="text"
                   icon="mdi-chevron-left"
+                  aria-label="Previous machines page"
                   :disabled="currentMachinesPage <= 1"
                   @click="currentMachinesPage = Math.max(1, currentMachinesPage - 1)"
                 />
@@ -547,6 +548,7 @@ const getVisiblePageNumbers = () => {
                   size="x-small"
                   variant="text"
                   icon="mdi-chevron-right"
+                  aria-label="Next machines page"
                   :disabled="currentMachinesPage >= totalMachinePages"
                   @click="currentMachinesPage = Math.min(totalMachinePages, currentMachinesPage + 1)"
                 />

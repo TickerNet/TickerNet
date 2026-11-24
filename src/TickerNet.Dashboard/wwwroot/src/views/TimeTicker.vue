@@ -1134,6 +1134,7 @@ const canBeForceDeleted = ref<string[]>([])
                 size="small"
                 variant="text"
                 color="primary"
+                aria-label="Refresh time tickers"
                 @click="refreshData"
                 class="refresh-btn utility-btn"
               >
@@ -1228,6 +1229,8 @@ const canBeForceDeleted = ref<string[]>([])
                   <v-btn
                     v-if="item.hasChildren"
                     :icon="item.isExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+                    :aria-label="`Child tickers for ${item.function}`"
+                    :aria-expanded="item.isExpanded"
                     size="x-small"
                     variant="text"
                     @click="toggleParentExpansion(item.id)"
@@ -1371,6 +1374,7 @@ const canBeForceDeleted = ref<string[]>([])
                     <template v-slot:activator="{ props }">
                       <button
                         v-bind="props"
+                        aria-label="Cancel operation"
                         @click="
                           requestCancel(item.id).catch(() => {
                             canBeForceDeleted.push(item.id)
@@ -1396,6 +1400,7 @@ const canBeForceDeleted = ref<string[]>([])
                     <template v-slot:activator="{ props }">
                       <button
                         v-bind="props"
+                        aria-label="Edit ticker"
                         v-if="
                           hasStatus(item.status, Status.Queued) ||
                           hasStatus(item.status, Status.Idle)
@@ -1414,6 +1419,7 @@ const canBeForceDeleted = ref<string[]>([])
                       <button
                         v-else
                         v-bind="props"
+                        aria-label="Duplicate ticker"
                         @click="
                           crudTimeTickerDialog.open({
                             ...item,
@@ -1447,6 +1453,9 @@ const canBeForceDeleted = ref<string[]>([])
                     <template v-slot:activator="{ props }">
                       <button
                         v-bind="props"
+                        :aria-label="
+                          canBeForceDeleted.includes(item.id) ? 'Force delete ticker' : 'Delete ticker'
+                        "
                         @click="confirmDialog.open({ id: item.id })"
                         :disabled="
                           hasStatus(item.status, Status.InProgress) &&

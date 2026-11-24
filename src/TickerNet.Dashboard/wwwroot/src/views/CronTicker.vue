@@ -1081,6 +1081,7 @@ const refreshData = async () => {
                   size="x-small"
                   variant="text"
                   color="primary"
+                  aria-label="Reset chart range"
                   @click="resetRange"
                   class="reset-btn"
                   density="compact"
@@ -1135,6 +1136,7 @@ const refreshData = async () => {
                 size="small"
                 variant="text"
                 color="primary"
+                aria-label="Refresh status chart"
                 @click="getTimeTickersGraphDataAndParseToGraph"
                 class="refresh-chart-btn"
               >
@@ -1207,6 +1209,7 @@ const refreshData = async () => {
                 size="small"
                 variant="text"
                 color="primary"
+                aria-label="Refresh cron tickers"
                 @click="refreshData"
                 class="refresh-btn utility-btn"
               >
@@ -1283,6 +1286,7 @@ const refreshData = async () => {
                     <template v-slot:activator="{ props }">
                       <button
                         v-bind="props"
+                        :aria-label="item.isEnabled ? 'Disable ticker' : 'Enable ticker'"
                         @click="ToggleCronTickerEnabled(item.id, item.isEnabled)"
                         class="modern-action-btn"
                         :class="item.isEnabled ? 'disable-btn' : 'enable-btn'"
@@ -1300,6 +1304,7 @@ const refreshData = async () => {
                     <template v-slot:activator="{ props }">
                       <button
                         v-bind="props"
+                        aria-label="View occurrences graph"
                         @click="ShowCronTickerOccurrenceGraphData(item.function, item.id, -3, 3)"
                         class="modern-action-btn chart-btn"
                         :class="{ active: selectedCronTickerGraphData === item.id }"
@@ -1319,6 +1324,7 @@ const refreshData = async () => {
                     <template v-slot:activator="{ props }">
                       <button
                         v-bind="props"
+                        aria-label="View occurrences list"
                         @click="
                           (event) => {
                             cronOccurrenceDialog.open({
@@ -1343,6 +1349,7 @@ const refreshData = async () => {
                     <template v-slot:activator="{ props }">
                       <button
                         v-bind="props"
+                        aria-label="Edit ticker"
                         @click="crudCronTickerDialog.open({ ...item, isFromDuplicate: false })"
                         class="modern-action-btn edit-btn"
                       >
@@ -1359,6 +1366,7 @@ const refreshData = async () => {
                     <template v-slot:activator="{ props }">
                       <button
                         v-bind="props"
+                        aria-label="Run ticker now"
                         @click="RunCronTickerOnDemand(item.id)"
                         class="modern-action-btn run-btn"
                         :class="{ 'btn-disabled': !item.isEnabled }"
@@ -1377,6 +1385,7 @@ const refreshData = async () => {
                     <template v-slot:activator="{ props }">
                       <button
                         v-bind="props"
+                        aria-label="Delete ticker"
                         @click="
                           confirmDialog.open({
                             ...new ConfirmDialogProps(),

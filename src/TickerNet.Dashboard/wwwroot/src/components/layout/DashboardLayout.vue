@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
 import { sleep } from '../../utilities/sleep'
 import { useDialog } from '../../composables/useDialog'
 import { ConfirmDialogProps } from '../common/ConfirmDialog.vue'
@@ -35,9 +34,6 @@ const timeZoneStore = useTimeZoneStore()
 
 // Time zone menu state
 const isTimeZoneMenuOpen = ref(false)
-
-// Router
-const router = useRouter()
 
 // Lazy-loaded stores and services
 let tickerService: any = null
@@ -218,12 +214,6 @@ async function handleReconnect() {
   }
 }
 
-// Navigate to dashboard
-function navigateToDashboard() {
-  // Use router to navigate to dashboard
-  router.push('/')
-}
-
 // Auth event handlers
 function handleAuthLogin(success: boolean) {
   if (success) {
@@ -284,18 +274,20 @@ const handleForceUIUpdate = () => {
       <div class="header-container">
         <div class="header-content">
             <div class="header-left">
-            <div class="logo-container clickable" @click="navigateToDashboard">
-              <img
-                src="@/assets/tickernet-logo.svg"
-                alt="TickerNet"
-                class="logo-image"
-              />
-            </div>
-            <div class="app-title-container clickable" @click="navigateToDashboard">
-              <h1 class="app-title">
-                <strong>TickerNet</strong>
-              </h1>
-            </div>
+            <router-link to="/" class="brand-link" aria-label="TickerNet dashboard home">
+              <div class="logo-container">
+                <img
+                  src="@/assets/tickernet-logo.svg"
+                  alt=""
+                  class="logo-image"
+                />
+              </div>
+              <div class="app-title-container">
+                <h1 class="app-title">
+                  <strong>TickerNet</strong>
+                </h1>
+              </div>
+            </router-link>
 
             <!-- Time Zone Menu -->
             <div class="timezone-menu">
@@ -307,6 +299,7 @@ const handleForceUIUpdate = () => {
                 <template #activator="{ props }">
                   <v-btn
                     v-bind="props"
+                    :aria-label="'Display time zone: ' + timeZoneStore.effectiveTimeZone"
                     size="small"
                     variant="text"
                     density="comfortable"
@@ -593,6 +586,13 @@ const handleForceUIUpdate = () => {
   flex-shrink: 0;
 }
 
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  text-decoration: none;
+}
+
 .logo-container {
   display: flex;
   align-items: center;
@@ -627,10 +627,6 @@ const handleForceUIUpdate = () => {
 .app-title-container:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: translateY(-1px);
-}
-
-.clickable {
-  user-select: none;
 }
 
 .app-title {
@@ -1075,6 +1071,12 @@ const handleForceUIUpdate = () => {
   }
 
   .header-left {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .brand-link {
     flex-direction: column;
     gap: 12px;
     align-items: center;
