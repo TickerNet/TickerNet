@@ -2,6 +2,13 @@
  * Clean, simple authentication service for TickerNet Dashboard
  */
 
+import {
+  clearSignIn,
+  clearSignInIfExpired,
+  msUntilSignInExpires,
+  recordSignIn,
+} from '../utilities/signInExpiry';
+
 // Extend window interface for TypeScript
 declare global {
   interface Window {
@@ -39,6 +46,7 @@ export interface LoginCredentials {
 class AuthService {
   private config: AuthConfig | null = null;
   private status: AuthStatus = { authenticated: false };
+  private expiryTimer: ReturnType<typeof setTimeout> | null = null;
 
   /**
    * Initialize authentication service
@@ -64,12 +72,16 @@ class AuthService {
         return;
       }
 
+      // Forget a stored sign-in whose session timeout has run out
+      clearSignInIfExpired(localStorage);
+
       // For now, just check if we have stored credentials without validating
       // This prevents hanging on API calls during initialization
       if (this.hasStoredCredentials()) {
         // Set as authenticated for now - validation will happen on first API call
         const username = this.getStoredUsername();
         this.status = { authenticated: true, username: username || 'user' };
+        this.scheduleExpiry();
       } else {
         // No stored credentials - user needs to log in
         this.status = { authenticated: false, message: 'Please log in' };
@@ -97,6 +109,7 @@ class AuthService {
       
       if (result.authenticated) {
         this.status = result;
+        this.scheduleExpiry();
         return true;
       }
 
@@ -144,7 +157,7 @@ class AuthService {
    * Get authorization header for API calls
    */
   getAuthHeader(): string | null {
-    if (!this.config?.enabled) {
+    if (!this.config?.enabled || this.expireIfDue()) {
       return null;
     }
 
@@ -170,7 +183,7 @@ class AuthService {
    * Get access token for SignalR (WebSocket limitation)
    */
   getAccessToken(): string | null {
-    if (!this.config?.enabled) {
+    if (!this.config?.enabled || this.expireIfDue()) {
       return null;
     }
 
@@ -299,12 +312,52 @@ class AuthService {
         }
         break;
     }
+
+    recordSignIn(localStorage, this.config?.sessionTimeout ?? 60);
+  }
+
+  /**
+   * Forgets the stored sign-in if its session timeout has run out. Returns true when it did.
+   */
+  private expireIfDue(): boolean {
+    if (!clearSignInIfExpired(localStorage)) {
+      return false;
+    }
+    this.status = { authenticated: false, message: 'Your session has ended. Please sign in again.' };
+    return true;
+  }
+
+  /**
+   * Signs out an open tab when the session timeout runs out, and reloads it to show the sign-in page.
+   */
+  private scheduleExpiry(): void {
+    if (this.expiryTimer) {
+      clearTimeout(this.expiryTimer);
+      this.expiryTimer = null;
+    }
+
+    const delay = msUntilSignInExpires(localStorage);
+    if (delay === null) {
+      return;
+    }
+
+    this.expiryTimer = setTimeout(() => {
+      this.expiryTimer = null;
+      if (this.expireIfDue()) {
+        window.location.reload();
+      } else {
+        // The timer was capped below the real expiry; check again later.
+        this.scheduleExpiry();
+      }
+    }, delay);
   }
 
   private clearCredentials(): void {
-    localStorage.removeItem('tickernet_basic_auth');
-    localStorage.removeItem('tickernet_api_key');
-    localStorage.removeItem('tickernet_host_access_key');
+    if (this.expiryTimer) {
+      clearTimeout(this.expiryTimer);
+      this.expiryTimer = null;
+    }
+    clearSignIn(localStorage);
   }
 }
 

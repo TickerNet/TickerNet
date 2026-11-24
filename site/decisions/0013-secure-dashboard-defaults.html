@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADR 0013: Secure dashboard defaults within 1.x, sign-in required in 2.0</title>
+<meta name="description" content="The dashboard warns at startup when it has no sign-in, accepts only same-origin requests unless configured, and forgets a sign-in after its session timeout; 2.0 will require a sign-in choice.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../remote-workers.html">Remote workers</a></li>
+        <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="../contributing.html">Contributing</a></li>
+        <li><a href="../governance.html">Governance</a></li>
+        <li><a href="index.html" aria-current="page">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>ADR 0013</h2>
+    <ol><li><a href="#context"><span class="n">01</span><span>Context</span></a></li><li><a href="#decision"><span class="n">02</span><span>Decision</span></a></li><li><a href="#alternatives"><span class="n">03</span><span>Alternatives considered</span></a></li><li><a href="#consequences"><span class="n">04</span><span>Consequences</span></a></li><li><a href="#where"><span class="n">05</span><span>Where it lives</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol>
+    <p class="rail-back"><a href="index.html">← All decisions</a></p>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">ADR 0013 · Code and packages</p>
+      <h1>Secure dashboard defaults within 1.x, sign-in required in 2.0</h1>
+      <p class="lede">From 1.2.0 the dashboard warns at startup when it has no sign-in, accepts only same-origin requests unless you set a CORS policy, forgets a stored sign-in when its session timeout runs out, and compares credentials in constant time. TickerNet 2.0 will make a sign-in choice mandatory.</p>
+      <dl class="adr-meta">
+        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Decided</dt><dd>2026-11-24</dd></div>
+        <div><dt>Affects</dt><dd><code>src/TickerNet.Dashboard/</code></dd></div>
+      </dl>
+      <p class="adr-related">Related: <a href="0006-version-independently-dotnet-10.html">ADR 0006</a> Version independently (SemVer binds the public API from 1.0.0), <a href="0010-accept-tickerq-names.html">ADR 0010</a> Accept TickerQ's names where moving would otherwise break</p>
+    </header>
+    <section class="step" id="context">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
+      <div class="prose"><p>The dashboard came from TickerQ with open defaults. With no sign-in method it was public: anyone who could reach its URL could view, add, run and delete jobs. Its default CORS policy allowed any origin with credentials, which let any website a signed-in user visited call the dashboard API as that user when the app's own cookie sign-in was used (<code>WithHostAuthentication</code>). <code>WithSessionTimeout</code> was documented as the session length but nothing enforced it: the browser kept credentials in <code>localStorage</code> until someone signed out. Credentials were compared with ordinary string equality. The docs warned about the first two, but a security review before promoting the project treated warnings in docs as not enough.</p><p>ADR 0006 makes SemVer binding from 1.0.0, so making sign-in mandatory has to wait for 2.0.</p></div>
+    </section>
+    <section class="step" id="decision">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Decision</h2></div>
+      <div class="prose"><ul>
+<li><strong>Warn when open.</strong> At startup, the dashboard logs a warning (category <code>TickerNet.Dashboard</code>) when it has no sign-in method and the app didn't call <code>WithNoAuth()</code>. <code>WithNoAuth()</code> now means "public on purpose".</li>
+<li><strong>Same-origin CORS by default.</strong> Without <code>SetCorsPolicy</code>, the dashboard's CORS policy allows no other origins. Its own web app is same-origin and unaffected. When <code>SetBackendDomain</code> is used and no policy is set, the old permissive policy stays, with a startup warning, so a separately hosted front end keeps working.</li>
+<li><strong>Session timeout enforced in the browser.</strong> Sign-in has no server-side session: the front end sends the stored credentials with every request. So the front end stores the expiry time next to the credentials (<code>tickernet_sign_in_expires_at</code>) and removes both when it passes, including from an open tab, which then reloads to the sign-in page. A stored sign-in with no expiry, such as one from an older version, counts as expired. <code>WithSessionTimeout</code> rejects values below 1 minute.</li>
+<li><strong>Constant-time comparison</strong> for Basic credentials and API keys (<code>CryptographicOperations.FixedTimeEquals</code>).</li>
+<li><strong>In 2.0:</strong> starting the dashboard with no sign-in method and no <code>WithNoAuth()</code> will fail instead of warning.</li>
+</ul></div>
+    </section>
+    <section class="step" id="alternatives">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Alternatives considered</h2></div>
+      <div class="prose"><ul>
+<li><strong>Require a sign-in choice now.</strong> Safest, but it breaks every 1.x app that relies on the open default, which ADR 0006 rules out within a major version.</li>
+<li><strong>Keep the permissive CORS default and only warn.</strong> Rejected: the default combined with cookie sign-in is exploitable from any website, and a dashboard served by the app itself never needs cross-origin access. Only a caller using the dashboard API from another website without setting a policy is affected, and it can restore access with <code>SetCorsPolicy</code>.</li>
+<li><strong>Server-side sessions with expiring tokens.</strong> A larger change to every sign-in method and the SignalR connection. Not needed to make the documented timeout true; it can come with 2.0 if wanted.</li>
+</ul></div>
+    </section>
+    <section class="step" id="consequences">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
+      <div class="prose"><ul>
+<li>Apps with an open dashboard see a warning until they choose a sign-in method or call <code>WithNoAuth()</code>.</li>
+<li>Cross-origin callers of the dashboard API without <code>SetCorsPolicy</code> or <code>SetBackendDomain</code> stop working in 1.2.0. The release notes must say so.</li>
+<li>Users signed in from an older version, or after a TickerQ sign-in carried over, sign in once more.</li>
+<li>New dashboard options must default to the safer behaviour, or warn when they don't.</li>
+</ul></div>
+    </section>
+    <section class="step" id="where">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
+      <div class="prose"><ul>
+<li><code>src/TickerNet.Dashboard/DashboardOptionsBuilder.cs</code> (<code>WithNoAuth</code>, <code>SetCorsPolicy</code>, <code>WithSessionTimeout</code>)</li>
+<li><code>src/TickerNet.Dashboard/DependencyInjection/ServiceExtensions.cs</code> (default CORS policy)</li>
+<li><code>src/TickerNet.Dashboard/DependencyInjection/ServiceCollectionExtensions.cs</code> (<code>WarnAboutOpenAccess</code>)</li>
+<li><code>src/TickerNet.Dashboard/Authentication/AuthService.cs</code> (constant-time comparison)</li>
+<li><code>src/TickerNet.Dashboard/wwwroot/src/utilities/signInExpiry.ts</code> and <code>services/auth.ts</code></li>
+<li><code>tests/TickerNet.Tests/DashboardSecureDefaultsTests.cs</code>, <code>wwwroot/src/__tests__/signInExpiry.test.ts</code></li>
+</ul></div>
+    </section>
+    <section class="step" id="sources">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
+      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/blob/main/SECURITY.md"><code>SECURITY.md</code></a></li><li><a href="../getting-started.html#dashboard">Getting started: the dashboard</a></li></ul></div>
+    </section>
+    <nav class="pager" aria-label="Decisions"><a href="0012-target-dotnet-10-and-11.html"><small>Previous</small>ADR 0012: Target .NET 10 and .NET 11</a><a class="next" href="index.html"><small>Back</small>All decisions</a></nav>
+    <footer>Written on DD Month YYYY against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="../assets/site.js"></script>
+</body>
+</html>

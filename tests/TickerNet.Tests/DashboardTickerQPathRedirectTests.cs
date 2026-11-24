@@ -84,6 +84,22 @@ public class DashboardTickerQPathRedirectTests
         Assert.Equal("/admin/jobs/time-tickers", response.Headers.Location?.OriginalString);
     }
 
+    [Theory]
+    [InlineData("/tickerq/dashboard//other.example", "/other.example")]
+    [InlineData("/tickerq/dashboard///other.example/path", "/other.example/path")]
+    [InlineData("/tickerq/dashboard/%5Cother.example", "/other.example")]
+    [InlineData("/tickerq/dashboard/%5C%5Cother.example", "/other.example")]
+    public async Task Get_OldPath_RootBasePath_NeverRedirectsOffSite(string requestPath, string expectedLocation)
+    {
+        using var host = await CreateRedirectHost("/", usePathBase: null);
+        var client = host.GetTestClient();
+
+        var response = await client.GetAsync(requestPath);
+
+        Assert.Equal(HttpStatusCode.Found, response.StatusCode);
+        Assert.Equal(expectedLocation, response.Headers.Location?.OriginalString);
+    }
+
     [Fact]
     public async Task Get_OldPath_RootBasePath_RedirectsToRoot()
     {

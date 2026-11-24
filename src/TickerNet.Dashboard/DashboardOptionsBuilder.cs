@@ -33,8 +33,22 @@ public class DashboardOptionsBuilder
     /// </summary>
     internal bool RedirectTickerQPath { get; set; } = true;
 
+    /// <summary>True when the app called <see cref="WithNoAuth"/> to confirm a dashboard without sign-in.</summary>
+    internal bool NoAuthConfirmed { get; private set; }
+
+    /// <summary>True when the app set its own CORS policy with <see cref="SetCorsPolicy"/>.</summary>
+    internal bool CorsPolicyConfigured { get; private set; }
+
+    /// <summary>
+    /// Set the CORS policy for the dashboard's endpoints. Without one, the dashboard accepts only same-origin
+    /// requests, unless <see cref="SetBackendDomain"/> is used, in which case any origin is allowed (with a startup
+    /// warning) so a separately hosted front end keeps working.
+    /// </summary>
     public void SetCorsPolicy(Action<CorsPolicyBuilder> corsPolicyBuilder)
-        => CorsPolicyBuilder = corsPolicyBuilder;
+    {
+        CorsPolicyBuilder = corsPolicyBuilder;
+        CorsPolicyConfigured = corsPolicyBuilder != null;
+    }
     
     public void SetBasePath(string basePath)
         => BasePath = basePath;
@@ -58,10 +72,14 @@ public class DashboardOptionsBuilder
     public void SetGroupName(string groupName)
         => GroupName = groupName;
     
-    /// <summary>Configure no authentication (public dashboard)</summary>
+    /// <summary>
+    /// Confirm that the dashboard has no sign-in, so anyone who can reach it can view, add, run and delete jobs.
+    /// Without a sign-in method or this call, TickerNet logs a warning at startup.
+    /// </summary>
     public DashboardOptionsBuilder WithNoAuth()
     {
         Auth.Mode = AuthMode.None;
+        NoAuthConfirmed = true;
         return this;
     }
 
@@ -98,9 +116,14 @@ public class DashboardOptionsBuilder
         return this;
     }
     
-    /// <summary>Set session timeout in minutes</summary>
+    /// <summary>
+    /// How long a sign-in lasts in the browser, in minutes (default 60). When it runs out, the dashboard forgets the
+    /// stored credentials and asks for them again, including in a tab that is still open.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="minutes"/> is less than 1.</exception>
     public DashboardOptionsBuilder WithSessionTimeout(int minutes)
     {
+        ArgumentOutOfRangeException.ThrowIfLessThan(minutes, 1);
         Auth.SessionTimeoutMinutes = minutes;
         return this;
     }

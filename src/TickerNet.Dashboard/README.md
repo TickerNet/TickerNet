@@ -10,7 +10,9 @@ services.AddTickerNet<MyTimeTicker, MyCronTicker>(config =>
 {
     config.AddDashboard(dashboard =>
     {
-        // No authentication setup = public dashboard
+        // Anyone who can reach the dashboard can view, add, run and delete jobs.
+        // Without this call (or a sign-in method), TickerNet logs a warning at startup.
+        dashboard.WithNoAuth();
     });
 });
 ```
@@ -77,7 +79,9 @@ services.AddTickerNet<MyTimeTicker, MyCronTicker>(config =>
 - `WithHostAuthentication(policy)` - Use your app's existing auth with optional policy (e.g., "AdminPolicy")
 - `SetBasePath(path)` - Set dashboard URL path
 - `SetBackendDomain(domain)` - Set backend API domain
-- `SetCorsPolicy(policy)` - Configure CORS
+- `WithNoAuth()` - Confirm a dashboard without sign-in and silence the startup warning
+- `WithSessionTimeout(minutes)` - How long a sign-in lasts in the browser (default 60, minimum 1); the dashboard asks again when it runs out
+- `SetCorsPolicy(policy)` - Configure CORS. Without a policy, only same-origin requests are allowed (or any origin, with a startup warning, when `SetBackendDomain` is used)
 - `SetGroupName(name)` - Set OpenAPI group name for dashboard endpoints
 - `DisableTickerQPathRedirect()` - Stop redirecting TickerQ's old dashboard address (see below)
 
@@ -98,7 +102,7 @@ when the new key isn't set yet.
 
 The dashboard automatically detects your authentication method:
 
-1. **No auth configured** → Public dashboard
+1. **No auth configured** → Public dashboard, with a startup warning unless you call `WithNoAuth()`
 2. **Basic auth configured** → Username/password login
 3. **Bearer token configured** → API key authentication
 4. **Host auth configured** → Delegates to your app's auth system

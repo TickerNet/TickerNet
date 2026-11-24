@@ -55,6 +55,8 @@ Build the source generator first: the core package packs its DLL from the genera
   credit is the name and a link to https://omniscient.to, nothing more.
 - **Secrets.** Never commit secrets, connection strings with real credentials, or `.env` files. Tests use local
   containers or in-memory stores.
+- **Pin external scripts.** A script that a page in `site/` loads from a CDN needs a fixed version and an
+  `integrity` (SRI) attribute with `crossorigin="anonymous"`, so a changed file on the CDN can't run on the docs site.
 - **Keep docs current.** If a change makes `README.md`, a package README, `CONTRIBUTING.md` or a page in `site/`
   wrong, fix it in the same change.
 - **Record decisions.** Add an ADR in `site/decisions/` when a change picks between real alternatives, adds or removes
