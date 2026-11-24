@@ -296,6 +296,7 @@ defineExpose({
                   <template v-slot:append>
                     <v-btn
                       icon="mdi-share-outline"
+                      aria-label="Copy example data to request data"
                       @click="setFieldValue('requestData', getFieldValue('exampleData'))"
                     ></v-btn>
                   </template>

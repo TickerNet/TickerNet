@@ -218,12 +218,6 @@ async function handleReconnect() {
   }
 }
 
-// Navigate to dashboard
-function navigateToDashboard() {
-  // Use router to navigate to dashboard
-  router.push('/')
-}
-
 // Auth event handlers
 function handleAuthLogin(success: boolean) {
   if (success) {
@@ -284,18 +278,20 @@ const handleForceUIUpdate = () => {
       <div class="header-container">
         <div class="header-content">
             <div class="header-left">
-            <div class="logo-container clickable" @click="navigateToDashboard">
-              <img
-                src="@/assets/tickernet-logo.svg"
-                alt="TickerNet"
-                class="logo-image"
-              />
-            </div>
-            <div class="app-title-container clickable" @click="navigateToDashboard">
-              <h1 class="app-title">
-                <strong>TickerNet</strong>
-              </h1>
-            </div>
+            <router-link to="/" class="brand-link" aria-label="TickerNet dashboard">
+              <div class="logo-container">
+                <img
+                  src="@/assets/tickernet-logo.svg"
+                  alt="TickerNet"
+                  class="logo-image"
+                />
+              </div>
+              <div class="app-title-container">
+                <h1 class="app-title">
+                  <strong>TickerNet</strong>
+                </h1>
+              </div>
+            </router-link>
 
             <!-- Time Zone Menu -->
             <div class="timezone-menu">
@@ -591,6 +587,14 @@ const handleForceUIUpdate = () => {
   align-items: center;
   gap: 20px;
   flex-shrink: 0;
+}
+
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .logo-container {

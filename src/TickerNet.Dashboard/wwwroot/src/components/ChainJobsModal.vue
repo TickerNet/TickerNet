@@ -14,6 +14,7 @@
             icon="mdi-close"
             variant="text"
             size="small"
+            aria-label="Close"
             @click="closeModal"
           />
         </div>
@@ -91,6 +92,7 @@
                         icon="mdi-content-copy"
                         size="small"
                         variant="text"
+                        aria-label="Copy example data"
                         @click="copyExampleToRequestData"
                         :disabled="!currentExampleData"
                       />
@@ -279,6 +281,7 @@
                             variant="text"
                             size="x-small"
                             class="ml-1"
+                            aria-label="Remove child job"
                             @click.stop="removeChild(index)"
                           />
                         </v-tab>
@@ -550,6 +553,7 @@
           icon="mdi-close"
           variant="text"
           size="small"
+          aria-label="Close"
           @click="grandchildrenModal.isOpen = false"
         />
       </v-card-title>
@@ -620,6 +624,7 @@
               variant="text"
               size="x-small"
               class="ml-1"
+              aria-label="Remove grandchild job"
               @click.stop="removeGrandChild(grandchildrenModal.parentChildIndex, grandIndex)"
             />
           </v-tab>

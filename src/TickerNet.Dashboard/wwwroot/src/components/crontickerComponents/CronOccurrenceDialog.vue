@@ -407,6 +407,7 @@ const setRowProp = (propContext: any) => {
             <template v-slot:item.actions="{ item }">
               <div class="actions-cell">
                 <v-btn
+                  aria-label="Cancel occurrence"
                   @click="requestCancel(item.id)"
                   :disabled="!hasStatus(item.status, Status.InProgress)"
                   icon
@@ -420,6 +421,7 @@ const setRowProp = (propContext: any) => {
                 </v-btn>
                 
                 <v-btn
+                  aria-label="Delete occurrence"
                   @click="confirmDialog.open({ data: item.id })"
                   :disabled="hasStatus(item.status, Status.InProgress)"
                   icon

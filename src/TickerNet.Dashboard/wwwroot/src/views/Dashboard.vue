@@ -536,6 +536,7 @@ const getVisiblePageNumbers = () => {
                 <v-btn
                   size="x-small"
                   variant="text"
+                  aria-label="Previous machines page"
                   icon="mdi-chevron-left"
                   :disabled="currentMachinesPage <= 1"
                   @click="currentMachinesPage = Math.max(1, currentMachinesPage - 1)"
@@ -546,6 +547,7 @@ const getVisiblePageNumbers = () => {
                 <v-btn
                   size="x-small"
                   variant="text"
+                  aria-label="Next machines page"
                   icon="mdi-chevron-right"
                   :disabled="currentMachinesPage >= totalMachinePages"
                   @click="currentMachinesPage = Math.min(totalMachinePages, currentMachinesPage + 1)"
