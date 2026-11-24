@@ -72,12 +72,12 @@ release with them attached ([ADR 0011](https://tickernet.github.io/TickerNet/dec
 
 ```bash
 git switch main && git pull
-git tag -a v1.0.0-preview.1 -m "TickerNet 1.0.0-preview.1"
-git push origin v1.0.0-preview.1
+git tag -a v1.1.0 -m "TickerNet 1.1.0"
+git push origin v1.1.0
 ```
 
 A tag with a label after the version (`-preview.1`, `-rc.1`) is published as a prerelease. A tag that isn't on
-`main` is refused.
+`main` is refused. Follow Semantic Versioning: a breaking change to a public API needs a new major version.
 
 Publishing uses NuGet trusted publishing, so no API key is stored in GitHub. Set it up once, before the first release:
 

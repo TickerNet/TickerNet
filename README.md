@@ -37,9 +37,6 @@ its development, and makes two promises on the project's behalf:
 > version, no license keys and no CLA. Omniscient AI has made this an
 > [irrevocable pledge](GOVERNANCE.md#open-source-pledge-tickernet-stays-open-source-forever).
 
-> **Preview.** TickerNet is at `1.0.0-preview.1` and isn't on NuGet yet. Until the first release, reference the
-> projects from source. The package names below are the ones the first release will use.
-
 ## Features
 
 - **Time and cron scheduling**: one-off jobs at a set time, and recurring jobs from cron expressions.
@@ -55,7 +52,17 @@ its development, and makes two promises on the project's behalf:
 
 ## Quick start
 
-### 1. Register services
+### 1. Add the packages
+
+```bash
+dotnet add package TickerNet
+dotnet add package TickerNet.EntityFrameworkCore   # or TickerNet.Caching.StackExchangeRedis, TickerNet.MongoDB
+dotnet add package TickerNet.Dashboard             # optional
+```
+
+The packages are on [nuget.org](https://www.nuget.org/profiles/TickerNet) and target .NET 10.
+
+### 2. Register services
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
@@ -67,7 +74,7 @@ app.UseTickerNet();
 app.Run();
 ```
 
-### 2. Write a job
+### 3. Write a job
 
 ```csharp
 using TickerNet.Utilities.Base;
@@ -84,7 +91,7 @@ public class MyJobs
 }
 ```
 
-### 3. Schedule it
+### 4. Schedule it
 
 ```csharp
 public class MyService(ITimeTickerManager<TimeTickerEntity> manager)

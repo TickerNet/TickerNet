@@ -39,7 +39,7 @@
       <li><a href="#naming"><span class="n">03</span><span>Name and schedule remote jobs</span></a></li>
       <li><a href="#behaviour"><span class="n">04</span><span>What happens when</span></a></li>
       <li><a href="#security"><span class="n">05</span><span>Security</span></a></li>
-      <li><a href="#limits"><span class="n">06</span><span>Limits in this preview</span></a></li>
+      <li><a href="#limits"><span class="n">06</span><span>Known limits</span></a></li>
       <li><a href="#tickerq-hub"><span class="n">07</span><span>Coming from TickerQ Hub</span></a></li>
       <li><a href="#more"><span class="n">↓</span><span>Samples and decisions</span></a></li>
     </ol>
@@ -58,7 +58,7 @@
           <li><a href="#naming">Name and schedule remote jobs</a></li>
           <li><a href="#behaviour">What happens when</a></li>
           <li><a href="#security">Security</a></li>
-          <li><a href="#limits">Limits in this preview</a></li>
+          <li><a href="#limits">Known limits</a></li>
           <li><a href="#tickerq-hub">Coming from TickerQ Hub</a></li>
           <li><a href="#more">Samples and decisions</a></li>
         </ol>
@@ -295,8 +295,8 @@ public class ReportJobs
     </section>
 
     <section class="step" id="limits">
-      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Limits in this preview</h2>
-        <p class="step-sub">Known gaps in <code>1.0.0-preview.1</code>.</p></div>
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Known limits</h2>
+        <p class="step-sub">Known gaps in <code>1.0.0</code>.</p></div>
       <div class="prose">
         <ul>
           <li><strong>Several scheduler instances need every address.</strong> A worker that can't reach one of the instances misses that instance's runs, which wait, then are skipped. Workers don't discover instances on their own yet: list them in <code>HubAddresses</code>.</li>

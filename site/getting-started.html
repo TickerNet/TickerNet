@@ -78,16 +78,22 @@
 
     <section class="step" id="packages">
       <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Add the packages</h2>
-        <p class="step-sub">The packages are not yet on NuGet. Until the first release, build from source and use project references, as the samples do.</p></div>
+        <p class="step-sub">The packages are on <a href="https://www.nuget.org/profiles/TickerNet">nuget.org</a>. You can also build from source and use project references, as the samples do.</p></div>
       <ol class="tasks">
-        <li><b>Clone and build.</b> The core package takes the source generator from the generator's <code>bin/</code> folder, so build the generator first. Build the dashboard's web app too if you want the dashboard.
+        <li><b>Add them from NuGet.</b> Add the core package, one store, and the dashboard if you want it.
+<div class="code"><div class="code-head"><span class="path">shell</span><span>nuget.org</span></div>
+<pre><code class="language-bash">dotnet add package TickerNet
+dotnet add package TickerNet.EntityFrameworkCore   # or .Caching.StackExchangeRedis, .MongoDB
+dotnet add package TickerNet.Dashboard</code></pre></div>
+          The source generator comes inside <code>TickerNet</code>. Keep every TickerNet package on the same version.</li>
+        <li><b>Or build from source.</b> To work on TickerNet itself, or to try an unreleased change, clone and build it. The core package takes the source generator from the generator's <code>bin/</code> folder, so build the generator first. Build the dashboard's web app too if you want the dashboard.
 <div class="code"><div class="code-head"><span class="path">shell</span><span>from CONTRIBUTING.md</span></div>
 <pre><code class="language-bash">git clone https://github.com/TickerNet/TickerNet.git
 cd TickerNet
 (cd src/TickerNet.Dashboard/wwwroot &amp;&amp; npm ci &amp;&amp; npm run build)
 dotnet build src/TickerNet.SourceGenerator/TickerNet.SourceGenerator.csproj -c Release
 dotnet build TickerNet.slnx -c Release</code></pre></div></li>
-        <li><b>Reference the projects.</b> A project reference to <code>TickerNet</code> does not bring the source generator with it (the generator DLL is only added when the package is packed), so reference the generator as an analyzer too. Add only the store and dashboard projects you use.
+        <li><b>Reference the projects</b> (source builds only). A project reference to <code>TickerNet</code> does not bring the source generator with it (the generator DLL is only added when the package is packed), so reference the generator as an analyzer too. Add only the store and dashboard projects you use.
 <div class="code"><div class="code-head"><span class="path">YourApp.csproj</span><span>pattern from samples/*/*.csproj</span></div>
 <pre><code class="language-xml">&lt;ItemGroup&gt;
   &lt;ProjectReference Include="..\TickerNet\src\TickerNet\TickerNet.csproj" /&gt;
@@ -99,11 +105,6 @@ dotnet build TickerNet.slnx -c Release</code></pre></div></li>
   &lt;ProjectReference Include="..\TickerNet\src\TickerNet.Dashboard\TickerNet.Dashboard.csproj" /&gt;
 &lt;/ItemGroup&gt;</code></pre></div>
           Building <code>src/</code> also writes <code>.nupkg</code> files, because <code>src/Directory.Build.props</code> sets <code>GeneratePackageOnBuild</code>. You can put those in a local NuGet feed instead.</li>
-        <li><b>From the first release.</b> Once <code>1.0.0</code> packages are published, this will be the way to add them. These commands do not work yet.
-<div class="code"><div class="code-head"><span class="path">shell</span><span>for the first release, not yet on NuGet</span></div>
-<pre><code class="language-bash">dotnet add package TickerNet --prerelease
-dotnet add package TickerNet.EntityFrameworkCore --prerelease   # or .Caching.StackExchangeRedis, .MongoDB
-dotnet add package TickerNet.Dashboard --prerelease</code></pre></div></li>
       </ol>
     </section>
 
