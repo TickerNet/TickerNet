@@ -221,7 +221,12 @@ const comboBoxFilter = (_: any, queryText: any, item: any) => {
   return text.includes(query)
 }
 
-const comboBoxItems = [
+type RetryIntervalItem = { header?: boolean; id?: number; title: string; value?: number }
+
+const intervalTitle = (item: RetryIntervalItem) => item.title
+const intervalId = (item: RetryIntervalItem) => item.id
+
+const comboBoxItems: RetryIntervalItem[] = [
   { header: true, title: 'Select suggested intervals or create one' },
   {
     id: 1,
@@ -380,8 +385,8 @@ defineExpose({
                             ? 'Unset intervals use (default: last set)'
                             : 'Set intervals or (default: 30s)'
                       "
-                      :item-title="(item) => item.title"
-                      :item-value="(item) => item.id"
+                      :item-title="intervalTitle"
+                      :item-value="intervalId"
                       hide-selected
                       multiple
                       hide-spin-buttons
