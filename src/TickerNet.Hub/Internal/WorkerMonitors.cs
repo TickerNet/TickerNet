@@ -69,13 +69,14 @@ internal sealed class WorkerPauseMonitor<TTimeTicker, TCronTicker>(
 
     // Workers need a moment to reconnect after this scheduler starts. Until WorkerTimeout has passed
     // the monitor only resumes cron jobs, so a restart (or one instance of several restarting)
-    // doesn't briefly pause every remote cron job.
-    private DateTime _pauseNotBefore = DateTime.MaxValue;
+    // doesn't briefly pause every remote cron job. A flag set after the wait, not a clock comparison:
+    // Task.Delay can finish a moment before DateTime.UtcNow reaches the same instant, which would skip
+    // the pass that follows the grace period.
+    private volatile bool _graceOver;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _stopping = stoppingToken;
-        _pauseNotBefore = DateTime.UtcNow + options.WorkerTimeout;
         if (!options.PauseCronTickersWhileOffline)
         {
             try { await ReconcileAsync(stoppingToken).ConfigureAwait(false); }
@@ -87,9 +88,8 @@ internal sealed class WorkerPauseMonitor<TTimeTicker, TCronTicker>(
         try
         {
             await ReconcileAsync(stoppingToken).ConfigureAwait(false);
-            var untilPausing = _pauseNotBefore - DateTime.UtcNow;
-            if (untilPausing > TimeSpan.Zero)
-                await Task.Delay(untilPausing, stoppingToken).ConfigureAwait(false);
+            await Task.Delay(options.WorkerTimeout, stoppingToken).ConfigureAwait(false);
+            _graceOver = true;
             await ReconcileAsync(stoppingToken).ConfigureAwait(false);
 
             using var timer = new PeriodicTimer(Sweep);
@@ -108,6 +108,7 @@ internal sealed class WorkerPauseMonitor<TTimeTicker, TCronTicker>(
 
     private void OnRegistryChanged()
     {
+        logger.LogDebug("Workers changed; reconciling in {Seconds} s", Debounce.TotalSeconds);
         var next = new CancellationTokenSource();
         var previous = Interlocked.Exchange(ref _pending, next);
         previous?.Cancel();
@@ -129,6 +130,10 @@ internal sealed class WorkerPauseMonitor<TTimeTicker, TCronTicker>(
             {
                 // Superseded by a newer change.
             }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Debounced reconcile failed");
+            }
         });
     }
 
@@ -144,6 +149,7 @@ internal sealed class WorkerPauseMonitor<TTimeTicker, TCronTicker>(
 
     internal async Task ReconcileAsync(CancellationToken cancellationToken)
     {
+        logger.LogDebug("Reconciling paused cron jobs (startup grace over: {GraceOver})", _graceOver);
         await writeGate.Gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -158,8 +164,10 @@ internal sealed class WorkerPauseMonitor<TTimeTicker, TCronTicker>(
             foreach (var cron in crons)
             {
                 var shouldPause = ShouldPause(cron.Function);
+                if (logger.IsEnabled(LogLevel.Debug))
+                    logger.LogDebug("Cron {Function}: paused={Paused} shouldPause={ShouldPause}", cron.Function, cron.IsSystemPaused, shouldPause);
                 if (cron.IsSystemPaused == shouldPause) continue;
-                if (shouldPause && DateTime.UtcNow < _pauseNotBefore) continue;
+                if (shouldPause && !_graceOver) continue;
                 cron.IsSystemPaused = shouldPause;
                 changed.Add(cron);
             }
