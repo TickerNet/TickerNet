@@ -221,12 +221,13 @@ public class TickerFunctionProviderTests : IDisposable
         TickerFunctionProvider.RegisterFunctions(functions);
 
         var configuration = Substitute.For<IConfiguration>();
-        configuration["CronSettings:Schedule"].Returns("0 30 * * *");
+        configuration["CronSettings:Schedule"].Returns("30 3 * * *");
 
         TickerFunctionProvider.UpdateCronExpressionsFromIConfiguration(configuration);
         TickerFunctionProvider.Build();
 
-        Assert.Equal("0 30 * * *", TickerFunctionProvider.TickerFunctions["CronFunc"].cronExpression);
+        // A five-part configuration value gains its seconds field, as attribute values do.
+        Assert.Equal("0 30 3 * * *", TickerFunctionProvider.TickerFunctions["CronFunc"].cronExpression);
     }
     
     [Fact]
@@ -242,7 +243,7 @@ public class TickerFunctionProviderTests : IDisposable
 
         // Simulate another host that contributes config-based cron update callback.
         var configuration = Substitute.For<IConfiguration>();
-        configuration["CronSettings:Schedule"].Returns("0 30 * * *");
+        configuration["CronSettings:Schedule"].Returns("30 3 * * *");
 
         TickerFunctionProvider.UpdateCronExpressionsFromIConfiguration(configuration);
        
@@ -250,11 +251,11 @@ public class TickerFunctionProviderTests : IDisposable
         TickerFunctionProvider.Build();
 
         Assert.True(TickerFunctionProvider.TickerFunctions.ContainsKey("CronRaceFunc"));
-        Assert.Equal("0 30 * * *", TickerFunctionProvider.TickerFunctions["CronRaceFunc"].cronExpression);
+        Assert.Equal("0 30 3 * * *", TickerFunctionProvider.TickerFunctions["CronRaceFunc"].cronExpression);
     }
 
     [Fact]
-    public void UpdateCronExpressionsFromIConfiguration_NoConfigValue_KeepsOriginal()
+    public void UpdateCronExpressionsFromIConfiguration_NoConfigValue_Throws()
     {
         var functions = new Dictionary<string, (string, TickerTaskPriority, TickerFunctionDelegate, int)>
         {
@@ -267,10 +268,47 @@ public class TickerFunctionProviderTests : IDisposable
         configuration["Missing:Key"].Returns((string)null!);
 
         TickerFunctionProvider.UpdateCronExpressionsFromIConfiguration(configuration);
+
+        // A stored placeholder would never fire, so startup fails with the key to set.
+        var error = Assert.Throws<InvalidOperationException>(() => TickerFunctionProvider.Build());
+        Assert.Contains("Missing:Key", error.Message);
+        Assert.Contains("KeepFunc", error.Message);
+    }
+
+    [Fact]
+    public void UpdateCronExpressionsFromIConfiguration_InvalidValue_ThrowsWithContext()
+    {
+        var functions = new Dictionary<string, (string, TickerTaskPriority, TickerFunctionDelegate, int)>
+        {
+            ["BadCronFunc"] = ("%CronSettings:Schedule%", TickerTaskPriority.Normal, NoOpDelegate, 0)
+        };
+
+        TickerFunctionProvider.RegisterFunctions(functions);
+
+        var configuration = Substitute.For<IConfiguration>();
+        configuration["CronSettings:Schedule"].Returns("not a cron");
+
+        TickerFunctionProvider.UpdateCronExpressionsFromIConfiguration(configuration);
+
+        var error = Assert.Throws<InvalidOperationException>(() => TickerFunctionProvider.Build());
+        Assert.Contains("CronSettings:Schedule", error.Message);
+        Assert.Contains("BadCronFunc", error.Message);
+        Assert.Contains("invalid", error.Message);
+    }
+
+    [Fact]
+    public void Configure_NormalisesAFivePartExpression()
+    {
+        var functions = new Dictionary<string, (string, TickerTaskPriority, TickerFunctionDelegate, int)>
+        {
+            ["ConfiguredFunc"] = ("0 0 1 * *", TickerTaskPriority.Normal, NoOpDelegate, 0)
+        };
+
+        TickerFunctionProvider.RegisterFunctions(functions);
+        TickerFunctionProvider.Configure("ConfiguredFunc", "30 3 * * *");
         TickerFunctionProvider.Build();
 
-        // Original expression (with %) should be preserved when config key not found
-        Assert.Equal("%Missing:Key%", TickerFunctionProvider.TickerFunctions["KeepFunc"].cronExpression);
+        Assert.Equal("0 30 3 * * *", TickerFunctionProvider.TickerFunctions["ConfiguredFunc"].cronExpression);
     }
 
     // ---------------------------------------------------------------

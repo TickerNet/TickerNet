@@ -286,8 +286,10 @@ namespace TickerNet.Utilities
                 if (!dict.TryGetValue(functionName, out var existing))
                     return;
 
+                // Same normalisation as an attribute expression: a five-part cron
+                // gains its seconds field instead of never firing.
                 dict[functionName] = (
-                    cronExpression ?? existing.cronExpression,
+                    cronExpression is null ? existing.cronExpression : CronExpression.Parse(cronExpression).Value,
                     priority ?? existing.Priority,
                     existing.Delegate,
                     maxConcurrency ?? existing.MaxConcurrency
@@ -314,11 +316,28 @@ namespace TickerNet.Utilities
                             var configKey = value.cronExpression.Trim('%');
                             var mappedCronExpression = configuration[configKey];
 
-                            if (!string.IsNullOrEmpty(mappedCronExpression))
+                            // A placeholder with no value would be stored verbatim and
+                            // never fire; say so at startup instead of skipping it.
+                            if (string.IsNullOrWhiteSpace(mappedCronExpression))
                             {
-                                dict[key] = (mappedCronExpression, value.Priority, value.Delegate,
-                                             value.MaxConcurrency);
+                                throw new InvalidOperationException(
+                                    $"Cron configuration key '{configKey}' for function '{key}' is missing or empty. " +
+                                    "Set it, or give the TickerFunction attribute a literal cron expression.");
                             }
+
+                            string normalized;
+                            try
+                            {
+                                normalized = CronExpression.Parse(mappedCronExpression).Value;
+                            }
+                            catch (ArgumentException error)
+                            {
+                                throw new InvalidOperationException(
+                                    $"Cron configuration key '{configKey}' for function '{key}' is invalid: {error.Message}",
+                                    error);
+                            }
+
+                            dict[key] = (normalized, value.Priority, value.Delegate, value.MaxConcurrency);
                         }
                     }
                 };
