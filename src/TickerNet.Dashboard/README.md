@@ -72,6 +72,55 @@ services.AddTickerNet<MyTimeTicker, MyCronTicker>(config =>
 });
 ```
 
+## PathBase inside the dashboard branch
+
+The dashboard runs in its own request branch. When a request matches the
+dashboard path, the branch moves that matched prefix out of `Request.Path` and
+into `Request.PathBase`, the same way `Map()` does. With the default path, a
+request to `/tickernet/dashboard/api/jobs` reaches the dashboard with:
+
+- `Request.PathBase` = `/tickernet/dashboard`
+- `Request.Path` = `/api/jobs`
+
+Middleware or an authentication handler placed inside the dashboard branch must
+therefore match on `PathBase` (or on `PathBase + Path`), not on `Path` alone:
+
+```csharp
+dashboard.PostDashboardMiddleware(app =>
+{
+    app.Use((context, next) =>
+    {
+        // The dashboard prefix is in PathBase here, not in Path.
+        if (context.Request.PathBase.StartsWithSegments("/tickernet/dashboard"))
+        {
+            // ...
+        }
+
+        return next();
+    });
+});
+```
+
+Code outside the branch, such as host middleware before `UseTickerNet()`, still
+sees the full request path.
+
+## IIS and WebDAV
+
+On IIS the WebDAV module answers `PUT` and `DELETE` with `405`, which blocks the
+dashboard's edit and delete requests. Remove the module and its handler in
+`web.config`:
+
+```xml
+<system.webServer>
+  <modules>
+    <remove name="WebDAVModule" />
+  </modules>
+  <handlers>
+    <remove name="WebDAV" />
+  </handlers>
+</system.webServer>
+```
+
 ## 🔧 Fluent API Methods
 
 - `WithBasicAuth(username, password)` - Enable username/password authentication

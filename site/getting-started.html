@@ -429,6 +429,34 @@ app.Run();</code></pre></div>
       </table></div>
       <div class="prose"><p>Also on <code>DashboardOptionsBuilder</code>: <code>SetCorsPolicy(...)</code>, <code>SetBackendDomain(...)</code>, <code>SetGroupName(...)</code> for an OpenAPI group, and the <code>PreDashboardMiddleware</code>, <code>CustomMiddleware</code> and <code>PostDashboardMiddleware</code> hooks.</p></div>
       <div class="prose"><p><strong>CORS.</strong> Without <code>SetCorsPolicy(...)</code>, the dashboard accepts only same-origin requests, which is all its own web app needs. If you use <code>SetBackendDomain(...)</code> and no policy, it allows any origin with credentials so a separately hosted front end keeps working, and logs a warning; set a policy that names the origins that serve the dashboard.</p></div>
+      <div class="prose">
+        <p><strong>PathBase inside the branch.</strong> The dashboard runs in its own request branch and moves the matched dashboard prefix from <code>Request.Path</code> into <code>Request.PathBase</code>. A request to <code>/jobs/api/tickers</code> reaches dashboard code as <code>PathBase = "/jobs"</code> and <code>Path = "/api/tickers"</code>. Middleware or an authentication handler inside the branch should match <code>PathBase</code> or <code>PathBase + Path</code>, not <code>Path</code> alone:</p>
+      </div>
+      <div class="code"><div class="code-head"><span class="path">Dashboard middleware</span><span>match the branch prefix</span></div>
+<pre><code class="language-csharp">dashboard.PostDashboardMiddleware(app =&gt;
+{
+    app.Use((context, next) =&gt;
+    {
+        if (context.Request.PathBase.StartsWithSegments("/jobs"))
+        {
+            // dashboard request; the prefix is in PathBase here
+        }
+
+        return next();
+    });
+});</code></pre></div>
+      <div class="prose">
+        <p><strong>IIS and WebDAV.</strong> On IIS the WebDAV module rejects the <code>PUT</code> and <code>DELETE</code> requests the dashboard sends for edits and deletes, returning <code>405</code>. Remove it in <code>web.config</code>:</p>
+      </div>
+      <div class="code"><div class="code-head"><span class="path">web.config</span><span>remove WebDAV</span></div>
+<pre><code class="language-xml">&lt;system.webServer&gt;
+  &lt;modules&gt;
+    &lt;remove name="WebDAVModule" /&gt;
+  &lt;/modules&gt;
+  &lt;handlers&gt;
+    &lt;remove name="WebDAV" /&gt;
+  &lt;/handlers&gt;
+&lt;/system.webServer&gt;</code></pre></div>
       <div class="warnbox"><b>Lock it down before you deploy.</b> Out of the box the dashboard has no sign-in: anyone who can reach the URL can see, add, run and delete jobs. TickerNet logs a warning at startup until you pick a sign-in method or call <code>WithNoAuth()</code>.</div>
     </section>
 
