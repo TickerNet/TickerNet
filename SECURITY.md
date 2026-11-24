@@ -29,3 +29,15 @@ the GitHub release) and run:
 ```bash
 gh attestation verify TickerNet.1.1.0.nupkg --repo TickerNet/TickerNet
 ```
+
+## How the project protects you
+
+- **Publishing:** releases are built and pushed only by the release workflow, from a `v*` tag on `main`, through
+  NuGet trusted publishing. No long-lived NuGet API key exists, and the `nuget` environment accepts only release tags.
+- **Releases can't be changed afterwards:** GitHub releases are immutable, and a tag rule stops anyone, maintainers
+  included, from moving or deleting a `v*` tag.
+- **Code review and checks:** every change reaches `main` through a pull request with passing build, tests and DCO
+  sign-off. CodeQL scans the C# and dashboard code on every pull request.
+- **Secrets:** secret scanning with push protection blocks commits that contain credentials.
+- **Dependencies:** Dependabot alerts and security updates are on, and Dependabot proposes NuGet, npm and GitHub
+  Actions updates weekly. The .NET SDK's NuGet audit warns about vulnerable packages at build time.
