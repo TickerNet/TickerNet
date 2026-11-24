@@ -1,6 +1,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { NodeTypes, type ElementNode } from '@vue/compiler-dom';
+import { parse } from '@vue/compiler-sfc';
 import { describe, expect, it } from 'vitest';
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -13,35 +15,81 @@ function vueFiles(dir: string): string[] {
     });
 }
 
-function visibleButtonText(rawInner: string): string {
-    return rawInner
-        .replace(/<!--[\s\S]*?-->/g, '')
-        .replace(/<v-tooltip\b[^>]*>[\s\S]*?<\/v-tooltip>/g, '')
-        .replace(/<v-icon\b[\s\S]*?<\/v-icon>/g, '')
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+function parseTemplate(file: string): ElementNode[] {
+    const source = readFileSync(file, 'utf8');
+    const { descriptor, errors } = parse(source, { filename: file });
+    expect(errors.map(String)).toEqual([]);
+
+    const elements: ElementNode[] = [];
+    // v-if / v-for wrap children in branches, so walk every node container.
+    const walk = (node: unknown): void => {
+        if (!node || typeof node !== 'object') return;
+        const current = node as {
+            type?: number;
+            children?: unknown[];
+            branches?: unknown[];
+        };
+        if (current.type === NodeTypes.ELEMENT) elements.push(node as ElementNode);
+        for (const child of current.children ?? []) walk(child);
+        for (const branch of current.branches ?? []) walk(branch);
+    };
+    walk(descriptor.template?.ast);
+    return elements;
+}
+
+function attributes(element: ElementNode): Map<string, string> {
+    const result = new Map<string, string>();
+    for (const prop of element.props) {
+        if (prop.type === NodeTypes.ATTRIBUTE) {
+            result.set(prop.name, prop.value?.content ?? '');
+        } else if (
+            prop.type === NodeTypes.DIRECTIVE
+            && prop.name === 'bind'
+            && prop.arg?.type === NodeTypes.SIMPLE_EXPRESSION
+        ) {
+            const expression = prop.exp?.type === NodeTypes.SIMPLE_EXPRESSION ? prop.exp.content : '';
+            result.set(prop.arg.content, expression);
+        }
+    }
+    return result;
+}
+
+function childText(node: unknown): string {
+    if (!node || typeof node !== 'object') return '';
+    const current = node as {
+        type?: number;
+        tag?: string;
+        content?: string | { content?: string };
+        children?: unknown[];
+        branches?: unknown[];
+    };
+    // Icons are not accessible names, and tooltips are not button content.
+    if (current.tag === 'v-icon' || current.tag === 'v-tooltip') return '';
+    if (current.type === NodeTypes.TEXT || current.type === NodeTypes.INTERPOLATION) {
+        return typeof current.content === 'string' ? current.content : current.content?.content ?? '';
+    }
+    return [
+        ...(current.children ?? []).map(childText),
+        ...(current.branches ?? []).map(childText),
+    ].join('');
 }
 
 function unlabeledIconButtons(): string[] {
-    const buttonPattern = /<v-btn\b([\s\S]*?)(?:\/>|>([\s\S]*?)<\/v-btn>)/g;
     const missing: string[] = [];
 
     for (const file of vueFiles(srcRoot)) {
-        const source = readFileSync(file, 'utf8');
-        let match: RegExpExecArray | null;
-        buttonPattern.lastIndex = 0;
+        const elements = parseTemplate(file);
+        for (const element of elements) {
+            // `v-btn-group` and `v-btn-toggle` are not buttons.
+            if (element.tag !== 'v-btn') continue;
+            const attrs = attributes(element);
+            const hasIcon = attrs.has('icon')
+                || element.children.some(child => child.type === NodeTypes.ELEMENT && child.tag === 'v-icon');
+            const hasVisibleText = element.children.map(childText).join('').trim().length > 0;
 
-        while ((match = buttonPattern.exec(source)) !== null) {
-            const attrs = match[1].replace(/\s+/g, ' ').trim();
-            const rawInner = match[2] ?? '';
-            const hasIcon = /(?:^|\s):?icon(?:=|\s|$)/.test(attrs) || /<v-icon\b/.test(rawInner);
-            const hasTextProp = /(?:^|\s):?text(?:=|\s|$)/.test(attrs);
-            const hasLabel = /\baria-label\b/.test(attrs);
-
-            if (hasIcon && !hasTextProp && !hasLabel && !visibleButtonText(rawInner)) {
-                const line = source.slice(0, match.index).split('\n').length;
-                missing.push(`${relative(srcRoot, file).replace(/\\/g, '/')}:${line}`);
+            if (hasIcon && !attrs.has('text') && !attrs.has('aria-label') && !hasVisibleText) {
+                const path = relative(srcRoot, file).replace(/\\/g, '/');
+                missing.push(`${path}:${element.loc.start.line}`);
             }
         }
     }
@@ -55,12 +103,12 @@ describe('dashboard accessibility', () => {
     });
 
     it('makes the header branding a real link', () => {
-        const layout = readFileSync(
-            join(srcRoot, 'components', 'layout', 'DashboardLayout.vue'),
-            'utf8',
+        const elements = parseTemplate(join(srcRoot, 'components', 'layout', 'DashboardLayout.vue'));
+        const homeLink = elements.find(
+            element => element.tag === 'router-link' && attributes(element).get('to') === '/',
         );
 
-        expect(layout).toMatch(/<router-link[^>]*to="\/"[^>]*aria-label="TickerNet dashboard home"/);
-        expect(layout).not.toMatch(/@click="navigateToDashboard"/);
+        expect(homeLink).toBeDefined();
+        expect(attributes(homeLink!).get('aria-label')).toBe('TickerNet dashboard home');
     });
 });

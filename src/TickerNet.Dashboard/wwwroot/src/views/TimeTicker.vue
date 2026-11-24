@@ -1229,7 +1229,8 @@ const canBeForceDeleted = ref<string[]>([])
                   <v-btn
                     v-if="item.hasChildren"
                     :icon="item.isExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
-                    :aria-label="`${item.isExpanded ? 'Collapse' : 'Expand'} child tickers for ${item.function}`"
+                    :aria-label="`Child tickers for ${item.function}`"
+                    :aria-expanded="item.isExpanded"
                     size="x-small"
                     variant="text"
                     @click="toggleParentExpansion(item.id)"

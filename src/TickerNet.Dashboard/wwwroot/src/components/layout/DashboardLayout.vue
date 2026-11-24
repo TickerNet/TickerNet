@@ -1075,6 +1075,12 @@ const handleForceUIUpdate = () => {
     align-items: center;
   }
 
+  .brand-link {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
   .header-center {
     display: none;
   }
