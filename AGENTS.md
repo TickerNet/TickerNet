@@ -16,7 +16,9 @@ test it. This file holds the rules for coding agents.
   and workers on a local port, one test at a time.
 - `samples/`, `benchmarks/`: example apps and BenchmarkDotNet runs.
 - `site/`: the docs site on GitHub Pages, including the ADR log in `site/decisions/`.
-- `.github/workflows/`: `ci.yaml` (build and test), `dco.yaml` (sign-off check), `pages.yaml` (docs site) and
+- `.github/workflows/`: `ci.yaml` (build and test), `dco.yaml` (sign-off check), `review-request.yaml` (a pull
+  request's author comments `/review` to re-request review; it runs with a write token on fork comments, so it must
+  never check out or run pull request code), `pages.yaml` (docs site) and
   `release.yaml` (publishes to NuGet on a `v*` tag; see CONTRIBUTING.md, Releasing). `.github/dependabot.yml` schedules weekly
   NuGet, npm and Actions updates; .NET packages that follow `$(DotNetVersion)` and Roslyn are excluded on purpose. `assets/tickernet-icon.png` is
   the package icon. `assets/social-preview.html` is the source of `site/assets/social-preview.png`, the GitHub social

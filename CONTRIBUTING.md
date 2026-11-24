@@ -65,6 +65,8 @@ dotnet test TickerNet.slnx -c Release --no-build
 4. Update the docs in the same pull request: `README.md`, the package READMEs and `site/` (the docs site).
 5. If your change picks between real alternatives, adds or removes a package or public interface, or sets a rule
    other changes must follow, add an architecture decision record under `site/decisions/`.
+6. After you push the changes a reviewer asked for, comment `/review` on the pull request. That asks everyone who
+   reviewed it, and hasn't approved yet, to look again. You can also @-mention the reviewer instead.
 
 Pull requests are merged with squash and merge. After your first one is merged, your name goes in
 [CONTRIBUTORS.md](CONTRIBUTORS.md): add it in your pull request, or the maintainer who merges it will.

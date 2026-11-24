@@ -1,0 +1,69 @@
+name: Review request
+
+# Lets a pull request's author comment `/review` to ask the earlier reviewers to look again.
+# Outside contributors can't re-request review themselves without the Triage role (ADR 0016).
+# This runs with a write token on comments from forks: never check out or run pull request code
+# here, and never put comment text into a shell command.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  pull-requests: write
+
+concurrency:
+  group: review-request-${{ github.event.issue.number }}
+
+jobs:
+  rerequest:
+    name: Re-request review
+    if: >-
+      github.event.issue.pull_request &&
+      github.event.issue.state == 'open' &&
+      github.event.comment.user.login == github.event.issue.user.login &&
+      startsWith(github.event.comment.body, '/review')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask earlier reviewers to look again
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.issue.number }}
+          AUTHOR: ${{ github.event.issue.user.login }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          # Each reviewer's latest review state, oldest first, skipping bots, drafts and the author.
+          latest=$(gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
+            --jq '.[] | select(.user.type == "User" and .state != "PENDING") | "\(.user.login) \(.state)"' |
+            awk -v author="$AUTHOR" '$1 != author { state[$1] = $2 } END { for (r in state) print r, state[r] }')
+
+          if [ -z "$latest" ]; then
+            gh api -X POST "repos/$REPO/issues/$PR/comments" \
+              -f body="Nobody has reviewed this pull request yet, so there's no one to ask again. A maintainer will pick it up." >/dev/null
+            exit 0
+          fi
+
+          reviewers=$(echo "$latest" | awk '$2 != "APPROVED" { print $1 }')
+          if [ -z "$reviewers" ]; then
+            gh api -X POST "repos/$REPO/issues/$PR/comments" \
+              -f body="Everyone who reviewed this pull request has already approved it." >/dev/null
+            exit 0
+          fi
+
+          asked=""
+          for reviewer in $reviewers; do
+            if gh api -X POST "repos/$REPO/pulls/$PR/requested_reviewers" -f "reviewers[]=$reviewer" >/dev/null; then
+              asked="$asked @$reviewer"
+            else
+              echo "::warning::Could not request review from $reviewer."
+            fi
+          done
+
+          if [ -n "$asked" ]; then
+            gh api -X POST "repos/$REPO/issues/comments/$COMMENT_ID/reactions" -f content=rocket >/dev/null
+            echo "Re-requested review from:$asked"
+          else
+            gh api -X POST "repos/$REPO/issues/$PR/comments" \
+              -f body="I couldn't re-request review automatically. Please @-mention your reviewer instead." >/dev/null
+          fi
