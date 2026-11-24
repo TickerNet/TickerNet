@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TickerNet.DependencyInjection;
 using TickerNet.EntityFrameworkCore.Customizer;
+using TickerNet.EntityFrameworkCore.DbContextFactory;
 using TickerNet.EntityFrameworkCore.DependencyInjection;
 using TickerNet.Utilities.Entities;
 
@@ -18,6 +19,13 @@ public class TestDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+    }
+}
+
+public class CustomTickerDbContext : TickerNetDbContext<TimeTickerEntity, CronTickerEntity>
+{
+    public CustomTickerDbContext(DbContextOptions<CustomTickerDbContext> options) : base(options)
+    {
     }
 }
 
@@ -72,5 +80,33 @@ public class ServiceExtensionTests
         Assert.NotNull(timeTickerSet);
         Assert.NotNull(cronTickerSet);
         Assert.NotNull(cronTickerOccurrenceSet);
+    }
+
+    /// <summary>
+    /// `dotnet ef` finds a context through a registered DbContextOptions&lt;TContext&gt;.
+    /// UseTickerNetDbContext must therefore register the options, not only the factory.
+    /// </summary>
+    [Fact]
+    public void UseTickerNetDbContext_RegistersOptionsForDesignTimeTools()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.Services.AddTickerNet(tickerOptions =>
+        {
+            tickerOptions.AddOperationalStore(efOptions =>
+            {
+                efOptions.UseTickerNetDbContext<CustomTickerDbContext>(db =>
+                    db.UseSqlite("Data Source=DesignTimeOptions;Mode=Memory;Cache=Shared"));
+            });
+        });
+
+        var app = builder.Build();
+        using var scope = app.Services.CreateScope();
+
+        var options = scope.ServiceProvider.GetRequiredService<DbContextOptions<CustomTickerDbContext>>();
+        Assert.NotNull(options);
+
+        var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<CustomTickerDbContext>>();
+        using var context = factory.CreateDbContext();
+        Assert.NotNull(context.Model.FindEntityType(typeof(TimeTickerEntity)));
     }
 }

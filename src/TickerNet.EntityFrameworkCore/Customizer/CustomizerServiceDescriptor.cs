@@ -35,13 +35,17 @@ public static class ServiceBuilder
     {
         builder.ConfigureServices = (services) =>
         {
-            services.TryAddSingleton<IDbContextFactory<TContext>>(sp =>
+            // Register the options as well as the factory: `dotnet ef` discovers a
+            // context through DbContextOptions<TContext> in the service provider.
+            services.TryAddSingleton<DbContextOptions<TContext>>(sp =>
             {
                 var optionsBuilder = new DbContextOptionsBuilder<TContext>();
                 optionsAction.Invoke(optionsBuilder);
                 optionsBuilder.UseApplicationServiceProvider(sp);
-                return new PooledDbContextFactory<TContext>(optionsBuilder.Options, builder.PoolSize);
+                return optionsBuilder.Options;
             });
+            services.TryAddSingleton<IDbContextFactory<TContext>>(sp =>
+                new PooledDbContextFactory<TContext>(sp.GetRequiredService<DbContextOptions<TContext>>(), builder.PoolSize));
             services.TryAddScoped<TContext>(sp => sp.GetRequiredService<IDbContextFactory<TContext>>().CreateDbContext());
             services.AddSingleton<ITickerPersistenceProvider<TTimeTicker, TCronTicker>, TickerEfCorePersistenceProvider<TContext, TTimeTicker, TCronTicker>>();
         };
