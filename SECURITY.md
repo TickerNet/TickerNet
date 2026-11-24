@@ -11,9 +11,10 @@ report, keep you updated while we work on a fix, and credit you in the advisory 
 
 ## Supported versions
 
-TickerNet is in preview. Security fixes go into the latest release only.
+Security fixes go into the latest 1.x release.
 
 | Version | Supported |
 | --- | --- |
-| Latest 1.x preview | Yes |
-| Older previews | No |
+| Latest 1.x release | Yes |
+| Older 1.x releases | No: update to the latest 1.x |
+| 1.0.0 previews | No |
