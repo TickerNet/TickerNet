@@ -60,6 +60,34 @@ It is irrevocable.
 Paid services around TickerNet, such as support, consulting or hosting, are fine. They never change TickerNet's
 license or decide which features TickerNet gets.
 
+## Maintainers
+
+TickerNet has one maintainer today: [jeff-pang](https://github.com/jeff-pang), whose time Omniscient AI funds. One
+maintainer is a risk, and we say so plainly. While it lasts, these protect you:
+
+- **The license.** Anyone can fork TickerNet and carry it on, under MIT or Apache-2.0, without asking anyone.
+- **The handover promise** in the pledge below: the project goes to a foundation or its active maintainers, never to
+  someone who drops the pledge.
+- **Checks that don't depend on trusting one person.** Every change goes through a pull request with required build,
+  test and sign-off checks and a CodeQL scan. Packages are published only by the release workflow, with signed build
+  provenance, and release tags and releases can't be changed afterwards. [SECURITY.md](SECURITY.md) lists them.
+
+We are looking for co-maintainers, and working towards a second person with owner access to the GitHub organization
+and the NuGet package IDs, so the project never depends on one account.
+
+### Becoming a maintainer
+
+1. **Contributor.** Anyone who opens an issue, answers a question in Discussions or sends a pull request.
+2. **Triager.** After a few good contributions, ask in Discussions or on a pull request. A maintainer can give you
+   triage access: you can label, assign and close issues and pull requests, but not merge.
+3. **Maintainer.** After about three months of steady, good contributions and reviews, the maintainers invite you.
+   Maintainers review and merge pull requests and publish releases. A new maintainer accepts the
+   [open-source pledge](#open-source-pledge-tickernet-stays-open-source-forever) in their first pull request to this
+   file, which adds their name above.
+
+Maintainers who are inactive for six months become emeritus and keep their credit. They can come back by asking.
+Once there are two or more maintainers, every pull request needs approval from a maintainer who didn't write it.
+
 ## How decisions are made
 
 - Maintainers review and merge pull requests. A change goes in when a maintainer approves it and nobody with a good
