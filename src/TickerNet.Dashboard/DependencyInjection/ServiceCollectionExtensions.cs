@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using TickerNet.Dashboard.Authentication;
 using TickerNet.Dashboard.Endpoints;
 using TickerNet.Dashboard.Infrastructure;
@@ -57,6 +58,8 @@ namespace TickerNet.Dashboard.DependencyInjection
 
             // Validate and normalize base path
             var basePath = NormalizeBasePath(config.BasePath);
+
+            WarnAboutOpenAccess(app, config, basePath);
 
             // Send links and bookmarks to TickerQ's old dashboard address to the current one.
             if (config.RedirectTickerQPath)
@@ -218,6 +221,34 @@ namespace TickerNet.Dashboard.DependencyInjection
 
                 await next();
             });
+        }
+
+        /// <summary>
+        /// Logs a warning at startup when the dashboard is reachable without sign-in, or when it accepts requests from any
+        /// website, unless the app chose that on purpose.
+        /// </summary>
+        internal static void WarnAboutOpenAccess(IApplicationBuilder app, DashboardOptionsBuilder config, string basePath)
+        {
+            var logger = app.ApplicationServices.GetService<ILoggerFactory>()?.CreateLogger("TickerNet.Dashboard");
+            if (logger == null)
+                return;
+
+            if (!config.Auth.IsEnabled && !config.NoAuthConfirmed)
+            {
+                logger.LogWarning(
+                    "The TickerNet dashboard at {DashboardPath} has no sign-in: anyone who can reach it can view, add, run and delete jobs. " +
+                    "Choose a sign-in method (WithBasicAuth, WithApiKey, WithHostAuthentication or WithCustomAuth), " +
+                    "or call WithNoAuth() to confirm a public dashboard and silence this warning.",
+                    basePath);
+            }
+
+            if (!config.CorsPolicyConfigured && !string.IsNullOrEmpty(config.BackendDomain))
+            {
+                logger.LogWarning(
+                    "The TickerNet dashboard at {DashboardPath} accepts requests with credentials from any website, because a backend domain is set " +
+                    "and no CORS policy is. Call SetCorsPolicy with the origins that serve the dashboard.",
+                    basePath);
+            }
         }
 
         private static string NormalizeBasePath(string basePath)

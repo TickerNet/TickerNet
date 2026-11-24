@@ -28,7 +28,8 @@ public class AuthConfig
     public Func<string, bool>? CustomValidator { get; set; }
     
     /// <summary>
-    /// Session timeout in minutes (default: 60 minutes)
+    /// How long a sign-in lasts in the browser, in minutes (default: 60). The dashboard front end forgets the stored
+    /// credentials when it runs out.
     /// </summary>
     public int SessionTimeoutMinutes { get; set; } = 60;
     

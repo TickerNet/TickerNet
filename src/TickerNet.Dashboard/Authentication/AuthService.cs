@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -100,7 +101,7 @@ public class AuthService : IAuthService
                 ? authHeader.Substring(6)
                 : authHeader;
 
-            if (credentials == _config.BasicCredentials)
+            if (FixedTimeEquals(credentials, _config.BasicCredentials))
             {
                 // Decode to get username for display
                 var decoded = Encoding.UTF8.GetString(Convert.FromBase64String(credentials));
@@ -128,7 +129,7 @@ public class AuthService : IAuthService
                 _ => authHeader
             };
 
-            if (token == _config.ApiKey)
+            if (FixedTimeEquals(token, _config.ApiKey))
             {
                 return Task.FromResult(AuthResult.Success("api-user"));
             }
@@ -156,6 +157,17 @@ public class AuthService : IAuthService
         {
             return Task.FromResult(AuthResult.Failure("Custom authentication error"));
         }
+    }
+
+    /// <summary>Compares secrets in constant time, so response timing doesn't reveal how much of a guess matched.</summary>
+    private static bool FixedTimeEquals(string? provided, string? expected)
+    {
+        if (provided is null || expected is null)
+        {
+            return false;
+        }
+
+        return CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(provided), Encoding.UTF8.GetBytes(expected));
     }
 
     private async Task<AuthResult> AuthenticateHostAsync(HttpContext context)

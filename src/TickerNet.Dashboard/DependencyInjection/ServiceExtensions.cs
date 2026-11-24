@@ -21,15 +21,22 @@ namespace TickerNet.Dashboard.DependencyInjection
             where TTimeTicker : TimeTickerEntity<TTimeTicker>, new()
             where TCronTicker : CronTickerEntity, new()
         {
-            var dashboardConfig = new DashboardOptionsBuilder
-            {
-                CorsPolicyBuilder = cors => cors
-                    .SetIsOriginAllowed(_ => true)
-                    .AllowAnyHeader()
-                    .AllowCredentials()
-            };
-            
+            var dashboardConfig = new DashboardOptionsBuilder();
+
             configureDashboard?.Invoke(dashboardConfig);
+
+            // Default CORS policy. A dashboard served by the app itself is same-origin and needs no CORS, so allow
+            // none: any origin with credentials would let other websites act as a signed-in user. A front end hosted
+            // elsewhere (SetBackendDomain) keeps the old permissive default, with a startup warning.
+            if (!dashboardConfig.CorsPolicyConfigured)
+            {
+                dashboardConfig.CorsPolicyBuilder = string.IsNullOrEmpty(dashboardConfig.BackendDomain)
+                    ? _ => { }
+                    : cors => cors
+                        .SetIsOriginAllowed(_ => true)
+                        .AllowAnyHeader()
+                        .AllowCredentials();
+            }
             
             tickerConfiguration.DashboardServiceAction = (services) =>
             {

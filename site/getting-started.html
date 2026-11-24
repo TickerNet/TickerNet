@@ -419,16 +419,17 @@ app.Run();</code></pre></div>
       <div class="tbl-wrap"><table>
         <thead><tr><th>Sign-in method</th><th>What it does</th></tr></thead>
         <tbody>
-          <tr><td><code>WithNoAuth()</code></td><td>No sign-in. This is the default.</td></tr>
+          <tr><td><code>WithNoAuth()</code></td><td>No sign-in, on purpose. With no sign-in method at all, the dashboard is also open, but TickerNet logs a warning at startup; this call confirms it and silences the warning.</td></tr>
           <tr><td><code>WithBasicAuth(username, password)</code></td><td>Username and password, sent as HTTP Basic.</td></tr>
           <tr><td><code>WithApiKey(apiKey)</code></td><td>A key the user enters, sent as a Bearer token.</td></tr>
           <tr><td><code>WithHostAuthentication(policy = null)</code></td><td>Your app's own authentication, with an optional authorization policy name.</td></tr>
           <tr><td><code>WithCustomAuth(Func&lt;string, bool&gt; validator)</code></td><td>Your function decides. It gets the <code>Authorization</code> header value, or the <code>access_token</code> query value for SignalR.</td></tr>
-          <tr><td><code>WithSessionTimeout(minutes)</code></td><td>Session length. The default is 60 minutes.</td></tr>
+          <tr><td><code>WithSessionTimeout(minutes)</code></td><td>How long a sign-in lasts in the browser. When it runs out, the dashboard forgets the stored credentials and asks again, even in an open tab. The default is 60 minutes; the minimum is 1.</td></tr>
         </tbody>
       </table></div>
       <div class="prose"><p>Also on <code>DashboardOptionsBuilder</code>: <code>SetCorsPolicy(...)</code>, <code>SetBackendDomain(...)</code>, <code>SetGroupName(...)</code> for an OpenAPI group, and the <code>PreDashboardMiddleware</code>, <code>CustomMiddleware</code> and <code>PostDashboardMiddleware</code> hooks.</p></div>
-      <div class="warnbox"><b>Lock it down before you deploy.</b> Out of the box the dashboard has no sign-in, and its CORS policy allows any origin with credentials. Anyone who can reach the URL can see, add, run and delete jobs. Pick a sign-in method, and set a CORS policy if the dashboard is served across origins.</div>
+      <div class="prose"><p><strong>CORS.</strong> Without <code>SetCorsPolicy(...)</code>, the dashboard accepts only same-origin requests, which is all its own web app needs. If you use <code>SetBackendDomain(...)</code> and no policy, it allows any origin with credentials so a separately hosted front end keeps working, and logs a warning; set a policy that names the origins that serve the dashboard.</p></div>
+      <div class="warnbox"><b>Lock it down before you deploy.</b> Out of the box the dashboard has no sign-in: anyone who can reach the URL can see, add, run and delete jobs. TickerNet logs a warning at startup until you pick a sign-in method or call <code>WithNoAuth()</code>.</div>
     </section>
 
     <section class="step" id="telemetry">
