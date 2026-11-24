@@ -47,8 +47,9 @@
       <li><a href="#freedom"><span class="n">02</span><span>Your freedom to build on it</span></a></li>
       <li><a href="#pledge"><span class="n">03</span><span>Open source, forever</span></a></li>
       <li><a href="#name"><span class="n">04</span><span>The name</span></a></li>
-      <li><a href="#decisions"><span class="n">05</span><span>How decisions are made</span></a></li>
-      <li><a href="#security"><span class="n">06</span><span>Security reports</span></a></li>
+      <li><a href="#maintainers"><span class="n">05</span><span>Maintainers</span></a></li>
+      <li><a href="#decisions"><span class="n">06</span><span>How decisions are made</span></a></li>
+      <li><a href="#security"><span class="n">07</span><span>Security reports</span></a></li>
     </ol>
   </nav>
   <main>
@@ -72,6 +73,7 @@
           <li><a href="#freedom">Your freedom to build on it</a></li>
           <li><a href="#pledge">Open source, forever</a></li>
           <li><a href="#name">The name</a></li>
+          <li><a href="#maintainers">Maintainers</a></li>
           <li><a href="#decisions">How decisions are made</a></li>
           <li><a href="#security">Security reports</a></li>
         </ol>
@@ -139,8 +141,23 @@
       </div>
     </section>
 
+    <section class="step" id="maintainers">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Maintainers</h2>
+        <p class="step-sub">One maintainer today, and how to become the next one.</p></div>
+      <div class="prose">
+        <p>TickerNet has one maintainer today: <a href="https://github.com/jeff-pang">jeff-pang</a>, whose time Omniscient AI funds. One maintainer is a risk, and we say so plainly. While it lasts, three things protect you: the license, which lets anyone fork and carry TickerNet on; the <a href="#pledge">handover promise</a>; and checks that don't depend on trusting one person, such as required pull request checks, CodeQL, publishing only from the release workflow with signed provenance, and releases and tags that can't be changed afterwards.</p>
+        <p>We are looking for co-maintainers, and working towards a second person with owner access to the GitHub organization and the NuGet package IDs.</p>
+      </div>
+      <ul class="tasks">
+        <li><b>Contributor.</b> Anyone who opens an issue, answers a question in <a href="https://github.com/TickerNet/TickerNet/discussions">Discussions</a> or sends a pull request.</li>
+        <li><b>Triager.</b> After a few good contributions, ask for triage access: you can label, assign and close issues and pull requests, but not merge.</li>
+        <li><b>Maintainer.</b> After about three months of steady, good contributions and reviews, the maintainers invite you. You accept the pledge in the pull request that adds your name to <code>GOVERNANCE.md</code>.</li>
+        <li><b>Emeritus.</b> Maintainers inactive for six months become emeritus and keep their credit. Once there are two or more maintainers, every pull request needs approval from one who didn't write it.</li>
+      </ul>
+    </section>
+
     <section class="step" id="decisions">
-      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">How decisions are made</h2></div>
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">How decisions are made</h2></div>
       <ul class="tasks">
         <li><b>Pull requests.</b> Maintainers review and merge pull requests. A change goes in when a maintainer approves it and nobody with a good reason objects. Pull requests are merged with squash and merge.</li>
         <li><b>Architecture decision records.</b> Decisions that pick between real alternatives, add or remove a package or public interface, or set a rule other changes must follow get an ADR in the <a href="decisions/index.html">decision log</a>.</li>
@@ -149,7 +166,7 @@
     </section>
 
     <section class="step" id="security">
-      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Security reports</h2></div>
+      <div class="step-head"><span class="step-num">07</span><h2 class="step-title">Security reports</h2></div>
       <div class="prose">
         <p>Don't report security problems in a public issue. Use GitHub's private vulnerability reporting: open the repository's <strong>Security</strong> tab and choose <strong>Report a vulnerability</strong> (<a href="https://github.com/TickerNet/TickerNet/security/advisories/new">direct link</a>). Say what the problem is, how to reproduce it, and what an attacker could do with it.</p>
         <p>Security fixes go into the latest 1.x release only. <a href="https://github.com/TickerNet/TickerNet/blob/main/SECURITY.md"><code>SECURITY.md</code></a> has the details, including how releases are published and protected and how to verify a package.</p>

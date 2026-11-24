@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADR 0014: Name the maintainers and a path to become one</title>
+<meta name="description" content="GOVERNANCE.md names TickerNet's one maintainer, says what protects users while there is only one, and sets out how contributors become triagers and maintainers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../remote-workers.html">Remote workers</a></li>
+        <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="../contributing.html">Contributing</a></li>
+        <li><a href="../governance.html">Governance</a></li>
+        <li><a href="index.html" aria-current="page">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>ADR 0014</h2>
+    <ol><li><a href="#context"><span class="n">01</span><span>Context</span></a></li><li><a href="#decision"><span class="n">02</span><span>Decision</span></a></li><li><a href="#alternatives"><span class="n">03</span><span>Alternatives considered</span></a></li><li><a href="#consequences"><span class="n">04</span><span>Consequences</span></a></li><li><a href="#where"><span class="n">05</span><span>Where it lives</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol>
+    <p class="rail-back"><a href="index.html">← All decisions</a></p>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">ADR 0014 · Docs and process</p>
+      <h1>Name the maintainers and a path to become one</h1>
+      <p class="lede"><code>GOVERNANCE.md</code> now names TickerNet's one maintainer, says what protects users while there is only one, and sets out how contributors become triagers and maintainers.</p>
+      <dl class="adr-meta">
+        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Decided</dt><dd>2026-11-24</dd></div>
+        <div><dt>Affects</dt><dd><code>GOVERNANCE.md</code>, <code>site/governance.html</code></dd></div>
+      </dl>
+      <p class="adr-related">Related: <a href="0003-license-pledge-no-cla.html">ADR 0003</a> the license and pledge, <a href="0007-sponsor-and-home.html">ADR 0007</a> Omniscient AI sponsors TickerNet</p>
+    </header>
+    <section class="step" id="context">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
+      <div class="prose"><p>TickerNet has one maintainer. <code>GOVERNANCE.md</code> said "maintainers review and merge pull requests" without saying who they were or how anyone could become one. Before promoting the project, a review found that a single, unnamed maintainer is the first question users and critics ask of a company-sponsored fork, and that the required review on <code>main</code> is a formality while the only maintainer is also a repository admin.</p></div>
+    </section>
+    <section class="step" id="decision">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Decision</h2></div>
+      <div class="prose"><ul>
+<li>A <strong>Maintainers</strong> section in <code>GOVERNANCE.md</code> and on the governance page names the maintainer, states plainly that one maintainer is a risk, and lists what protects users meanwhile: the license, the handover promise, and checks that don't rely on trusting one person.</li>
+<li>A path: <strong>contributor</strong>, then <strong>triager</strong> (label, assign and close, no merge) after a few good contributions, then <strong>maintainer</strong> by invitation after about three months of steady contributions and reviews. A new maintainer accepts the pledge in the pull request that adds their name.</li>
+<li>Maintainers inactive for six months become emeritus. Once there are two or more maintainers, every pull request needs approval from a maintainer who didn't write it.</li>
+<li>The project states it is working towards a second person with owner access to the GitHub organization and the NuGet package IDs, and makes no promise it can't yet keep.</li>
+</ul></div>
+    </section>
+    <section class="step" id="alternatives">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Alternatives considered</h2></div>
+      <div class="prose"><ul>
+<li><strong>Say nothing until there is a second maintainer.</strong> Rejected: hiding the bus factor costs more trust when it is found than stating it does.</li>
+<li><strong>Add a second owner who doesn't maintain the code, and call them a maintainer.</strong> Rejected: it would overstate the review the code gets. A recovery-only owner is still planned, described as what it is.</li>
+</ul></div>
+    </section>
+    <section class="step" id="consequences">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
+      <div class="prose"><ul>
+<li>Adding or removing a maintainer is a pull request to <code>GOVERNANCE.md</code>, which needs an ADR only if it changes the rules, not for the names.</li>
+<li>When a second maintainer joins, branch protection on <code>main</code> must stop letting admins bypass review, to match the rule above.</li>
+</ul></div>
+    </section>
+    <section class="step" id="where">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
+      <div class="prose"><ul><li><code>GOVERNANCE.md</code> (Maintainers)</li><li><code>site/governance.html</code> (#maintainers)</li></ul></div>
+    </section>
+    <section class="step" id="sources">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
+      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/blob/main/GOVERNANCE.md"><code>GOVERNANCE.md</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/SECURITY.md"><code>SECURITY.md</code></a></li></ul></div>
+    </section>
+    <nav class="pager" aria-label="Decisions"><a href="0013-secure-dashboard-defaults.html"><small>Previous</small>ADR 0013: Secure dashboard defaults within 1.x, sign-in required in 2.0</a><a class="next" href="index.html"><small>Back</small>All decisions</a></nav>
+    <footer>Written on DD Month YYYY against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="../assets/site.js"></script>
+</body>
+</html>
