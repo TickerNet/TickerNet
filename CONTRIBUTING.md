@@ -79,6 +79,10 @@ git push origin v1.1.0
 A tag with a label after the version (`-preview.1`, `-rc.1`) is published as a prerelease. A tag that isn't on
 `main` is refused. Follow Semantic Versioning: a breaking change to a public API needs a new major version.
 
+Before publishing, the workflow records a signed build provenance attestation for every `.nupkg` and `.snupkg`
+with `actions/attest`. It proves which workflow run and commit built each package. SECURITY.md shows how to check
+one.
+
 Publishing uses NuGet trusted publishing, so no API key is stored in GitHub. Set it up once, before the first release:
 
 1. On nuget.org, sign in with the account that will own the packages (or create a `TickerNet` organization and
@@ -87,8 +91,8 @@ Publishing uses NuGet trusted publishing, so no API key is stored in GitHub. Set
    workflow file `release.yaml`, environment `nuget`.
 3. In this repository, add the Actions variable `NUGET_USER` (Settings → Secrets and variables → Actions →
    Variables) with that nuget.org account's username.
-4. Ask nuget.org to reserve the `TickerNet.` ID prefix for that account (support@nuget.org, or the reserved-prefix
-   request form), so nobody else can publish packages named `TickerNet.*`.
+4. Ask nuget.org to reserve the `TickerNet.` ID prefix for that account (email account@nuget.org), so nobody else
+   can publish packages named `TickerNet.*`.
 
 The `nuget` GitHub environment already exists and only `v*` tags can deploy to it. Until step 3 is done, a release
 fails at its setup check, before anything is published.

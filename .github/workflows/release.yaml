@@ -2,7 +2,8 @@ name: Release
 
 # Publishes every TickerNet package to NuGet when a version tag (v1.2.3 or v1.2.3-preview.1) is
 # pushed for a commit on main. Uses NuGet trusted publishing: GitHub's OIDC token is exchanged for a
-# short-lived NuGet API key, so no key is stored in the repository. See CONTRIBUTING.md, "Releasing".
+# short-lived NuGet API key, so no key is stored in the repository. Every package also gets a signed build
+# provenance attestation. See CONTRIBUTING.md, "Releasing".
 
 on:
   push:
@@ -21,8 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: nuget
     permissions:
-      contents: write   # create the GitHub release
-      id-token: write   # NuGet trusted publishing
+      contents: write           # create the GitHub release
+      id-token: write           # NuGet trusted publishing and attestation signing
+      attestations: write       # store the build provenance attestations
+      artifact-metadata: write  # record the attested packages
     env:
       DOTNET_NOLOGO: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -93,6 +96,15 @@ jobs:
             echo "::error::Expected 9 packages, got $count. Update this check if a package was added or removed on purpose."
             exit 1
           fi
+
+      # Signed SLSA build provenance for every package, recorded in GitHub and the public Sigstore log.
+      # Anyone can check a package with: gh attestation verify <file>.nupkg --repo TickerNet/TickerNet
+      - name: Attest build provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            artifacts/*.nupkg
+            artifacts/*.snupkg
 
       - name: Get a short-lived NuGet API key
         id: nuget
