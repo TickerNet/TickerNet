@@ -81,7 +81,7 @@ function unlabeledIconButtons(): string[] {
         const elements = parseTemplate(file);
         for (const element of elements) {
             // `v-btn-group` and `v-btn-toggle` are not buttons.
-            if (element.tag !== 'v-btn') continue;
+            if (element.tag !== 'v-btn' && element.tag !== 'button') continue;
             const attrs = attributes(element);
             const hasIcon = attrs.has('icon')
                 || element.children.some(child => child.type === NodeTypes.ELEMENT && child.tag === 'v-icon');
@@ -100,6 +100,16 @@ function unlabeledIconButtons(): string[] {
 describe('dashboard accessibility', () => {
     it('gives every icon-only button an accessible name', () => {
         expect(unlabeledIconButtons().join('\n')).toBe('');
+    });
+
+    it('names the time zone button when its text is hidden on small screens', () => {
+        const elements = parseTemplate(join(srcRoot, 'components', 'layout', 'DashboardLayout.vue'));
+        const timeZoneButton = elements.find(
+            element => element.tag === 'v-btn' && attributes(element).get('prepend-icon') === 'mdi-earth',
+        );
+
+        expect(timeZoneButton).toBeDefined();
+        expect(attributes(timeZoneButton!).get('aria-label')).toContain('Display time zone');
     });
 
     it('makes the header branding a real link', () => {

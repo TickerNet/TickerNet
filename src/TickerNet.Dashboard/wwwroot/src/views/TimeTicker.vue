@@ -1374,6 +1374,7 @@ const canBeForceDeleted = ref<string[]>([])
                     <template v-slot:activator="{ props }">
                       <button
                         v-bind="props"
+                        aria-label="Cancel operation"
                         @click="
                           requestCancel(item.id).catch(() => {
                             canBeForceDeleted.push(item.id)
@@ -1399,6 +1400,7 @@ const canBeForceDeleted = ref<string[]>([])
                     <template v-slot:activator="{ props }">
                       <button
                         v-bind="props"
+                        aria-label="Edit ticker"
                         v-if="
                           hasStatus(item.status, Status.Queued) ||
                           hasStatus(item.status, Status.Idle)
@@ -1417,6 +1419,7 @@ const canBeForceDeleted = ref<string[]>([])
                       <button
                         v-else
                         v-bind="props"
+                        aria-label="Duplicate ticker"
                         @click="
                           crudTimeTickerDialog.open({
                             ...item,
@@ -1450,6 +1453,9 @@ const canBeForceDeleted = ref<string[]>([])
                     <template v-slot:activator="{ props }">
                       <button
                         v-bind="props"
+                        :aria-label="
+                          canBeForceDeleted.includes(item.id) ? 'Force delete ticker' : 'Delete ticker'
+                        "
                         @click="confirmDialog.open({ id: item.id })"
                         :disabled="
                           hasStatus(item.status, Status.InProgress) &&

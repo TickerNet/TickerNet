@@ -299,6 +299,7 @@ const handleForceUIUpdate = () => {
                 <template #activator="{ props }">
                   <v-btn
                     v-bind="props"
+                    :aria-label="'Display time zone: ' + timeZoneStore.effectiveTimeZone"
                     size="small"
                     variant="text"
                     density="comfortable"
