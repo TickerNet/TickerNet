@@ -7,10 +7,12 @@ import type { GetCronTickerResponse } from '@/http/services/types/cronTickerServ
 import { cronTickerService } from '@/http/services/cronTickerService'
 import { formatTime } from '@/utilities/dateTimeParser'
 import cronstrue from 'cronstrue'
+import { normalizeCronExpression } from '@/utilities/cronExpression'
 const functionNamesStore = useFunctionNameStore()
 const getTickerRequestData = tickerService.getRequestData()
 const updateCronTicker = cronTickerService.updateCronTicker()
 const addCronTicker = cronTickerService.addCronTicker()
+const saveError = ref('')
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -160,40 +162,31 @@ const { resetForm, handleSubmit, bindField, setFieldValue, getFieldValue, values
     }
   },
   onSubmitForm: async (values, errors) => {
-    if (!errors) {
-      var originalRequestData = values.requestData
-      if (!props.dialogProps.isFromDuplicate) {
-        await updateCronTicker
-          .requestAsync(props.dialogProps.id, {
-            function: values.functionName,
-            expression: values.expression,
-            request: values.requestData,
-            retries: parseInt(`${values.retries}`),
-            description: values.description,
-            intervals: comboBoxModel.value.map((item) => item.value),
-          })
-          .then(() => {
-            emit('close')
-            emit('confirm')
-          })
-      } else {
-        await addCronTicker
-          .requestAsync({
-            function: values.functionName,
-            expression: values.expression,
-            request: values.requestData,
-            retries: parseInt(`${values.retries}`),
-            description: values.description,
-            intervals: comboBoxModel.value.map((item) => item.value),
-          })
-          .then(() => {
-            emit('close')
-            emit('confirm')
-          })
+    if (errors) return
+    saveError.value = ''
+    const originalRequestData = values.requestData
+    const request = {
+      function: values.functionName,
+      expression: normalizeCronExpression(values.expression),
+      request: values.requestData,
+      retries: parseInt(`${values.retries}`),
+      description: values.description,
+      intervals: comboBoxModel.value.map((item) => item.value),
+    }
+    try {
+      const result: any = props.dialogProps.isFromDuplicate
+        ? await addCronTicker.requestAsync(request)
+        : await updateCronTicker.requestAsync(props.dialogProps.id, request)
+      if (result && result.success === false) {
+        saveError.value = result.message || 'The cron ticker could not be saved.'
+        return
       }
-
+      emit('close')
+      emit('confirm')
       getTickerRequestData.updateProperty('result', originalRequestData)
       resetForm()
+    } catch (error) {
+      saveError.value = (error as Error)?.message || 'The cron ticker could not be saved.'
     }
   },
 })
@@ -448,6 +441,8 @@ defineExpose({
             </v-form>
           </v-col>
         </v-row>
+
+        <v-alert v-if="saveError" type="error" density="compact" class="mb-3">{{ saveError }}</v-alert>
 
         <template v-slot:actions>
           <v-spacer></v-spacer>

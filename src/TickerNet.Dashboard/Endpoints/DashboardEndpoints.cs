@@ -590,6 +590,9 @@ public static class DashboardEndpoints
         await WriteJson(context, result, dashboardOptions.DashboardJsonOptions);
     }
 
+    private static string Failure(string fallback, Exception? exception)
+        => string.IsNullOrWhiteSpace(exception?.Message) ? fallback : $"{fallback}: {exception!.Message}";
+
     private static async Task AddCronTicker<TTimeTicker, TCronTicker>(HttpContext context)
         where TTimeTicker : TimeTickerEntity<TTimeTicker>, new()
         where TCronTicker : CronTickerEntity, new()
@@ -610,7 +613,7 @@ public static class DashboardEndpoints
         await WriteJson(context, new ActionResponseWithId
         {
             Success = result.IsSucceeded,
-            Message = result.IsSucceeded ? "Cron ticker added successfully" : "Failed to add cron ticker",
+            Message = result.IsSucceeded ? "Cron ticker added successfully" : Failure("Failed to add cron ticker", result.Exception),
             TickerId = result.Result?.Id
         }, dashboardOptions.DashboardJsonOptions);
     }
@@ -639,7 +642,7 @@ public static class DashboardEndpoints
         await WriteJson(context, new ActionResponse
         {
             Success = result.IsSucceeded,
-            Message = result.IsSucceeded ? "Cron ticker updated successfully" : "Failed to update cron ticker"
+            Message = result.IsSucceeded ? "Cron ticker updated successfully" : Failure("Failed to update cron ticker", result.Exception)
         }, dashboardOptions.DashboardJsonOptions);
     }
 
