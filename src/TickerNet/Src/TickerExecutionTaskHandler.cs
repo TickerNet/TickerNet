@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using TickerNet.Exceptions;
 using TickerNet.Utilities;
 using TickerNet.Utilities.Exceptions;
@@ -245,10 +246,7 @@ internal class TickerExecutionTaskHandler : ITickerExecutionTaskHandler
                 if (_serviceProvider.GetService(typeof(ITickerExceptionHandler)) is ITickerExceptionHandler handler)
                     await handler.HandleCanceledExceptionAsync(ex, context.TickerId, context.Type);
 
-                await _internalTickerManager.UpdateTickerAsync(context, cancellationToken);
-                
-                // Clean up and exit early on cancellation
-                TickerCancellationTokenManager.RemoveTickerCancellationToken(context.TickerId);
+                await PersistAndReleaseAsync(context, cancellationToken);
                 return;
             }
             catch (TerminateExecutionException ex)
@@ -274,10 +272,7 @@ internal class TickerExecutionTaskHandler : ITickerExecutionTaskHandler
                 // Log job skipped
                 _tickerNetInstrumentation.LogJobSkipped(context.TickerId, context.FunctionName, ex.Message);
 
-                await _internalTickerManager.UpdateTickerAsync(context, cancellationToken);
-
-                // Clean up and exit early on termination
-                TickerCancellationTokenManager.RemoveTickerCancellationToken(context.TickerId);
+                await PersistAndReleaseAsync(context, cancellationToken);
                 return;
             }
             catch (WorkerOfflineException ex)
@@ -296,9 +291,7 @@ internal class TickerExecutionTaskHandler : ITickerExecutionTaskHandler
                 jobActivity?.SetTag("tickernet.job.skip_reason", ex.Message);
                 _tickerNetInstrumentation.LogJobSkipped(context.TickerId, context.FunctionName, ex.Message);
 
-                await _internalTickerManager.UpdateTickerAsync(context, cancellationToken);
-
-                TickerCancellationTokenManager.RemoveTickerCancellationToken(context.TickerId);
+                await PersistAndReleaseAsync(context, cancellationToken);
                 return;
             }
             catch (Exception ex)
@@ -345,7 +338,7 @@ internal class TickerExecutionTaskHandler : ITickerExecutionTaskHandler
             // Log job completed successfully
             _tickerNetInstrumentation.LogJobCompleted(context.TickerId, context.FunctionName, totalStopWatch.ElapsedMilliseconds, true);
 
-            await _internalTickerManager.UpdateTickerAsync(context, cancellationToken);
+            await PersistAndReleaseAsync(context, cancellationToken);
         }
         else if (lastException != null)
         {
@@ -361,12 +354,36 @@ internal class TickerExecutionTaskHandler : ITickerExecutionTaskHandler
             _tickerNetInstrumentation.LogJobFailed(context.TickerId, context.FunctionName, lastException, context.RetryCount);
             _tickerNetInstrumentation.LogJobCompleted(context.TickerId, context.FunctionName, totalStopWatch.ElapsedMilliseconds, false);
 
-            await _internalTickerManager.UpdateTickerAsync(context, cancellationToken);
+            await PersistAndReleaseAsync(context, cancellationToken);
         }
 
 
         // Clean up: RemoveTickerCancellationToken handles disposal of the CTS
         TickerCancellationTokenManager.RemoveTickerCancellationToken(context.TickerId);
+    }
+
+    // Persist the final status and always release the job's cancellation token:
+    // a failed status write must not leave the job counted as running until the
+    // app restarts, and it must be visible in the log.
+    private async Task PersistAndReleaseAsync(InternalFunctionContext context, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _internalTickerManager.UpdateTickerAsync(context, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            var loggerFactory = _serviceProvider.GetService(typeof(ILoggerFactory)) as ILoggerFactory;
+            loggerFactory?.CreateLogger("TickerNet.TickerExecutionTaskHandler").LogError(
+                ex,
+                "TickerNet could not persist the final status for job {JobId} ({Function}); it may stay InProgress.",
+                context.TickerId,
+                context.FunctionName);
+        }
+        finally
+        {
+            TickerCancellationTokenManager.RemoveTickerCancellationToken(context.TickerId);
+        }
     }
 
     private async Task<bool> WaitForRetry(InternalFunctionContext context, CancellationToken cancellationToken,

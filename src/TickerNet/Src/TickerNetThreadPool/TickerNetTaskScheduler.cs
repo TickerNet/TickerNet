@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using TickerNet.Utilities.Enums;
 using TickerNet.Utilities.Interfaces;
 
@@ -28,6 +29,7 @@ public sealed class TickerNetTaskScheduler : IAsyncDisposable, ITickerNetTaskSch
     
     private readonly CancellationTokenSource _shutdownCts = new();
     private readonly SoftSchedulerNotifyDebounce _notifyDebounce;
+    private readonly ILogger<TickerNetTaskScheduler> _logger;
     
     // Thread-local flag to detect if we're on a TickerNet worker thread
     [ThreadStatic] public static bool IsTickerNetWorkerThread;
@@ -36,8 +38,10 @@ public sealed class TickerNetTaskScheduler : IAsyncDisposable, ITickerNetTaskSch
     public TickerNetTaskScheduler(
         int maxConcurrency, 
         TimeSpan? idleWorkerTimeout = null,
-        SoftSchedulerNotifyDebounce notifyDebounce = null)
+        SoftSchedulerNotifyDebounce notifyDebounce = null,
+        ILogger<TickerNetTaskScheduler> logger = null)
     {
+        _logger = logger;
         if (maxConcurrency <= 0)
             throw new ArgumentOutOfRangeException(nameof(maxConcurrency), "Must be greater than zero");
         
@@ -86,9 +90,11 @@ public sealed class TickerNetTaskScheduler : IAsyncDisposable, ITickerNetTaskSch
                     { 
                         await work(cancellationToken); 
                     } 
-                    catch 
-                    { 
-                        /* swallow */ 
+                    catch (Exception ex)
+                    {
+                        // A failed final status write leaves the job InProgress;
+                        // never drop the reason without a log line.
+                        _logger?.LogError(ex, "TickerNet long-running task failed; a job may stay InProgress.");
                     }
                 },
                 CancellationToken.None,
@@ -348,6 +354,7 @@ public sealed class TickerNetTaskScheduler : IAsyncDisposable, ITickerNetTaskSch
                             if (t.IsFaulted)
                             {
                                 _ = t.Exception;
+                                _logger?.LogError(t.Exception, "TickerNet task failed; a job may stay InProgress.");
                             }
                         }
                         catch
@@ -363,9 +370,11 @@ public sealed class TickerNetTaskScheduler : IAsyncDisposable, ITickerNetTaskSch
                     {
                         await task;
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Swallow exceptions to keep worker alive
+                        // Keep the worker alive, but leave a trace for a job
+                        // whose final status may not have been written.
+                        _logger?.LogError(ex, "TickerNet task failed; a job may stay InProgress.");
                     }
                 }
             }
@@ -374,10 +383,10 @@ public sealed class TickerNetTaskScheduler : IAsyncDisposable, ITickerNetTaskSch
         {
             // Expected - task was cancelled
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Log error if needed, but don't crash the worker
-            // Errors are swallowed to prevent worker thread crashes
+            // Don't crash the worker, but a failed status write must be visible.
+            _logger?.LogError(ex, "TickerNet worker observed a failed task; a job may stay InProgress.");
         }
     }
     

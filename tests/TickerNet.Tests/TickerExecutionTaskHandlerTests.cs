@@ -189,6 +189,23 @@ public class TickerExecutionTaskHandlerTests : IDisposable
 
     #endregion
 
+    [Fact]
+    public async Task ExecuteTaskAsync_ReleasesToken_WhenFinalStatusWriteThrows()
+    {
+        var context = CreateContext(ct: (_, _, _) => throw new TaskCanceledException("stop"));
+        using var cts = new CancellationTokenSource();
+        TickerCancellationTokenManager.AddTickerCancellationToken(cts, context, isDue: false);
+        _internalManager
+            .When(x => x.UpdateTickerAsync(Arg.Any<InternalFunctionContext>(), Arg.Any<CancellationToken>()))
+            .Do(_ => throw new InvalidOperationException("database is down"));
+
+        await _handler.ExecuteTaskAsync(context, isDue: false);
+
+        // The token must not stay registered: another run of the same cron parent
+        // would be refused with "Another CronOccurrence is already running!".
+        Assert.False(TickerCancellationTokenManager.RequestTickerCancellationById(context.TickerId));
+    }
+
     #region Cancellation Path
 
     [Fact]
