@@ -18,7 +18,9 @@ test it. This file holds the rules for coding agents.
 - `site/`: the docs site on GitHub Pages, including the ADR log in `site/decisions/`.
 - `.github/workflows/`: `ci.yaml` (build and test), `dco.yaml` (sign-off check), `pages.yaml` (docs site) and
   `release.yaml` (publishes to NuGet on a `v*` tag; see CONTRIBUTING.md, Releasing). `assets/tickernet-icon.png` is
-  the package icon.
+  the package icon. `assets/social-preview.html` is the source of `site/assets/social-preview.png`, the GitHub social
+  preview and the docs site's link image; re-render it with the command in that file and upload it again in the repo's
+  settings.
 - `src/Directory.Build.props`: version, target frameworks (.NET 10 and .NET 11) and package metadata for every package.
 
 ## Build and test

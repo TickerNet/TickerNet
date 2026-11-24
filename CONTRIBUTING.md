@@ -4,6 +4,10 @@ Thanks for helping. This page covers the two rules every contribution must follo
 open a pull request. The [docs site](https://tickernet.github.io/TickerNet/) has a longer contributor guide that
 walks through the code.
 
+New here? Issues labelled [`good first issue`](https://github.com/TickerNet/TickerNet/labels/good%20first%20issue)
+are small and self-contained. Ask questions or float ideas in
+[Discussions](https://github.com/TickerNet/TickerNet/discussions) before you start on something big.
+
 ## Rule 1: sign off every commit (DCO)
 
 TickerNet has no contributor license agreement. You keep the copyright in your work and license it to everyone

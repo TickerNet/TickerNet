@@ -3,3 +3,6 @@ contact_links:
   - name: Documentation
     url: https://tickernet.github.io/TickerNet/
     about: Check the documentation before opening an issue
+  - name: Questions and ideas
+    url: https://github.com/TickerNet/TickerNet/discussions
+    about: Ask how to do something, or float an idea before opening a feature request
