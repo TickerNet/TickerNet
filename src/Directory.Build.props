@@ -1,10 +1,13 @@
 ﻿<Project>
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <Version>1.0.0</Version>
+        <!-- .NET 10 (LTS) and .NET 11. Each target uses its own major version of the Microsoft packages (ADR 0012). -->
+        <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+        <Version>1.1.0</Version>
         <DotNetVersion>[10.0.0,11.0.0)</DotNetVersion>
         <DotNetAbstractionsVersion>[10.0.0,11.0.0)</DotNetAbstractionsVersion>
+        <DotNetVersion Condition="'$(TargetFramework)' == 'net11.0'">[11.0.0,12.0.0)</DotNetVersion>
+        <DotNetAbstractionsVersion Condition="'$(TargetFramework)' == 'net11.0'">[11.0.0,12.0.0)</DotNetAbstractionsVersion>
         <RepositoryUrl>https://github.com/TickerNet/TickerNet</RepositoryUrl>
         <PackageProjectUrl>https://tickernet.github.io/TickerNet/</PackageProjectUrl>
         <PackageLicenseExpression>MIT OR Apache-2.0</PackageLicenseExpression>
@@ -13,7 +16,7 @@
         <PackageIcon>tickernet-icon.png</PackageIcon>
         <LangVersion>default</LangVersion>
 
-        <!-- Source Link -->
+        <!-- Source Link (built into the .NET SDK) -->
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <IncludeSymbols>true</IncludeSymbols>
@@ -24,10 +27,6 @@
 
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)..\assets\tickernet-icon.png" Pack="true" PackagePath="\" Visible="false" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.102" PrivateAssets="All" />
     </ItemGroup>
 
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />

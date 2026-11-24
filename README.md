@@ -60,7 +60,7 @@ dotnet add package TickerNet.EntityFrameworkCore   # or TickerNet.Caching.StackE
 dotnet add package TickerNet.Dashboard             # optional
 ```
 
-The packages are on [nuget.org](https://www.nuget.org/profiles/TickerNet) and target .NET 10.
+The packages are on [nuget.org](https://www.nuget.org/profiles/TickerNet) and target .NET 10 (LTS) and .NET 11.
 
 ### 2. Register services
 

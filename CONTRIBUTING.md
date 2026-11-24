@@ -40,7 +40,7 @@ TickerQ code from before commit `13a9b544` is MIT OR Apache-2.0 and is fine to u
 
 ## Build and test
 
-You need the [.NET 10 SDK](https://dotnet.microsoft.com/download), [Node.js](https://nodejs.org/) (current LTS) for
+You need the [.NET 11 SDK](https://dotnet.microsoft.com/download) and the .NET 10 runtime (the tests run on both), [Node.js](https://nodejs.org/) (current LTS) for
 the dashboard, and Docker for the MongoDB tests (they start a container with Testcontainers).
 
 ```bash

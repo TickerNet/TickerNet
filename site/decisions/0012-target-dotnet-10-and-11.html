@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADR 0012: Target .NET 10 and .NET 11</title>
+<meta name="description" content="Every TickerNet package ships net10.0 and net11.0 builds, each using its own .NET version's Microsoft packages, so .NET 10 LTS apps keep getting updates.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../remote-workers.html">Remote workers</a></li>
+        <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="../contributing.html">Contributing</a></li>
+        <li><a href="../governance.html">Governance</a></li>
+        <li><a href="index.html" aria-current="page">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>ADR 0012</h2>
+    <ol><li><a href="#context"><span class="n">01</span><span>Context</span></a></li><li><a href="#decision"><span class="n">02</span><span>Decision</span></a></li><li><a href="#alternatives"><span class="n">03</span><span>Alternatives considered</span></a></li><li><a href="#consequences"><span class="n">04</span><span>Consequences</span></a></li><li><a href="#where"><span class="n">05</span><span>Where it lives</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol>
+    <p class="rail-back"><a href="index.html">← All decisions</a></p>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">ADR 0012 · Code and packages</p>
+      <h1>Target .NET 10 and .NET 11</h1>
+      <p class="lede">From 1.1.0, every TickerNet package ships a <code>net10.0</code> and a <code>net11.0</code> build. Each build uses the Microsoft.Extensions and EF Core packages of its own .NET version.</p>
+      <dl class="adr-meta">
+        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Decided</dt><dd>2026-11-24</dd></div>
+        <div><dt>Affects</dt><dd><code>src/Directory.Build.props</code>, <code>samples/</code>, <code>benchmarks/</code>, <code>.github/workflows/</code></dd></div>
+      </dl>
+      <p class="adr-related">Supersedes the target framework part of <a href="0006-version-independently-dotnet-10.html">ADR 0006</a> Version independently and target .NET 10 only. Related: <a href="0011-nuget-trusted-publishing.html">ADR 0011</a> Publish packages from CI with NuGet trusted publishing</p>
+    </header>
+    <section class="step" id="context">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
+      <div class="prose"><p>ADR 0006 made TickerNet target <code>net10.0</code> only. .NET 11 was released in November 2026 as a standard-term release; .NET 10 is the long-term release. Microsoft's release index gives both an end of support of 14 November 2028. Every TickerNet dependency that follows the .NET version, including EF Core and <code>FlexLabs.EntityFrameworkCore.Upsert</code>, has an 11.0.0 release. TickerNet 1.0.0 made Semantic Versioning binding on the public API (ADR 0006, amended), so dropping a target framework would need a new major version.</p></div>
+    </section>
+    <section class="step" id="decision">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Decision</h2></div>
+      <div class="prose"><ul>
+        <li><code>src/Directory.Build.props</code> sets <code>TargetFrameworks</code> to <code>net10.0;net11.0</code>. <code>DotNetVersion</code> and <code>DotNetAbstractionsVersion</code> are <code>[10.0.0,11.0.0)</code> for <code>net10.0</code> and <code>[11.0.0,12.0.0)</code> for <code>net11.0</code>, so each build depends on its own .NET version's packages.</li>
+        <li>The source generator stays on <code>netstandard2.0</code>, as Roslyn requires.</li>
+        <li>Tests run on both targets. Samples and benchmarks target <code>net11.0</code> only.</li>
+        <li>CI and the release workflow install the .NET 11 SDK and the .NET 10 runtime.</li>
+        <li>Source Link comes from the .NET SDK; the <code>Microsoft.SourceLink.GitHub</code> package reference is removed.</li>
+        <li>Adding a target framework is a minor release (1.1.0). Dropping one is a major release.</li>
+      </ul></div>
+    </section>
+    <section class="step" id="alternatives">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Alternatives considered</h2></div>
+      <div class="prose"><ul>
+        <li><strong>.NET 11 only.</strong> Rejected: apps on .NET 10, the long-term release, could take no TickerNet update after 1.0.0, and it would be a breaking change needing 2.0.0.</li>
+        <li><strong>Stay on .NET 10 only.</strong> Rejected: .NET 11 apps would run the .NET 10 build and pull in .NET 10 Microsoft packages beside their own.</li>
+        <li><strong>One open version range such as <code>[10.0.0,)</code> for both.</strong> Rejected: a .NET 10 app could be moved onto EF Core 11 packages that don't support it.</li>
+      </ul></div>
+    </section>
+    <section class="step" id="consequences">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
+      <div class="prose"><ul>
+        <li>Contributors need the .NET 11 SDK, and the .NET 10 runtime to run the <code>net10.0</code> tests.</li>
+        <li>Builds and test runs take about twice as long.</li>
+        <li>When .NET 12 ships, adding it follows the same pattern; dropping .NET 10 waits for a major version.</li>
+      </ul></div>
+    </section>
+    <section class="step" id="where">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
+      <div class="prose"><ul><li><code>src/Directory.Build.props</code></li><li><code>src/TickerNet.SourceGenerator/TickerNet.SourceGenerator.csproj</code></li><li><code>samples/Directory.Build.props</code>, <code>benchmarks/Directory.Build.props</code></li><li><code>.github/workflows/ci.yaml</code>, <code>.github/workflows/release.yaml</code></li></ul></div>
+    </section>
+    <section class="step" id="sources">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
+      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/blob/main/src/Directory.Build.props"><code>src/Directory.Build.props</code></a></li><li><a href="https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json">.NET release index</a> (support phases and end-of-support dates)</li></ul></div>
+    </section>
+    <nav class="pager" aria-label="Decisions"><a href="0011-nuget-trusted-publishing.html"><small>Previous</small>ADR 0011: Publish packages from CI with NuGet trusted publishing</a><a class="next" href="index.html"><small>Back</small>All decisions</a></nav>
+    <footer>Written on 24 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="../assets/site.js"></script>
+</body>
+</html>

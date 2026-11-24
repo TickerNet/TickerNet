@@ -3,6 +3,10 @@
     <Import Project="$(MSBuildThisFileDirectory)..\src\Directory.Build.props" />
 
     <PropertyGroup>
+        <TargetFrameworks></TargetFrameworks>
+        <TargetFramework>net11.0</TargetFramework>
+        <DotNetVersion>[11.0.0,12.0.0)</DotNetVersion>
+        <DotNetAbstractionsVersion>[11.0.0,12.0.0)</DotNetAbstractionsVersion>
         <IsPackable>false</IsPackable>
         <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
