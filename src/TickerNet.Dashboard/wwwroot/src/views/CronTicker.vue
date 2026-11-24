@@ -1081,6 +1081,7 @@ const refreshData = async () => {
                   size="x-small"
                   variant="text"
                   color="primary"
+                  aria-label="Reset chart range"
                   @click="resetRange"
                   class="reset-btn"
                   density="compact"
@@ -1135,6 +1136,7 @@ const refreshData = async () => {
                 size="small"
                 variant="text"
                 color="primary"
+                aria-label="Refresh status chart"
                 @click="getTimeTickersGraphDataAndParseToGraph"
                 class="refresh-chart-btn"
               >
@@ -1207,6 +1209,7 @@ const refreshData = async () => {
                 size="small"
                 variant="text"
                 color="primary"
+                aria-label="Refresh cron tickers"
                 @click="refreshData"
                 class="refresh-btn utility-btn"
               >

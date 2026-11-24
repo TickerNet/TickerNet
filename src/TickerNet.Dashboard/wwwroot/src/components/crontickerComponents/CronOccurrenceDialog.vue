@@ -412,6 +412,7 @@ const setRowProp = (propContext: any) => {
                   icon
                   variant="text"
                   size="small"
+                  aria-label="Cancel execution"
                   class="action-btn cancel-btn"
                   :class="{ 'active': hasStatus(item.status, Status.InProgress) }"
                 >
@@ -425,6 +426,7 @@ const setRowProp = (propContext: any) => {
                   icon
                   variant="text"
                   size="small"
+                  aria-label="Delete occurrence"
                   class="action-btn delete-btn"
                 >
                   <v-icon size="18">mdi-delete</v-icon>

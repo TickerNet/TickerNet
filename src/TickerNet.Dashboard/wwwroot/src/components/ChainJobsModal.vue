@@ -14,6 +14,7 @@
             icon="mdi-close"
             variant="text"
             size="small"
+            aria-label="Close create chain jobs dialog"
             @click="closeModal"
           />
         </div>
@@ -91,6 +92,7 @@
                         icon="mdi-content-copy"
                         size="small"
                         variant="text"
+                        aria-label="Copy example to request data"
                         @click="copyExampleToRequestData"
                         :disabled="!currentExampleData"
                       />
@@ -278,6 +280,7 @@
                             icon="mdi-close"
                             variant="text"
                             size="x-small"
+                            :aria-label="`Remove child ${index + 1}`"
                             class="ml-1"
                             @click.stop="removeChild(index)"
                           />
@@ -550,6 +553,7 @@
           icon="mdi-close"
           variant="text"
           size="small"
+          aria-label="Close manage grandchildren dialog"
           @click="grandchildrenModal.isOpen = false"
         />
       </v-card-title>
@@ -619,6 +623,7 @@
               icon="mdi-close"
               variant="text"
               size="x-small"
+              :aria-label="`Remove grandchild ${grandIndex + 1}`"
               class="ml-1"
               @click.stop="removeGrandChild(grandchildrenModal.parentChildIndex, grandIndex)"
             />

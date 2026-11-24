@@ -1134,6 +1134,7 @@ const canBeForceDeleted = ref<string[]>([])
                 size="small"
                 variant="text"
                 color="primary"
+                aria-label="Refresh time tickers"
                 @click="refreshData"
                 class="refresh-btn utility-btn"
               >
@@ -1228,6 +1229,7 @@ const canBeForceDeleted = ref<string[]>([])
                   <v-btn
                     v-if="item.hasChildren"
                     :icon="item.isExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+                    :aria-label="`${item.isExpanded ? 'Collapse' : 'Expand'} child tickers for ${item.function}`"
                     size="x-small"
                     variant="text"
                     @click="toggleParentExpansion(item.id)"
