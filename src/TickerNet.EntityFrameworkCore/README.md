@@ -5,10 +5,13 @@ Entity Framework Core persistence for [TickerNet](https://github.com/TickerNet/T
 ## Install
 
 ```bash
+dotnet add package TickerNet
 dotnet add package TickerNet.EntityFrameworkCore
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+dotnet add package Microsoft.EntityFrameworkCore.Design
 ```
 
-This is one of TickerNet's operational stores. Use it or `TickerNet.MongoDB`, not both. See the [getting started guide](https://tickernet.github.io/TickerNet/getting-started.html) for the rest of the setup.
+`TickerNet.EntityFrameworkCore` does not bring in the core `TickerNet` package, which defines `AddTickerNet()` and `UseTickerNet()`. Add an EF Core provider for the database you use; the SQLite examples below need `Microsoft.EntityFrameworkCore.Sqlite`, and `Microsoft.EntityFrameworkCore.Design` is needed for migrations. This is one of TickerNet's operational stores. Use it or `TickerNet.MongoDB`, not both. See the [getting started guide](https://tickernet.github.io/TickerNet/getting-started.html) for the rest of the setup.
 
 ## Setup
 
@@ -27,7 +30,7 @@ builder.Services.AddTickerNet(options =>
     options.AddOperationalStore(ef =>
     {
         ef.UseTickerNetDbContext<TickerNetDbContext>(db =>
-            db.UseSqlite("Data Source=tickernet.db"));
+            db.UseSqlite("Data Source=tickernet.db", b => b.MigrationsAssembly("MyApp")));
     });
 });
 ```
@@ -53,12 +56,12 @@ builder.Services.AddTickerNet(options =>
 });
 ```
 
-`UseModelCustomizer` adds TickerNet's three entities to your model for you. With `IgnoreModelCustomizer`, apply them yourself in `OnModelCreating` using the public `TimeTickerConfigurations<T>`, `CronTickerConfigurations<T>` and `CronTickerOccurrenceConfigurations<T>` classes from `TickerNet.EntityFrameworkCore.Configurations`.
+`UseModelCustomizer` adds TickerNet's three entities to your model for you. With `IgnoreModelCustomizer`, apply them yourself in `OnModelCreating` using the public `TimeTickerConfigurations<T>`, `CronTickerConfigurations<T>` and `CronTickerOccurrenceConfigurations<T>` classes from `TickerNet.EntityFrameworkCore.Configurations`. Those configuration classes default to the `ticker` schema and do not read `SetSchema`, so pass the schema to each constructor, for example `new TimeTickerConfigurations<TimeTickerEntity>("jobs")`. Only `TickerModelCustomizer` and `TickerNetDbContext.OnModelCreating` read the builder's schema.
 
 ## Options and schema
 
-- `SetSchema("jobs")` changes the schema from the default `ticker`. With `UseTickerNetDbContext` you can also pass the schema as its `schema` argument.
-- `SetDbContextPoolSize(256)` changes the pooled context factory's size. The default is 1024.
+- `SetSchema("jobs")` changes the schema from the default `ticker` when using `UseModelCustomizer` or `UseTickerNetDbContext`. With `IgnoreModelCustomizer`, pass the schema to each configuration constructor as described above.
+- `SetDbContextPoolSize(256)` changes the size of the pooled context factory that `UseTickerNetDbContext` registers. With `UseApplicationDbContext`, your own `AddDbContext` registration decides whether pooling is used and its size.
 - The tables are `TimeTickers`, `CronTickers` and `CronTickerOccurrences`.
 
 ```csharp
@@ -67,9 +70,11 @@ options.AddOperationalStore(ef =>
     ef.SetSchema("jobs");
     ef.SetDbContextPoolSize(256);
     ef.UseTickerNetDbContext<TickerNetDbContext>(db =>
-        db.UseSqlite("Data Source=tickernet.db"));
+        db.UseSqlServer("Server=localhost;Database=tickernet;Trusted_Connection=True;", b => b.MigrationsAssembly("MyApp")));
 });
 ```
+
+This example uses SQL Server so `SetSchema("jobs")` has an effect; add `Microsoft.EntityFrameworkCore.SqlServer` for it. SQLite has no schemas, so EF ignores `SetSchema` and logs a warning with the SQLite provider.
 
 ## Migrations
 
@@ -87,4 +92,4 @@ using (var scope = app.Services.CreateScope())
 app.UseTickerNet();
 ```
 
-With the TickerNet-owned context, resolve `TickerNetDbContext` from the scope instead.
+With the TickerNet-owned context, resolve `TickerNetDbContext` from the scope instead. That context lives in the `TickerNet.EntityFrameworkCore` assembly, so set `MigrationsAssembly("MyApp")` in `UseSqlite`/`UseSqlServer` as shown above. Otherwise `dotnet ef migrations add Init --context TickerNetDbContext` looks in the package assembly and fails, and `Migrate()` finds no migrations to apply. With your own `AppDbContext`, the migrations already belong to your app.
