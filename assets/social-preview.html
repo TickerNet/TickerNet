@@ -1,0 +1,77 @@
+<!doctype html>
+<!--
+  Source for the GitHub social preview and the docs site's og:image (site/assets/social-preview.png).
+  Render at 1280x640, for example:
+  chrome --headless=new --hide-scrollbars --window-size=1280,640 --virtual-time-budget=5000 \
+    --screenshot=site/assets/social-preview.png assets/social-preview.html
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TickerNet social preview</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #0E1418; --surface: #151D23; --line: #2A3640; --ink: #E3E9ED; --muted: #93A2AC;
+    --core: #8AA6F6; --core-tint: #1C2847; --signal: #43C9B3; --signal-tint: #12302B;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1280px; height: 640px; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(900px 520px at 100% 0%, rgba(138, 166, 246, 0.16), transparent 70%),
+      radial-gradient(700px 420px at 0% 100%, rgba(67, 201, 179, 0.10), transparent 70%),
+      var(--bg);
+    color: var(--ink); font-family: "IBM Plex Sans", system-ui, sans-serif;
+    padding: 72px 88px; display: grid; grid-template-rows: auto 1fr auto; position: relative;
+  }
+  .ticks { position: absolute; right: 88px; top: 72px; display: grid; grid-template-columns: repeat(12, 14px); gap: 10px; }
+  .ticks span { height: 14px; border-radius: 4px; background: var(--line); }
+  .ticks .on { background: var(--core); }
+  .ticks .ok { background: var(--signal); }
+  .brand { display: flex; align-items: center; gap: 28px; }
+  .brand svg { width: 104px; height: 104px; flex: none; }
+  h1 { font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; font-size: 112px; line-height: 1; letter-spacing: -0.02em; }
+  .tagline { margin-top: 36px; font-size: 36px; line-height: 1.3; color: var(--ink); font-weight: 500; }
+  .tagline em { font-style: normal; color: var(--core); }
+  .chips { margin-top: 32px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .chip { font-family: "JetBrains Mono", monospace; font-size: 22px; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); }
+  .chip.core { color: var(--core); background: var(--core-tint); border-color: transparent; }
+  .chip.signal { color: var(--signal); background: var(--signal-tint); border-color: transparent; }
+  footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 28px; }
+  .sponsor { display: flex; align-items: center; gap: 20px; color: var(--muted); font-size: 18px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+  .sponsor img { height: 40px; }
+  .url { font-family: "JetBrains Mono", monospace; font-size: 22px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <div class="ticks" aria-hidden="true">
+    <span></span><span class="ok"></span><span></span><span></span><span class="ok"></span><span></span>
+    <span class="on"></span><span></span><span class="ok"></span><span></span><span></span><span class="on"></span>
+    <span></span><span></span><span class="on"></span><span></span><span class="ok"></span><span></span>
+    <span class="ok"></span><span></span><span></span><span class="on"></span><span></span><span class="ok"></span>
+  </div>
+
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#8AA6F6" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9.5" />
+      <path d="M12 6.5V12l3.5 3.5" />
+    </svg>
+    <h1>TickerNet</h1>
+  </div>
+
+  <div>
+    <p class="tagline">The open-source background job scheduler for <em>.NET</em>.<br>Cron and one-off jobs, your own database, a live dashboard.</p>
+    <div class="chips">
+      <span class="chip core">MIT OR Apache-2.0</span>
+      <span class="chip signal">Open source, forever</span>
+      <span class="chip">dotnet add package TickerNet</span>
+    </div>
+  </div>
+
+  <footer>
+    <div class="sponsor">Maintained and sponsored by <img src="../site/assets/sponsor/omniscient-logo-horizontal-dark-bg.svg" alt="Omniscient AI"></div>
+    <div class="url">github.com/TickerNet/TickerNet</div>
+  </footer>
+</body>
+</html>
