@@ -14,7 +14,8 @@ export const methodName = {
   onReceiveThreadsActive: "GetActiveThreadsNotification",
   onReceiveNextOccurrence: "GetNextOccurrenceNotification",
   onReceiveHostStatus: "GetHostStatusNotification",
-  onReceiveHostExceptionMessage: "UpdateHostExceptionNotification"
+  onReceiveHostExceptionMessage: "UpdateHostExceptionNotification",
+  onReceiveUpdateNodeHeartBeat: "UpdateNodeHeartBeat"
 }
 // Define a SignalR service class
 class TickerNotificationHub extends BaseHub {  
