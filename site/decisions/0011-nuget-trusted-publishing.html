@@ -41,7 +41,7 @@
       <h1>Publish packages from CI with NuGet trusted publishing</h1>
       <p class="lede">Pushing a version tag on <code>main</code> builds, tests and publishes every TickerNet package to NuGet from GitHub Actions. The workflow gets a short-lived NuGet key through trusted publishing, so no API key is stored anywhere.</p>
       <dl class="adr-meta">
-        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Status</dt><dd><span class="adr-status amended">Amended</span> 2026-11-24: the workflow also records a signed build provenance attestation (<code>actions/attest</code>) for every <code>.nupkg</code> and <code>.snupkg</code> before publishing. Packages are not author-signed yet; nuget.org repository-signs them.</dd></div>
         <div><dt>Decided</dt><dd>2026-11-23</dd></div>
         <div><dt>Affects</dt><dd><code>.github/workflows/release.yaml</code>, <code>src/Directory.Build.props</code>, package READMEs, <code>assets/tickernet-icon.png</code></dd></div>
       </dl>

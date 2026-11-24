@@ -18,3 +18,14 @@ Security fixes go into the latest 1.x release.
 | Latest 1.x release | Yes |
 | Older 1.x releases | No: update to the latest 1.x |
 | 1.0.0 previews | No |
+
+## Verifying a package
+
+nuget.org signs every TickerNet package with its repository signature, and `dotnet restore` checks it. From 1.1.0
+on, each package also has a signed build provenance attestation from the release workflow. To check that a package
+was built by TickerNet's release workflow from a commit in this repository, download the `.nupkg` (from nuget.org or
+the GitHub release) and run:
+
+```bash
+gh attestation verify TickerNet.1.1.0.nupkg --repo TickerNet/TickerNet
+```
