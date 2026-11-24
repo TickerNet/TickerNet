@@ -30,8 +30,10 @@ namespace TickerNet.Dashboard.Infrastructure.Dashboard
             }
             catch (Exception)
             {
+                // Do not cache a failure: options can gain a resolver later (for
+                // example when the host configures a JSON context), and a cached
+                // empty result would keep the field disabled for good.
                 json = string.Empty;
-                Cache[type] = json;
                 return false;
             }
         }

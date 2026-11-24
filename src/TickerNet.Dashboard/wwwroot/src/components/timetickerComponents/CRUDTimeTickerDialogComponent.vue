@@ -525,9 +525,6 @@ defineExpose({
                       v-bind="bindField('requestData')"
                       label="Request Data"
                       variant="outlined"
-                      :disabled="
-                        formatJsonForDisplay(getFieldValue('exampleData'), false) == undefined
-                      "
                     />
                   </v-col>
                   <v-col cols="6" v-if="!getFieldValue('ignoreDateTime')">

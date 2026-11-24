@@ -16,13 +16,34 @@ namespace TickerNet.Utilities
         /// JsonSerializerOptions specifically for ticker request serialization/deserialization.
         /// Can be configured during application startup via TickerOptionsBuilder.
         /// </summary>
-        public static JsonSerializerOptions RequestJsonSerializerOptions { get; set; } = new();
+        public static JsonSerializerOptions RequestJsonSerializerOptions { get; set; } = CreateRequestJsonOptions();
         
         /// <summary>
         /// Controls whether ticker requests are GZip-compressed.
         /// When false (default), requests are stored as plain UTF-8 JSON bytes without compression.
         /// </summary>
         public static bool UseGZipCompression { get; set; } = false;
+
+        /// <summary>
+        /// Request options with a reflection resolver when the runtime allows it, so
+        /// <see cref="JsonSerializerOptions.GetTypeInfo(Type)"/> works before any
+        /// other serialisation has configured a context. With source generation the
+        /// resolver is replaced by <c>WithJsonContext</c> at startup.
+        /// </summary>
+        private static JsonSerializerOptions CreateRequestJsonOptions()
+        {
+            var options = new JsonSerializerOptions();
+            if (JsonSerializer.IsReflectionEnabledByDefault)
+            {
+                // Guarded at runtime so a native-AOT build never reaches the
+                // reflection resolver; the analyzers cannot see that guard.
+#pragma warning disable IL2026, IL3050 // reflection resolver, only when reflection is enabled
+                options.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+#pragma warning restore IL2026, IL3050
+            }
+
+            return options;
+        }
 
         public static byte[] CreateTickerRequest<T>(T data)
         {
