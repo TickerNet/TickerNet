@@ -4,6 +4,7 @@ using Xunit;
 
 namespace TickerNet.Tests;
 
+[Collection(CronTimeZoneGlobalStateCollection.Name)]
 public class CronScheduleCacheTests
 {
     [Fact]

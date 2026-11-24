@@ -48,7 +48,7 @@
       <p class="lede">TickerNet runs one-off and recurring jobs inside your .NET app. A job is a plain method with a <code>[TickerFunction]</code> attribute. A source generator registers it at compile time. Jobs can be kept in memory, in your EF Core database, in Redis or in MongoDB, and a built-in dashboard shows them live. Job code can also run in separate worker processes that connect to the scheduler.</p>
       <dl class="adr-meta" aria-label="Project facts">
         <div><dt>Version</dt><dd><code>1.0.0</code></dd></div>
-        <div><dt>Runs on</dt><dd>.NET 10</dd></div>
+        <div><dt>Runs on</dt><dd>.NET 10 and .NET 11</dd></div>
         <div><dt>License</dt><dd>MIT OR Apache-2.0</dd></div>
         <div><dt>NuGet</dt><dd><a href="https://www.nuget.org/packages/TickerNet">TickerNet</a></dd></div>
       </dl>
@@ -138,7 +138,7 @@
     <section class="step" id="quick-start">
       <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Quick start</h2>
         <p class="step-sub">A web app that keeps jobs in memory. It follows <code>samples/TickerNet.Sample.WebApi</code> without the database.</p></div>
-      <div class="code"><div class="code-head"><span class="path">Program.cs</span><span>ASP.NET Core, .NET 10</span></div>
+      <div class="code"><div class="code-head"><span class="path">Program.cs</span><span>ASP.NET Core, .NET 10 or 11</span></div>
 <pre><code class="language-csharp">using TickerNet.DependencyInjection;
 using TickerNet.Utilities.Base;
 using TickerNet.Utilities.Entities;

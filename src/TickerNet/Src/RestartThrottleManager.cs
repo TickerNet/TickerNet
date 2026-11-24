@@ -10,11 +10,18 @@ public sealed class RestartThrottleManager : IDisposable
     private Timer _debounceTimer;
     private volatile bool _restartPending;
 
-    private readonly TimeSpan _debounceWindow = TimeSpan.FromMilliseconds(50);
+    private readonly TimeSpan _debounceWindow;
 
     public RestartThrottleManager(Action onRestartTriggered)
+        : this(onRestartTriggered, TimeSpan.FromMilliseconds(50))
+    {
+    }
+
+    // Tests use a longer window so that timing on a busy machine can't split one burst of requests.
+    internal RestartThrottleManager(Action onRestartTriggered, TimeSpan debounceWindow)
     {
         _onRestartTriggered = onRestartTriggered;
+        _debounceWindow = debounceWindow;
     }
 
     public void RequestRestart()

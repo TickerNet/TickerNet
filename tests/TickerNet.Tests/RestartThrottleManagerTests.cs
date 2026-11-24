@@ -48,10 +48,13 @@ public class RestartThrottleManagerTests
     public async Task RequestRestart_ResetsTimer_OnSubsequentCalls()
     {
         var triggerCount = 0;
-        using var manager = new RestartThrottleManager(() => Interlocked.Increment(ref triggerCount));
+        // A 1 s window: the second request comes well inside it even when the machine is busy.
+        using var manager = new RestartThrottleManager(
+            () => Interlocked.Increment(ref triggerCount), TimeSpan.FromSeconds(1));
 
         manager.RequestRestart();
         await Task.Delay(30); // Less than the debounce window
+        Assert.Equal(0, Volatile.Read(ref triggerCount));
         manager.RequestRestart(); // Resets the timer
 
         // Requests inside one window still produce a single callback.

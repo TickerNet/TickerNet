@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Getting started · TickerNet docs</title>
-<meta name="description" content="Add TickerNet to a .NET 10 app: register services, write a job with [TickerFunction], schedule time and cron jobs, pick a store, and turn on the dashboard and tracing.">
+<meta name="description" content="Add TickerNet to a .NET 10 or .NET 11 app: register services, write a job with [TickerFunction], schedule time and cron jobs, pick a store, and turn on the dashboard and tracing.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -47,7 +47,7 @@
     <header class="hero">
       <p class="eyebrow">TickerNet · using it</p>
       <h1>Getting started</h1>
-      <p class="lede">From an empty .NET 10 app to scheduled jobs, a database store and a live dashboard. Every API name, option and default on this page comes from the code in <code>src/</code> and <code>samples/</code>.</p>
+      <p class="lede">From an empty .NET 10 or .NET 11 app to scheduled jobs, a database store and a live dashboard. Every API name, option and default on this page comes from the code in <code>src/</code> and <code>samples/</code>.</p>
       <details class="mobile-toc">
         <summary>On this page</summary>
         <ol>
@@ -67,7 +67,7 @@
       <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Requirements</h2></div>
       <div class="prose">
         <ul>
-          <li><strong>.NET 10.</strong> Every package targets <code>net10.0</code> only, and its Microsoft.Extensions and EF Core references are limited to <code>[10.0.0,11.0.0)</code>.</li>
+          <li><strong>.NET 10 or .NET 11.</strong> Every package has a <code>net10.0</code> and a <code>net11.0</code> build. Each uses the Microsoft.Extensions and EF Core packages of its own .NET version: <code>[10.0.0,11.0.0)</code> on .NET 10, <code>[11.0.0,12.0.0)</code> on .NET 11 (<a href="decisions/0012-target-dotnet-10-and-11.html">ADR 0012</a>).</li>
           <li><strong>ASP.NET Core, for the dashboard.</strong> <code>TickerNet.Dashboard</code> references the <code>Microsoft.AspNetCore.App</code> framework. The scheduler itself also runs in a console app or worker service.</li>
           <li><strong>A store, if jobs must survive a restart.</strong> An EF Core relational database provider (the samples and tests use SQLite), Redis, or MongoDB.</li>
           <li><strong>Node.js LTS, only to build the dashboard from source.</strong> Its web app is built into <code>wwwroot/dist</code> and embedded in the assembly.</li>

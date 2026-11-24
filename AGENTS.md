@@ -19,7 +19,7 @@ test it. This file holds the rules for coding agents.
 - `.github/workflows/`: `ci.yaml` (build and test), `dco.yaml` (sign-off check), `pages.yaml` (docs site) and
   `release.yaml` (publishes to NuGet on a `v*` tag; see CONTRIBUTING.md, Releasing). `assets/tickernet-icon.png` is
   the package icon.
-- `src/Directory.Build.props`: version, target framework (.NET 10) and package metadata for every package.
+- `src/Directory.Build.props`: version, target frameworks (.NET 10 and .NET 11) and package metadata for every package.
 
 ## Build and test
 

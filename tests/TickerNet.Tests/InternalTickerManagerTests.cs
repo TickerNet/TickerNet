@@ -16,6 +16,7 @@ using TickerNet.Utilities.Models;
 
 namespace TickerNet.Tests;
 
+[Collection(CronTimeZoneGlobalStateCollection.Name)]
 public class InternalTickerManagerTests
 {
     public class FakeTimeTicker : TimeTickerEntity<FakeTimeTicker> { }

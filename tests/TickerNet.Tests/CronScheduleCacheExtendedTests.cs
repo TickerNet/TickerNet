@@ -12,6 +12,7 @@ namespace TickerNet.Tests;
 /// Each test uses unique cron expressions or invalidates after use to avoid
 /// cross-test interference from the static cache.
 /// </summary>
+[Collection(CronTimeZoneGlobalStateCollection.Name)]
 public class CronScheduleCacheExtendedTests : IDisposable
 {
     public CronScheduleCacheExtendedTests()

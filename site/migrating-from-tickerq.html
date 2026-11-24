@@ -68,7 +68,7 @@
       <div class="prose">
         <ul>
           <li><strong>Which TickerQ.</strong> This guide is for TickerQ 10.4.x and earlier open-source releases. It was checked against the TickerQ code at the fork point, commit <code>3acd0f31</code>, which is four commits after the 10.4.0 package.</li>
-          <li><strong>.NET 10 first.</strong> TickerNet targets .NET 10 only. If you are on a TickerQ 8.x or 9.x release for .NET 8 or 9, move your app to .NET 10 first (<a href="decisions/0006-version-independently-dotnet-10.html">ADR 0006</a>).</li>
+          <li><strong>.NET 10 or later first.</strong> TickerNet targets .NET 10 and .NET 11 (<a href="decisions/0012-target-dotnet-10-and-11.html">ADR 0012</a>). If you are on a TickerQ 8.x or 9.x release for .NET 8 or 9, move your app to .NET 10 or 11 first (<a href="decisions/0006-version-independently-dotnet-10.html">ADR 0006</a>).</li>
           <li><strong>Packages.</strong> TickerNet's packages are on <a href="https://www.nuget.org/profiles/TickerNet">nuget.org</a>. <a href="getting-started.html#packages">Getting started</a> shows how to add them.</li>
           <li><strong>One behaviour change: jobs started at once outlive the call that added them.</strong> When a job is dispatched straight away, for example a time job added with <code>AddAsync</code> or <code>AddBatchAsync</code> for now or the next second, or a cron run started from the dashboard, it no longer runs with the <code>CancellationToken</code> you passed to that call. It runs with the host's stopping token. In TickerQ, cancelling that token, for example by the end of the HTTP request that added the job, could cancel the job or leave it <code>InProgress</code>. To cancel one job, use <code>TickerCancellationTokenManager.RequestTickerCancellationById</code>.</li>
           <li><strong>TickerQ Hub.</strong> TickerQ Hub, a hosted service with its own terms, isn't supported (<a href="decisions/0005-drop-tickerq-hub.html">ADR 0005</a>). If you ran jobs on remote workers with <code>TickerQ.RemoteExecutor</code> and <code>TickerQ.SDK</code>, TickerNet does it without a hosted service: <code>TickerNet.Hub</code> in the scheduler and <code>TickerNet.Worker</code> in the workers. Jobs stored as <code>function@node</code> keep working. See <a href="#tickerq-hub">section 06</a> and <a href="remote-workers.html">Remote workers</a>.</li>
@@ -233,7 +233,7 @@ dotnet ef migrations remove</code></pre></div>
     <section class="step" id="checklist">
       <div class="step-head"><span class="step-num">↓</span><h2 class="step-title">Checklist</h2></div>
       <ul class="checklist">
-        <li><span>Your app runs on .NET 10.</span></li>
+        <li><span>Your app runs on .NET 10 or .NET 11.</span></li>
         <li><span>TickerQ package references are replaced with the matching TickerNet packages.</span></li>
         <li><span>Namespaces, types and members are renamed, with <code>TickerQuery…</code> names and migration IDs left alone.</span></li>
         <li><span><code>TQ0nn</code> suppressions and severities now say <code>TN0nn</code>.</span></li>

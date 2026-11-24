@@ -64,7 +64,7 @@
     <section class="step" id="setup">
       <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Set up</h2></div>
       <ul class="checklist">
-        <li><span><strong>.NET 10 SDK.</strong> Everything targets <code>net10.0</code>, except the source generator, which targets <code>netstandard2.0</code> as Roslyn requires.</span></li>
+        <li><span><strong>.NET 11 SDK and the .NET 10 runtime.</strong> The packages and tests target <code>net10.0</code> and <code>net11.0</code>, samples and benchmarks target <code>net11.0</code>, and the source generator targets <code>netstandard2.0</code>, as Roslyn requires.</span></li>
         <li><span><strong>Node.js, current LTS.</strong> For the dashboard's web app in <code>src/TickerNet.Dashboard/wwwroot</code> (Vue 3, Vite, Vuetify, Vitest).</span></li>
         <li><span><strong>Docker.</strong> The MongoDB tests start a MongoDB container with Testcontainers. The other tests need no services: EF Core tests use SQLite, and the rest use in-memory stores and NSubstitute.</span></li>
         <li><span><strong>Git with your real name and email.</strong> Every commit needs a sign-off that matches its author (<a href="#rules">rule 1</a>).</span></li>
@@ -79,7 +79,7 @@ cd TickerNet</code></pre></div>
         <p class="step-sub">One solution, <code>TickerNet.slnx</code>. Shared build settings for every package are in <code>src/Directory.Build.props</code>.</p></div>
       <div class="map" role="img" aria-label="The repository has src with ten projects, tests with six test projects, and samples, benchmarks, site and GitHub workflows.">
         <div class="band core">
-          <div class="band-head"><b>src/ · the packages</b><span>net10.0 · version 1.0.0</span></div>
+          <div class="band-head"><b>src/ · the packages</b><span>net10.0 + net11.0 · version 1.1.0</span></div>
           <div class="chips">
             <span class="chip">TickerNet<small>registration, hosted services, scheduler loop, dispatcher, worker pool, in-memory store</small></span>
             <span class="chip">TickerNet.Utilities<small>entities, managers, options, function registry, interfaces, logging and tracing</small></span>
