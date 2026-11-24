@@ -449,7 +449,8 @@ builder.Services.AddTickerNet(options =&gt; options.EnableActivitySource());
 
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing =&gt; tracing.AddSource("TickerNet"));   // then add your exporter</code></pre></div>
-      <div class="prose"><p>Each run is a span named <code>tickernet.job.execute.timeticker</code> or <code>tickernet.job.execute.crontickeroccurrence</code>. Events such as <code>tickernet.job.enqueued</code>, <code>.completed</code>, <code>.failed</code>, <code>.cancelled</code> and <code>.skipped</code> are separate spans. Tags start with <code>tickernet.job.</code>, for example <code>tickernet.job.id</code> and <code>tickernet.job.function</code>.</p></div>
+      <div class="prose"><p>Each run is a span named <code>tickernet.job.execute.timeticker</code> or <code>tickernet.job.execute.crontickeroccurrence</code>. Events such as <code>tickernet.job.enqueued</code>, <code>.completed</code>, <code>.failed</code>, <code>.cancelled</code> and <code>.skipped</code> are separate spans. Tags start with <code>tickernet.job.</code>, for example <code>tickernet.job.id</code> and <code>tickernet.job.function</code>.</p>
+        <p>A runnable example that prints these spans with the console exporter is in <a href="https://github.com/TickerNet/TickerNet/tree/main/samples/TickerNet.Sample.OpenTelemetry"><code>samples/TickerNet.Sample.OpenTelemetry</code></a>.</p></div>
     </section>
     <nav class="pager" aria-label="Pages"><a href="index.html"><small>Previous</small>Home</a><a class="next" href="remote-workers.html"><small>Next</small>Remote workers</a></nav>
     <footer>Written on 23 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>

@@ -16,6 +16,7 @@
     <Project Path="samples/TickerNet.Sample.Hub/TickerNet.Sample.Hub.csproj" />
     <Project Path="samples/TickerNet.Sample.HubWorker/TickerNet.Sample.HubWorker.csproj" />
     <Project Path="samples/TickerNet.Sample.MongoDB/TickerNet.Sample.MongoDB.csproj" />
+    <Project Path="samples/TickerNet.Sample.OpenTelemetry/TickerNet.Sample.OpenTelemetry.csproj" />
     <Project Path="samples/TickerNet.Sample.WebApi/TickerNet.Sample.WebApi.csproj" />
     <Project Path="samples/TickerNet.Sample.WorkerService/TickerNet.Sample.WorkerService.csproj" />
   </Folder>
