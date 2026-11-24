@@ -9,6 +9,11 @@ using TickerNet.Utilities.Interfaces.Managers;
 
 namespace TickerNet.Utilities
 {
+    /// <summary>
+    /// Configures TickerNet's scheduler, seeding, serialization and telemetry.
+    /// Returned by <c>AddTickerNet(options =&gt; ...)</c>; every method returns the
+    /// same builder so calls can be chained.
+    /// </summary>
     public class TickerOptionsBuilder<TTimeTicker, TCronTicker> : ITickerOptionsSeeding
         where TTimeTicker : TimeTickerEntity<TTimeTicker>, new()
         where TCronTicker : CronTickerEntity, new()
@@ -61,6 +66,11 @@ namespace TickerNet.Utilities
         internal Action<IServiceCollection> DashboardServiceAction { get; set; }
         internal Type TickerExceptionHandlerType { get; private set; }
 
+        /// <summary>
+        /// Changes the scheduler settings on <see cref="SchedulerOptionsBuilder"/>.
+        /// </summary>
+        /// <param name="schedulerOptionsBuilder">Receives the scheduler options to change.</param>
+        /// <returns>The same builder, for chaining.</returns>
         public TickerOptionsBuilder<TTimeTicker, TCronTicker> ConfigureScheduler(Action<SchedulerOptionsBuilder> schedulerOptionsBuilder)
         {
             schedulerOptionsBuilder?.Invoke(_schedulerOptions);
@@ -217,6 +227,12 @@ namespace TickerNet.Utilities
             return this;
         }
 
+        /// <summary>
+        /// Registers an <see cref="ITickerExceptionHandler"/> that is called when a job
+        /// fails or is cancelled.
+        /// </summary>
+        /// <typeparam name="THandler">The handler type to resolve from the service provider.</typeparam>
+        /// <returns>The same builder, for chaining.</returns>
         public TickerOptionsBuilder<TTimeTicker, TCronTicker> SetExceptionHandler<THandler>() where THandler : ITickerExceptionHandler
         {
             TickerExceptionHandlerType = typeof(THandler);
@@ -230,11 +246,33 @@ namespace TickerNet.Utilities
             => _tickerExecutionContext.DashboardApplicationAction = action;
     }
 
+    /// <summary>
+    /// Scheduler settings, changed through
+    /// <see cref="TickerOptionsBuilder{TTimeTicker,TCronTicker}.ConfigureScheduler"/>.
+    /// </summary>
     public class SchedulerOptionsBuilder
     {
+        /// <summary>
+        /// This node's name. It is written as the lock holder on jobs the node takes,
+        /// and used for heartbeats. Defaults to <see cref="Environment.MachineName"/>.
+        /// </summary>
         public string NodeIdentifier { get; set; } = Environment.MachineName;
+
+        /// <summary>
+        /// Number of worker threads that run jobs. Defaults to
+        /// <see cref="Environment.ProcessorCount"/>.
+        /// </summary>
         public int MaxConcurrency { get; set; } = Environment.ProcessorCount;
+
+        /// <summary>
+        /// How long an idle worker thread waits before it stops. Defaults to one minute.
+        /// </summary>
         public TimeSpan IdleWorkerTimeOut { get; set; } = TimeSpan.FromMinutes(1);
+
+        /// <summary>
+        /// How often a second service looks for jobs that are past due and still
+        /// waiting. Defaults to 30 seconds.
+        /// </summary>
         public TimeSpan FallbackIntervalChecker { get; set; } = TimeSpan.FromSeconds(30);
         /// <summary>
         /// Gets or sets the minimum interval between database polls.
@@ -252,6 +290,11 @@ namespace TickerNet.Utilities
         /// </para>
         /// </summary>
         public TimeSpan StaleCronOccurrenceThreshold { get; set; } = TimeSpan.Zero;
+        /// <summary>
+        /// Time zone for cron expressions, and for execution times given with
+        /// <see cref="DateTimeKind.Unspecified"/>. Defaults to
+        /// <see cref="TimeZoneInfo.Local"/>.
+        /// </summary>
         public TimeZoneInfo SchedulerTimeZone = TimeZoneInfo.Local;
     }
 }
