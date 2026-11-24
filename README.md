@@ -193,6 +193,8 @@ architecture decision records. Its source is the [`site/`](site/) folder.
 Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first. In short: sign off every commit
 (`git commit -s`), and never copy or adapt anything from TickerQ's commercial versions.
 
+Everyone who has contributed is listed in [CONTRIBUTORS.md](CONTRIBUTORS.md).
+
 ## Governance and sponsor
 
 <a href="https://omniscient.to"><img src="site/assets/sponsor/omniscient-mark-gradient.svg" alt="" height="28" align="left" /></a>

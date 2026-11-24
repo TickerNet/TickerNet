@@ -65,7 +65,8 @@ Build the source generator first: the core package packs its DLL from the genera
   status line or supersede it.
 - **Public API.** Treat everything public in `src/` as API. Don't rename or remove public members without an ADR, and
   list API changes in the pull request description.
-- **Merging.** Pull requests are merged with squash and merge.
+- **Merging.** Pull requests are merged with squash and merge. When merging someone's first pull request, check
+  they are in `CONTRIBUTORS.md` and add them if not (ADR 0015).
 
 ## Check before you push
 

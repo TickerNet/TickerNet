@@ -66,7 +66,8 @@ dotnet test TickerNet.slnx -c Release --no-build
 5. If your change picks between real alternatives, adds or removes a package or public interface, or sets a rule
    other changes must follow, add an architecture decision record under `site/decisions/`.
 
-Pull requests are merged with squash and merge.
+Pull requests are merged with squash and merge. After your first one is merged, your name goes in
+[CONTRIBUTORS.md](CONTRIBUTORS.md): add it in your pull request, or the maintainer who merges it will.
 
 ## Releasing
 

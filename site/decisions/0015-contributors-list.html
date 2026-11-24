@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADR 0015: Credit contributors in CONTRIBUTORS.md</title>
+<meta name="description" content="Everyone with a merged pull request is listed by name in CONTRIBUTORS.md, which the governance path now points to.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../remote-workers.html">Remote workers</a></li>
+        <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="../contributing.html">Contributing</a></li>
+        <li><a href="../governance.html">Governance</a></li>
+        <li><a href="index.html" aria-current="page">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>ADR 0015</h2>
+    <ol><li><a href="#context"><span class="n">01</span><span>Context</span></a></li><li><a href="#decision"><span class="n">02</span><span>Decision</span></a></li><li><a href="#alternatives"><span class="n">03</span><span>Alternatives considered</span></a></li><li><a href="#consequences"><span class="n">04</span><span>Consequences</span></a></li><li><a href="#where"><span class="n">05</span><span>Where it lives</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol>
+    <p class="rail-back"><a href="index.html">← All decisions</a></p>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">ADR 0015 · Docs and process</p>
+      <h1>Credit contributors in CONTRIBUTORS.md</h1>
+      <p class="lede">Everyone whose pull request is merged is listed by name in <code>CONTRIBUTORS.md</code>. The first step of the governance path, contributor, now says so.</p>
+      <dl class="adr-meta">
+        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Decided</dt><dd>2026-11-24</dd></div>
+        <div><dt>Affects</dt><dd><code>CONTRIBUTORS.md</code>, <code>GOVERNANCE.md</code>, <code>CONTRIBUTING.md</code>, <code>README.md</code>, <code>site/governance.html</code>, <code>site/contributing.html</code></dd></div>
+      </dl>
+      <p class="adr-related">Related: <a href="0003-license-pledge-no-cla.html">ADR 0003</a> the license and pledge, no CLA, <a href="0014-maintainers-and-path.html">ADR 0014</a> Name the maintainers and a path to become one</p>
+    </header>
+    <section class="step" id="context">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
+      <div class="prose"><p>The first outside contributor asked, on <a href="https://github.com/TickerNet/TickerNet/pull/24">#24</a>, to be named in a contributor list. TickerNet had none. Contributors were credited only by their commits, GitHub's contributor graph and the copyright line "the TickerNet contributors", and <code>GOVERNANCE.md</code> named only maintainers. With no CLA (<a href="0003-license-pledge-no-cla.html">ADR 0003</a>), contributors keep their copyright, so naming them is also an honest record of who holds it.</p></div>
+    </section>
+    <section class="step" id="decision">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Decision</h2></div>
+      <div class="prose"><ul>
+<li>A <code>CONTRIBUTORS.md</code> file at the repository root lists everyone whose pull request has been merged since the fork, by name and GitHub handle, in order of first contribution. It points to <code>GOVERNANCE.md</code> for the maintainers and to <code>LICENSE</code> and <code>NOTICE</code> for TickerQ's authors before the fork.</li>
+<li>Contributors may add themselves in their pull request. If they don't, the maintainer who merges their first pull request adds them. Anyone can ask to be left off or listed differently.</li>
+<li>A merged pull request is the bar. The list doesn't record what each person contributed; the git history does.</li>
+<li>The contributor step in <code>GOVERNANCE.md</code> and on the governance page, <code>CONTRIBUTING.md</code>, the contributing page and the README link to the list.</li>
+</ul></div>
+    </section>
+    <section class="step" id="alternatives">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Alternatives considered</h2></div>
+      <div class="prose"><ul>
+<li><strong>Keep relying on the git history, GitHub's contributor graph and the "TickerNet contributors" copyright line</strong>, and offer triage access later as the credit that matters. Rejected: the contributor asked to be named, the graph shows handles rather than names, and it isn't part of the repository or linked from the docs.</li>
+</ul></div>
+    </section>
+    <section class="step" id="consequences">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
+      <div class="prose"><ul>
+<li>Merging a first-time contributor's pull request now includes checking they are on the list, and adding them if not.</li>
+<li>Two open pull requests that both add a name to the end of the list conflict. The second one rebases, or the maintainer adds the name after merging.</li>
+<li>Credit for issues, reviews and Discussions answers isn't recorded in the list. If that matters later, a new record can widen it.</li>
+</ul></div>
+    </section>
+    <section class="step" id="where">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
+      <div class="prose"><ul><li><code>CONTRIBUTORS.md</code></li><li><code>GOVERNANCE.md</code> (Becoming a maintainer, step 1)</li><li><code>CONTRIBUTING.md</code> (Pull requests)</li><li><code>README.md</code> (Contributing)</li><li><code>site/governance.html</code> (#maintainers)</li><li><code>site/contributing.html</code> (#pull-requests)</li></ul></div>
+    </section>
+    <section class="step" id="sources">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
+      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/pull/24">#24</a> docs(stores): complete EF Core and Utilities package READMEs (the request)</li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/CONTRIBUTORS.md"><code>CONTRIBUTORS.md</code></a></li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/GOVERNANCE.md"><code>GOVERNANCE.md</code></a></li></ul></div>
+    </section>
+    <nav class="pager" aria-label="Decisions"><a href="0014-maintainers-and-path.html"><small>Previous</small>ADR 0014: Name the maintainers and a path to become one</a><a class="next" href="index.html"><small>Back</small>All decisions</a></nav>
+    <footer>Written on 24 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="../assets/site.js"></script>
+</body>
+</html>

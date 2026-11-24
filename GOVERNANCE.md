@@ -77,7 +77,8 @@ and the NuGet package IDs, so the project never depends on one account.
 
 ### Becoming a maintainer
 
-1. **Contributor.** Anyone who opens an issue, answers a question in Discussions or sends a pull request.
+1. **Contributor.** Anyone who opens an issue, answers a question in Discussions or sends a pull request. Once a
+   pull request of yours is merged, your name goes in [CONTRIBUTORS.md](CONTRIBUTORS.md).
 2. **Triager.** After a few good contributions, ask in Discussions or on a pull request. A maintainer can give you
    triage access: you can label, assign and close issues and pull requests, but not merge.
 3. **Maintainer.** After about three months of steady, good contributions and reviews, the maintainers invite you.
