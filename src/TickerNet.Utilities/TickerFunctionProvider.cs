@@ -32,9 +32,12 @@ namespace TickerNet.Utilities
         private static readonly Dictionary<Type, string> _typeMappings = new();
 
         // Final frozen dictionaries
-        public static FrozenDictionary<string, (string, Type)> TickerFunctionRequestTypes = FrozenDictionary<string, (string, Type)>.Empty;
-        public static FrozenDictionary<string, (string RequestType, string RequestExampleJson)> TickerFunctionRequestInfos = FrozenDictionary<string, (string RequestType, string RequestExampleJson)>.Empty;
-        public static FrozenDictionary<string, (string cronExpression, TickerTaskPriority Priority, TickerFunctionDelegate Delegate, int MaxConcurrency)> TickerFunctions = FrozenDictionary<string, (string cronExpression, TickerTaskPriority Priority, TickerFunctionDelegate Delegate, int MaxConcurrency)>.Empty;
+        // Read-only outside this class: registration goes through RegisterFunctions,
+        // ReplaceFunctions or MergeRemoteFunctions, so no caller can swap the
+        // registry for an unrelated dictionary after startup.
+        public static FrozenDictionary<string, (string, Type)> TickerFunctionRequestTypes { get; private set; } = FrozenDictionary<string, (string, Type)>.Empty;
+        public static FrozenDictionary<string, (string RequestType, string RequestExampleJson)> TickerFunctionRequestInfos { get; private set; } = FrozenDictionary<string, (string RequestType, string RequestExampleJson)>.Empty;
+        public static FrozenDictionary<string, (string cronExpression, TickerTaskPriority Priority, TickerFunctionDelegate Delegate, int MaxConcurrency)> TickerFunctions { get; private set; } = FrozenDictionary<string, (string cronExpression, TickerTaskPriority Priority, TickerFunctionDelegate Delegate, int MaxConcurrency)>.Empty;
 
         public static bool IsBuilt { get; private set; }
 
