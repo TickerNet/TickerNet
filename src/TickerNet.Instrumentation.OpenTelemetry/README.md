@@ -80,15 +80,25 @@ What stays the same either way:
 ## Trace Structure
 
 ### Job Execution Activities
+
+The main span is `tickernet.job.execute.timeticker` for a time ticker and
+`tickernet.job.execute.crontickeroccurrence` for a cron occurrence.
+
 ```
-tickernet.job.execute.timeticker (main job execution span)
-├── tickernet.job.enqueued (when job starts execution)
+tickernet.job.execute.timeticker (or .crontickeroccurrence)
+├── tickernet.job.enqueued (when the job starts execution)
 ├── tickernet.job.completed (on successful completion)
 ├── tickernet.job.failed (on failure)
 ├── tickernet.job.cancelled (on cancellation)
 ├── tickernet.job.skipped (when skipped)
-├── tickernet.seeding.started (for data seeding)
-└── tickernet.seeding.completed (seeding completion)
+└── tickernet.job_request_serialization.failed (when the request cannot be deserialized)
+```
+
+Seeding spans are separate roots, not children of a job span:
+
+```
+tickernet.seeding.started
+tickernet.seeding.completed
 ```
 
 ### Tags Added to Activities
@@ -96,7 +106,7 @@ tickernet.job.execute.timeticker (main job execution span)
 | Tag | Description | Example |
 |-----|-------------|---------|
 | `tickernet.job.id` | Unique job identifier | `123e4567-e89b-12d3-a456-426614174000` |
-| `tickernet.job.type` | Type of ticker | `TimeTicker`, `CronTicker` |
+| `tickernet.job.type` | Type of ticker | `TimeTicker`, `CronTickerOccurrence` |
 | `tickernet.job.function` | Function name being executed | `ProcessEmails` |
 | `tickernet.job.priority` | Job priority | `Normal`, `High`, `LongRunning` |
 | `tickernet.job.machine` | Machine executing the job | `web-server-01` |
@@ -105,7 +115,9 @@ tickernet.job.execute.timeticker (main job execution span)
 | `tickernet.job.is_due` | Whether the job was due | `true`, `false` |
 | `tickernet.job.is_child` | Whether this is a child job | `true`, `false` |
 | `tickernet.job.retries` | Maximum retry attempts | `3` |
+| `tickernet.job.retry_count` | Retry attempt that failed (on `tickernet.job.failed`) | `1`, `2`, `3` |
 | `tickernet.job.current_attempt` | Current retry attempt | `1`, `2`, `3` |
+| `tickernet.job.run_condition` | Run condition of a time-ticker child job | `OnSuccess`, `Always` |
 | `tickernet.job.final_status` | Final execution status | `Done`, `Failed`, `Cancelled`, `Skipped` |
 | `tickernet.job.final_retry_count` | Final retry count reached | `2` |
 | `tickernet.job.execution_time_ms` | Execution time in milliseconds | `1250` |
@@ -115,6 +127,8 @@ tickernet.job.execute.timeticker (main job execution span)
 | `tickernet.job.error_stack_trace` | Full stack trace | `at MyService.ProcessData()...` |
 | `tickernet.job.cancellation_reason` | Reason for cancellation | `Task was cancelled` |
 | `tickernet.job.skip_reason` | Reason for skipping | `Another instance is already running` |
+| `tickernet.seeding.type` | Ticker type being seeded | `TimeTicker` |
+| `tickernet.seeding.environment` | Machine running the seeding | `production-node-01` |
 
 ## Logging Output
 
@@ -159,6 +173,6 @@ builder.Logging.AddNLog();
 
 ## Requirements
 
-- .NET 8.0 or later
+- .NET 10 or .NET 11 (the packages target `net10.0` and `net11.0`)
 - OpenTelemetry 1.15.3 or later
 - TickerNet.Utilities (automatically included)
