@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TickerNet and TickerQ compared · TickerNet docs</title>
+<meta name="description" content="How TickerNet compares with TickerQ's commercial 10.5 releases: license, .NET versions, scheduling API, reliability, storage and dashboard, with the planned issue for each gap.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TickerNet">
+<meta property="og:title" content="TickerNet and TickerQ compared · TickerNet docs">
+<meta property="og:description" content="How TickerNet compares with TickerQ's commercial 10.5 releases: license, .NET versions, scheduling API, reliability, storage and dashboard, with the planned issue for each gap.">
+<meta property="og:url" content="https://tickernet.github.io/TickerNet/comparison.html">
+<meta property="og:image" content="https://tickernet.github.io/TickerNet/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="TickerNet: the open-source background job scheduler for .NET">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="getting-started.html">Getting started</a></li>
+        <li><a href="remote-workers.html">Remote workers</a></li>
+        <li><a href="migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="comparison.html" aria-current="page">Compared with TickerQ</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+        <li><a href="governance.html">Governance</a></li>
+        <li><a href="decisions/index.html">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>On this page</h2>
+    <ol>
+      <li><a href="#source"><span class="n">→</span><span>How this page was written</span></a></li>
+      <li><a href="#glance"><span class="n">01</span><span>At a glance</span></a></li>
+      <li><a href="#scheduling"><span class="n">02</span><span>Scheduling and the managers</span></a></li>
+      <li><a href="#reliability"><span class="n">03</span><span>Reliability</span></a></li>
+      <li><a href="#platform"><span class="n">04</span><span>Storage, runtime and dashboard</span></a></li>
+      <li><a href="#roadmap"><span class="n">05</span><span>Roadmap</span></a></li>
+      <li><a href="#help"><span class="n">↓</span><span>Help build it</span></a></li>
+    </ol>
+  </nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">TickerNet · coming from TickerQ</p>
+      <h1>TickerNet and TickerQ compared</h1>
+      <p class="lede">TickerNet started from TickerQ's last open-source code. TickerQ carried on under a commercial license from 10.5.0. This page sets the two side by side so you can choose, and links each gap in TickerNet to the issue that plans it.</p>
+      <details class="mobile-toc">
+        <summary>On this page</summary>
+        <ol>
+          <li><a href="#source">How this page was written</a></li>
+          <li><a href="#glance">At a glance</a></li>
+          <li><a href="#scheduling">Scheduling and the managers</a></li>
+          <li><a href="#reliability">Reliability</a></li>
+          <li><a href="#platform">Storage, runtime and dashboard</a></li>
+          <li><a href="#roadmap">Roadmap</a></li>
+          <li><a href="#help">Help build it</a></li>
+        </ol>
+      </details>
+    </header>
+
+    <section class="step" id="source">
+      <div class="step-head"><span class="step-num">→</span><h2 class="step-title">How this page was written</h2></div>
+      <div class="prose">
+        <ul>
+          <li><strong>TickerNet:</strong> version 1.1.0 and the <code>main</code> branch on 24 November 2026.</li>
+          <li><strong>TickerQ:</strong> its public <a href="https://github.com/Arcenox-co/TickerQ/releases">release notes</a> for 10.5.0 to 10.5.2-rc.2 (October and November 2026). Under TickerNet's <a href="decisions/0004-clean-room-tickerq-commercial.html">clean-room rule</a>, nobody working on TickerNet reads TickerQ's code or documentation from 10.5.0 on, so this page describes TickerQ only as far as its release notes do. Check them for the current state.</li>
+        </ul>
+      </div>
+      <div class="warnbox"><b>Nothing from TickerQ 10.5.0 or later is in TickerNet.</b> Where TickerNet adds a feature that TickerQ also has, it is designed from a description of the behaviour, never from TickerQ's code. Names and details may differ.</div>
+    </section>
+
+    <section class="step" id="glance">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">At a glance</h2></div>
+      <div class="tbl-wrap"><table class="wrap">
+        <thead><tr><th>What</th><th>TickerNet</th><th>TickerQ 10.5</th></tr></thead>
+        <tbody>
+          <tr><td>License</td><td>MIT OR Apache-2.0, with an irrevocable <a href="governance.html#pledge">pledge</a> to stay open source. No license keys, no CLA.</td><td>TickerQ Software License Agreement: a free Community option, a 30-day evaluation and a commercial subscription. Installs a license file. Releases up to 10.4 keep their MIT and Apache-2.0 terms.</td></tr>
+          <tr><td>.NET versions</td><td>.NET 10 and 11 (<a href="decisions/0012-target-dotnet-10-and-11.html">ADR 0012</a>). .NET 8 and 9 reached end of support in November 2026.</td><td>.NET 8, 9, 10 and 11.</td></tr>
+          <tr><td>Remote workers</td><td>Self-hosted: <code>TickerNet.Hub</code> in the scheduler, <code>TickerNet.Worker</code> in each worker, and a worker can connect to several schedulers. See <a href="remote-workers.html">Remote workers</a>.</td><td>TickerQ Hub, a hosted service. The SDK and remote executor packages aren't part of the 10.5 releases.</td></tr>
+          <tr><td>Coming from TickerQ 10.4 or earlier</td><td>Your stored data, dashboard links, saved sign-ins and trace names keep working. See <a href="migrating-from-tickerq.html">Migrating from TickerQ</a>.</td><td>The 10.5 upgrade changes some APIs and needs explicit dashboard authentication.</td></tr>
+          <tr><td>Release packages</td><td>Symbol packages, Source Link, signed build provenance for every package, and a reserved <code>TickerNet.</code> NuGet prefix.</td><td>Symbol packages and Source Link.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="step" id="scheduling">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Scheduling and the managers</h2>
+        <p class="step-sub">What you can do from code with the time and cron ticker managers.</p></div>
+      <div class="tbl-wrap"><table class="wrap">
+        <thead><tr><th>Feature</th><th>TickerNet</th><th>TickerQ 10.5</th><th>Plan</th></tr></thead>
+        <tbody>
+          <tr><td>One-off and cron jobs, typed <code>AddAsync&lt;TFunction&gt;</code>, batch add, update and delete</td><td>Yes</td><td>Yes</td><td></td></tr>
+          <tr><td>Run a cron now, enable and disable it</td><td>Yes</td><td>Yes</td><td></td></tr>
+          <tr><td>Get one job, list with a filter, delete by filter</td><td>Through <code>ITickerQueryable</code> only</td><td>Yes</td><td><a href="https://github.com/TickerNet/TickerNet/issues/53">#53</a></td></tr>
+          <tr><td>Throw on a failed manager call (<code>EnsureSuccess</code>)</td><td>Not yet</td><td>Yes</td><td><a href="https://github.com/TickerNet/TickerNet/issues/54">#54</a></td></tr>
+          <tr><td>Move a job that hasn't started</td><td>Not yet</td><td>Yes</td><td><a href="https://github.com/TickerNet/TickerNet/issues/55">#55</a></td></tr>
+          <tr><td>Cancel all pending jobs for a function</td><td>Not yet</td><td>Yes</td><td><a href="https://github.com/TickerNet/TickerNet/issues/56">#56</a></td></tr>
+          <tr><td>List a cron's next run times</td><td>Not yet</td><td>Yes</td><td><a href="https://github.com/TickerNet/TickerNet/issues/57">#57</a></td></tr>
+          <tr><td>Wait for a job and read the result it returned</td><td>Not yet</td><td>Yes</td><td><a href="https://github.com/TickerNet/TickerNet/issues/58">#58</a></td></tr>
+          <tr><td>Schedule inside your own EF Core transaction</td><td>Not yet</td><td>Yes</td><td><a href="https://github.com/TickerNet/TickerNet/issues/59">#59</a></td></tr>
+          <tr><td>Crons defined in code</td><td>Cron expression in <code>[TickerFunction]</code>. Hosts starting together can create duplicates.</td><td>Declared with time zone, request, retries and chain steps; no duplicates</td><td><a href="https://github.com/TickerNet/TickerNet/issues/49">#49</a></td></tr>
+          <tr><td>One-time startup jobs</td><td><code>UseTickerSeeder</code>, which runs on every start</td><td>Created once per key</td><td><a href="https://github.com/TickerNet/TickerNet/issues/50">#50</a></td></tr>
+          <tr><td>Chains (jobs that run after one another)</td><td>Up to three levels with five children each, for one-off jobs</td><td>Any depth, recurring chains, parallel groups and joins, results passed from parent to child, progress, retry from a chosen step</td><td>Later</td></tr>
+          <tr><td>Business calendars, late-start and catch-up rules</td><td>Skip stale cron runs at startup</td><td>Yes</td><td>Not planned yet</td></tr>
+          <tr><td>Detecting a new deployment and fencing older hosts</td><td>No</td><td>Yes</td><td>Not planned yet</td></tr>
+          <tr><td>Several environments sharing one store</td><td>Not yet</td><td>Application namespaces</td><td><a href="https://github.com/TickerNet/TickerNet/issues/61">#61</a></td></tr>
+          <tr><td>Controlling time in tests</td><td><code>ITickerClock</code> exists but isn't used everywhere or documented</td><td>Replaceable test clock</td><td><a href="https://github.com/TickerNet/TickerNet/issues/60">#60</a></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="step" id="reliability">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Reliability</h2>
+        <p class="step-sub">What happens when nodes crash, restart or stop.</p></div>
+      <div class="tbl-wrap"><table class="wrap">
+        <thead><tr><th>Feature</th><th>TickerNet</th><th>TickerQ 10.5</th><th>Plan</th></tr></thead>
+        <tbody>
+          <tr><td>Jobs left running by a node that died</td><td>Released by Redis heartbeats, or when a node restarts with the same name</td><td>Leases and a stale-job policy</td><td><a href="https://github.com/TickerNet/TickerNet/issues/47">#47</a></td></tr>
+          <tr><td>Finish running jobs on shutdown</td><td>Workers only</td><td>Yes</td><td><a href="https://github.com/TickerNet/TickerNet/issues/48">#48</a></td></tr>
+          <tr><td>Clean up old finished jobs</td><td>Not yet</td><td>Yes</td><td><a href="https://github.com/TickerNet/TickerNet/issues/51">#51</a></td></tr>
+          <tr><td>Disabling a cron skips its pending runs</td><td>Not yet</td><td>Yes</td><td><a href="https://github.com/TickerNet/TickerNet/issues/52">#52</a></td></tr>
+          <tr><td>A job started from the dashboard outlives the HTTP request</td><td>Yes</td><td>Yes</td><td></td></tr>
+          <tr><td>A worker offline: cron jobs paused and shown in the dashboard</td><td>Yes</td><td>Not described</td><td></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="step" id="platform">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Storage, runtime and dashboard</h2></div>
+      <div class="tbl-wrap"><table class="wrap">
+        <thead><tr><th>Feature</th><th>TickerNet</th><th>TickerQ 10.5</th></tr></thead>
+        <tbody>
+          <tr><td>Stores</td><td>EF Core, MongoDB, Redis, in-memory</td><td>The same</td></tr>
+          <tr><td>Databases tested with EF Core</td><td>SQLite in the test suite; others through their EF Core providers</td><td>SQLite, SQL Server, PostgreSQL, MySQL, MariaDB, CockroachDB, YugabyteDB and Oracle, each run through a test suite</td></tr>
+          <tr><td>Reuse your own Redis connection</td><td>Yes</td><td>Yes</td></tr>
+          <tr><td>Native AOT</td><td>Packages marked AOT-compatible</td><td>Publishing tested against the installed packages</td></tr>
+          <tr><td>Tracing</td><td>ActivitySource in the core package, plus an OpenTelemetry package</td><td>The same</td></tr>
+          <tr><td>Dashboard</td><td>Vue. Run cron now, server-side search and status filters, worker-offline badge, secure defaults (<a href="decisions/0013-secure-dashboard-defaults.html">ADR 0013</a>)</td><td>Rewritten in React. Adds a node list, search by ID, cancellation reasons, SignalR backplane settings, signed-in user and sign-out, saved drafts and chain templates</td></tr>
+          <tr><td>AI assistant in the dashboard</td><td>No</td><td>Yes</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="step" id="roadmap">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Roadmap</h2>
+        <p class="step-sub">Every planned gap has an issue with the <a href="https://github.com/TickerNet/TickerNet/issues?q=is%3Aissue+label%3Aroadmap">roadmap</a> label. Reliability comes first, because it matters most in a job scheduler.</p></div>
+      <div class="prose">
+        <h3>First: reliability</h3>
+        <ul>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/47">#47</a> Recover jobs left <code>InProgress</code> when a node dies, without Redis</li>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/48">#48</a> Wait for running jobs when the host shuts down</li>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/49">#49</a> Seed code-defined crons once, even when several hosts start together</li>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/50">#50</a> One-time startup jobs, created once per key</li>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/51">#51</a> Clean up old finished jobs and cron occurrences</li>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/52">#52</a> Skip pending runs when a cron ticker is disabled</li>
+        </ul>
+        <h3>Next: the managers and testing</h3>
+        <ul>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/53">#53</a> Get, list and delete by filter</li>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/54">#54</a> <code>TickerResult.EnsureSuccess()</code></li>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/55">#55</a> Reschedule a job that hasn't started</li>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/56">#56</a> Cancel a function's pending jobs</li>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/57">#57</a> List a cron's next run times</li>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/58">#58</a> Wait for a job and read its result</li>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/59">#59</a> Schedule inside your EF Core transaction</li>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/60">#60</a> A replaceable clock for tests</li>
+          <li><a href="https://github.com/TickerNet/TickerNet/issues/61">#61</a> Application namespaces for environments that share a store</li>
+        </ul>
+        <h3>Later, or not planned</h3>
+        <ul>
+          <li><strong>Later:</strong> longer and recurring chains, results passed from parent to child, a node list and search by ID in the dashboard, database tests against more EF Core providers, and a Native AOT publish test.</li>
+          <li><strong>Not planned yet:</strong> business calendars and deployment fencing (ask for them in Discussions if you need them), .NET 8 and 9 (out of support), and a dashboard rewrite.</li>
+          <li><strong>Not planned:</strong> an AI assistant in the dashboard. It would depend on an outside model provider and is not core to a scheduler.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="step" id="help">
+      <div class="step-head"><span class="step-num">↓</span><h2 class="step-title">Help build it</h2></div>
+      <div class="prose"><p>Pick a <a href="https://github.com/TickerNet/TickerNet/issues?q=is%3Aissue+is%3Aopen+label%3Aroadmap">roadmap issue</a> and say so in a comment. <a href="https://github.com/TickerNet/TickerNet/issues?q=is%3Aissue+is%3Aopen+label%3Aroadmap+label%3A%22good+first+issue%22">Good first issues</a> are small. Read <a href="contributing.html">Contributing</a> first, especially the clean-room rule: design from the issue, never from TickerQ 10.5 or later.</p></div>
+    </section>
+    <nav class="pager" aria-label="Pages"><a href="migrating-from-tickerq.html"><small>Previous</small>Migrating from TickerQ</a><a class="next" href="contributing.html"><small>Next</small>Contributing</a></nav>
+    <footer>Written on 24 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="assets/site.js"></script>
+</body>
+</html>
