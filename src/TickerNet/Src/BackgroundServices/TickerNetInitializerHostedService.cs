@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using TickerNet.Provider;
 using TickerNet.Utilities;
 using TickerNet.Utilities.Interfaces.Managers;
+using TickerNet.Utilities.Instrumentation;
 
 namespace TickerNet.BackgroundServices;
 
@@ -56,17 +57,20 @@ internal sealed class TickerNetInitializerHostedService : IHostedService
 
         if (options == null || options.SeedDefinedCronTickers)
         {
-            await SeedDefinedCronTickers(_serviceProvider);
+            await WithSeedingInstrumentation(_serviceProvider, "CronTickers",
+                () => SeedDefinedCronTickers(_serviceProvider));
         }
 
         if (options?.TimeSeederAction != null)
         {
-            await options.TimeSeederAction(_serviceProvider);
+            await WithSeedingInstrumentation(_serviceProvider, "TimeSeeder",
+                () => options.TimeSeederAction(_serviceProvider));
         }
 
         if (options?.CronSeederAction != null)
         {
-            await options.CronSeederAction(_serviceProvider);
+            await WithSeedingInstrumentation(_serviceProvider, "CronSeeder",
+                () => options.CronSeederAction(_serviceProvider));
         }
 
         // Skip stale cron occurrences that were pending before this restart.
@@ -83,6 +87,20 @@ internal sealed class TickerNetInitializerHostedService : IHostedService
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <summary>
+    /// Runs one seeding step between the instrumentation's started/completed
+    /// calls. Completed is only reported when the step succeeds; a failure is
+    /// left for the host's own error handling.
+    /// </summary>
+    private static async Task WithSeedingInstrumentation(
+        IServiceProvider serviceProvider, string seedingDataType, Func<Task> seed)
+    {
+        var instrumentation = serviceProvider.GetService<ITickerNetInstrumentation>();
+        instrumentation?.LogSeedingDataStarted(seedingDataType);
+        await seed();
+        instrumentation?.LogSeedingDataCompleted(seedingDataType);
+    }
 
     private static async Task SeedDefinedCronTickers(IServiceProvider serviceProvider)
     {
