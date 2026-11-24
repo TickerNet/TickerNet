@@ -161,7 +161,8 @@ nothing extra to install. All packages share one version. Keep them on the same 
 
 TickerNet starts from TickerQ's last open-source code (see [NOTICE](NOTICE)), so moving from TickerQ 10.4 or earlier
 is mostly a rename: `TickerQ` becomes `TickerNet` in package IDs, namespaces and API names (`AddTickerQ` becomes
-`AddTickerNet`). Features from TickerQ's commercial versions are not part of TickerNet.
+`AddTickerNet`). Features from TickerQ's commercial versions are not part of TickerNet; see
+[how TickerNet compares](#how-tickernet-compares-with-tickerq-105) below.
 
 ### Backward compatibility
 
@@ -182,11 +183,37 @@ searches or logger-category settings that use the text "TickerQ". The
 [migration guide](https://tickernet.github.io/TickerNet/migrating-from-tickerq.html) lists every change, with a
 one-pass rename command and a checklist.
 
+### How TickerNet compares with TickerQ 10.5
+
+TickerQ continued under a commercial license from 10.5.0. This summary comes from TickerQ's public release notes for
+10.5.0 to 10.5.2-rc.2 (TickerNet's [clean-room rule](CONTRIBUTING.md) keeps contributors away from its newer code and
+docs). Planned gaps carry the [`roadmap`](https://github.com/TickerNet/TickerNet/issues?q=is%3Aissue+label%3Aroadmap)
+label.
+
+| | TickerNet | TickerQ 10.5 |
+| --- | --- | --- |
+| License | MIT OR Apache-2.0, open source forever | Commercial license with a free Community option |
+| .NET | 10 and 11 | 8, 9, 10 and 11 |
+| Remote workers | Self-hosted hub and workers | TickerQ Hub (hosted) |
+| Scheduling: one-off, cron, typed, batch, run cron now | Yes | Yes |
+| Get, list, reschedule, cancel pending, next run times, wait for a result | Planned: [#53](https://github.com/TickerNet/TickerNet/issues/53), [#55](https://github.com/TickerNet/TickerNet/issues/55), [#56](https://github.com/TickerNet/TickerNet/issues/56), [#57](https://github.com/TickerNet/TickerNet/issues/57), [#58](https://github.com/TickerNet/TickerNet/issues/58) | Yes |
+| Schedule inside your EF Core transaction | Planned: [#59](https://github.com/TickerNet/TickerNet/issues/59) | Yes |
+| Recover jobs from a dead node without Redis, drain on shutdown | Planned: [#47](https://github.com/TickerNet/TickerNet/issues/47), [#48](https://github.com/TickerNet/TickerNet/issues/48) | Yes |
+| Duplicate-free code-defined crons, one-time startup jobs | Planned: [#49](https://github.com/TickerNet/TickerNet/issues/49), [#50](https://github.com/TickerNet/TickerNet/issues/50) | Yes |
+| Clean up old jobs, skip runs of a disabled cron | Planned: [#51](https://github.com/TickerNet/TickerNet/issues/51), [#52](https://github.com/TickerNet/TickerNet/issues/52) | Yes |
+| Test clock, environments sharing a store | Planned: [#60](https://github.com/TickerNet/TickerNet/issues/60), [#61](https://github.com/TickerNet/TickerNet/issues/61) | Yes |
+| Chains | Three levels, one-off jobs | Any depth, recurring, parallel groups |
+| Stores | EF Core, MongoDB, Redis, in-memory | The same, with more databases tested |
+| Dashboard | Vue, secure defaults | React rewrite, node list, AI assistant |
+
+The [full comparison](https://tickernet.github.io/TickerNet/comparison.html) has every row, what's later or not
+planned, and why.
+
 ## Documentation
 
 The docs site is at **[tickernet.github.io/TickerNet](https://tickernet.github.io/TickerNet/)**: getting started,
-remote workers, migrating from TickerQ, a contributor guide that walks through the code, governance, and the project's
-architecture decision records. Its source is the [`site/`](site/) folder.
+remote workers, migrating from TickerQ, how TickerNet compares with TickerQ, a contributor guide that walks through the
+code, governance, and the project's architecture decision records. Its source is the [`site/`](site/) folder.
 
 ## Contributing
 
