@@ -11,6 +11,7 @@ using TickerNet.DependencyInjection;
 using TickerNet.Utilities;
 using TickerNet.Utilities.Enums;
 using TickerNet.Utilities.Interfaces.Managers;
+using TickerNet.Utilities.Instrumentation;
 
 namespace TickerNet.Tests;
 
@@ -80,6 +81,30 @@ public class DesignTimeToolDetectionTests
 
         // MigrateDefinedCronTickers should have been called (even if with empty list)
         await internalManager.Received(1).MigrateDefinedCronTickers(Arg.Any<(string, string)[]>());
+    }
+
+    [Fact]
+    public async Task Initializer_Reports_Seeding_To_The_Instrumentation()
+    {
+        var internalManager = Substitute.For<IInternalTickerManager>();
+        var instrumentation = Substitute.For<ITickerNetInstrumentation>();
+        var context = new TickerExecutionContext();
+        var configuration = Substitute.For<IConfiguration>();
+
+        var services = new ServiceCollection();
+        services.AddSingleton(context);
+        services.AddSingleton(configuration);
+        services.AddSingleton(internalManager);
+        services.AddSingleton(instrumentation);
+        services.AddSingleton(new SchedulerOptionsBuilder());
+
+        var initializer = new TickerNetInitializerHostedService(context, services.BuildServiceProvider(), configuration);
+        initializer.InitializationRequested = true;
+
+        await initializer.StartAsync(CancellationToken.None);
+
+        instrumentation.Received(1).LogSeedingDataStarted("CronTickers");
+        instrumentation.Received(1).LogSeedingDataCompleted("CronTickers");
     }
 
     [Fact]
