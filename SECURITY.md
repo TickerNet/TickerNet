@@ -21,6 +21,10 @@ Security fixes go into the latest 1.x release.
 
 ## Verifying a package
 
+The `TickerNet.` package ID prefix is reserved on nuget.org for the project, so every package named `TickerNet` or
+`TickerNet.*` shows nuget.org's verified checkmark and nobody else can publish under that name. A package that claims
+to be TickerNet but has no checkmark isn't ours.
+
 nuget.org signs every TickerNet package with its repository signature, and `dotnet restore` checks it. From 1.1.0
 on, each package also has a signed build provenance attestation from the release workflow. To check that a package
 was built by TickerNet's release workflow from a commit in this repository, download the `.nupkg` (from nuget.org or

@@ -97,7 +97,7 @@ Publishing uses NuGet trusted publishing, so no API key is stored in GitHub. Set
 3. In this repository, add the Actions variable `NUGET_USER` (Settings → Secrets and variables → Actions →
    Variables) with that nuget.org account's username.
 4. Ask nuget.org to reserve the `TickerNet.` ID prefix for that account (email account@nuget.org), so nobody else
-   can publish packages named `TickerNet.*`.
+   can publish packages named `TickerNet.*`. Done for the `TickerNet` organization on 24 November 2026.
 
 The `nuget` GitHub environment already exists and only `v*` tags can deploy to it. Until step 3 is done, a release
 fails at its setup check, before anything is published.
