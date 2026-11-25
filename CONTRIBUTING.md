@@ -67,6 +67,10 @@ dotnet test TickerNet.slnx -c Release --no-build
    other changes must follow, add an architecture decision record under `site/decisions/`.
 6. After you push the changes a reviewer asked for, comment `/review` on the pull request. That asks everyone who
    reviewed it, and hasn't approved yet, to look again. You can also @-mention the reviewer instead.
+7. Keep one or two pull requests open at a time, and answer the review comments on them before opening more.
+   A maintainer may close pull requests that arrive in bulk or whose reviews go unanswered, so they don't hold up
+   other contributors. Once the earlier feedback is done, ask for them to be reopened or open new ones, and file
+   issues for the rest of your ideas.
 
 Pull requests are merged with squash and merge. After your first one is merged, your name goes in
 [CONTRIBUTORS.md](CONTRIBUTORS.md): add it in your pull request, or the maintainer who merges it will.
