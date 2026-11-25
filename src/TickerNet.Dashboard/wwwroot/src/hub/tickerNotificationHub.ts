@@ -14,7 +14,11 @@ export const methodName = {
   onReceiveThreadsActive: "GetActiveThreadsNotification",
   onReceiveNextOccurrence: "GetNextOccurrenceNotification",
   onReceiveHostStatus: "GetHostStatusNotification",
-  onReceiveHostExceptionMessage: "UpdateHostExceptionNotification"
+  onReceiveHostExceptionMessage: "UpdateHostExceptionNotification",
+  // Sent by TickerNetNotificationHubSender.UpdateNodeHeartBeatAsync; registered
+  // here so startConnection() adds its no-op handler and the browser stops
+  // warning about the missing method (#77).
+  onReceiveUpdateNodeHeartBeat: "UpdateNodeHeartBeat"
 }
 // Define a SignalR service class
 class TickerNotificationHub extends BaseHub {  
