@@ -73,7 +73,7 @@ public class MapTickerTests : IDisposable
 
     private sealed class SampleRequest
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
     }
 
     // ---------------------------------------------------------------
