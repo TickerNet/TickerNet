@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADR 0018: Add TickerResult.EnsureSuccess() to rethrow failed results</title>
+<meta name="description" content="TickerResult gains EnsureSuccess(): it returns the result on success and rethrows the stored exception, with its original stack trace, on failure.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html">TickerNet <span>docs</span></a>
+    <nav aria-label="Site">
+      <ul class="topnav">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting started</a></li>
+        <li><a href="../remote-workers.html">Remote workers</a></li>
+        <li><a href="../migrating-from-tickerq.html">Migrating from TickerQ</a></li>
+        <li><a href="../comparison.html">Compared with TickerQ</a></li>
+        <li><a href="../contributing.html">Contributing</a></li>
+        <li><a href="../governance.html">Governance</a></li>
+        <li><a href="index.html" aria-current="page">Decisions</a></li>
+      </ul>
+    </nav>
+    <a class="topbar-sponsor" href="https://omniscient.to"><img src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="23" height="16">Sponsored by <b>Omniscient AI</b></a>
+  </div>
+</header>
+<div class="page">
+<div class="shell">
+  <nav class="rail" aria-label="On this page">
+    <h2>ADR 0018</h2>
+    <ol><li><a href="#context"><span class="n">01</span><span>Context</span></a></li><li><a href="#decision"><span class="n">02</span><span>Decision</span></a></li><li><a href="#alternatives"><span class="n">03</span><span>Alternatives considered</span></a></li><li><a href="#consequences"><span class="n">04</span><span>Consequences</span></a></li><li><a href="#where"><span class="n">05</span><span>Where it lives</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol>
+    <p class="rail-back"><a href="index.html">← All decisions</a></p>
+  </nav>
+  <main>
+    <!-- Copy this file to NNNN-short-slug.html, replace every placeholder, add a row to index.html, update its counts, and link the neighbouring pagers. -->
+    <header class="hero">
+      <p class="eyebrow">ADR 0018 · Code and packages</p>
+      <h1>Add <code>TickerResult.EnsureSuccess()</code> to rethrow failed results</h1>
+      <p class="lede"><code>TickerResult&lt;T&gt;</code> gains <code>EnsureSuccess()</code>: it returns the result when the operation succeeded and rethrows the stored exception, with its original stack trace, when it failed.</p>
+      <dl class="adr-meta">
+        <div><dt>Status</dt><dd><span class="adr-status accepted">Accepted</span></dd></div>
+        <div><dt>Decided</dt><dd>2026-11-25</dd></div>
+        <div><dt>Affects</dt><dd><code>src/TickerNet.Utilities/Models/TickerResult.cs</code>, <code>tests/TickerNet.Tests/TickerResultTests.cs</code>, <code>site/getting-started.html</code></dd></div>
+      </dl>
+      <p class="adr-related">Related: <a href="0012-target-dotnet-10-and-11.html">ADR 0012</a> Target .NET 10 and .NET 11</p>
+    </header>
+    <section class="step" id="context">
+      <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
+      <div class="prose"><p>Every manager call returns a <code>TickerResult&lt;T&gt;</code>, and callers have to check <code>IsSucceeded</code> and <code>Exception</code> by hand. It is easy to forget, and then a failed schedule goes unnoticed. <a href="https://github.com/TickerNet/TickerNet/issues/54">Issue #54</a> asks for a single call that either returns the result or throws the stored failure.</p></div>
+    </section>
+    <section class="step" id="decision">
+      <div class="step-head"><span class="step-num">02</span><h2 class="step-title">Decision</h2></div>
+      <div class="prose"><ul><li><code>TickerResult&lt;T&gt;.EnsureSuccess()</code> returns the same result instance when <code>IsSucceeded</code> is true, so calls can be chained.</li><li>When the operation failed, it rethrows the stored <code>Exception</code> with its original stack trace, via <code>ExceptionDispatchInfo</code>, instead of throwing a new exception.</li><li>The method has XML documentation and is covered by tests for the success and the failure path.</li><li>The getting-started guide shows <code>EnsureSuccess()</code> where scheduling is explained.</li></ul></div>
+    </section>
+    <section class="step" id="alternatives">
+      <div class="step-head"><span class="step-num">03</span><h2 class="step-title">Alternatives considered</h2></div>
+      <div class="prose"><ul><li>Returning the inner <code>Result</code> value instead of the <code>TickerResult</code>: rejected, because callers would lose <code>AffectedRows</code> and could not chain further checks on the result.</li><li>Throwing <code>Exception</code> directly: rejected, because a plain <code>throw</code> resets the stack trace to the rethrow point and hides where the failure happened.</li></ul></div>
+    </section>
+    <section class="step" id="consequences">
+      <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
+      <div class="prose"><ul><li>Callers can replace the hand-written <code>IsSucceeded</code> check with one call; a forgotten check no longer silently swallows a failed schedule.</li><li>The method is public API on <code>TickerResult&lt;T&gt;</code>, so it stays supported under the project license like the rest of the type.</li><li>New public API on this type follows the same shape: return the result on success, rethrow the stored exception on failure.</li></ul></div>
+    </section>
+    <section class="step" id="where">
+      <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
+      <div class="prose"><ul><li><code>src/TickerNet.Utilities/Models/TickerResult.cs</code></li><li><code>tests/TickerNet.Tests/TickerResultTests.cs</code></li><li><code>site/getting-started.html</code></li></ul></div>
+    </section>
+    <section class="step" id="sources">
+      <div class="step-head"><span class="step-num">06</span><h2 class="step-title">Sources</h2></div>
+      <div class="prose"><ul><li><a href="https://github.com/TickerNet/TickerNet/issues/54">#54</a> Add TickerResult.EnsureSuccess()</li><li><a href="https://github.com/TickerNet/TickerNet/blob/main/CONTRIBUTING.md"><code>CONTRIBUTING.md</code></a></li></ul></div>
+    </section>
+    <nav class="pager" aria-label="Decisions"><a href="0017-few-open-pull-requests.html"><small>Previous</small>ADR 0017: Keep a few pull requests open at a time</a><a class="next" href="index.html"><small>Back</small>All decisions</a></nav>
+    <footer>Written on 25 November 2026 against the <code>main</code> branch. Source: <code>site/</code> in <code>TickerNet/TickerNet</code>. <img class="footer-mark" src="../assets/sponsor/omniscient-mark-gradient.svg" alt="" width="18" height="13">Sponsored by <a href="https://omniscient.to">Omniscient AI</a>.</footer>
+  </main>
+</div>
+</div>
+<script src="../assets/site.js"></script>
+</body>
+</html>
