@@ -8,9 +8,11 @@ The maintainers are listed in [GOVERNANCE.md](GOVERNANCE.md#maintainers), which 
 
 ## Contributors
 
-Everyone whose pull request has been merged since the fork, in order of their first contribution:
+Everyone whose pull request has been merged since the fork, or whom a maintainer has added for work in review, in order
+of their first contribution:
 
 - rva.creates ([@ayushnandi718-dev](https://github.com/ayushnandi718-dev))
+- daocuong11 ([@daocuong11](https://github.com/daocuong11))
 
 ## Before the fork
 
@@ -21,4 +23,5 @@ TickerNet started from TickerQ, written by Arcenox LLC and the TickerQ contribut
 
 After your first pull request is merged, you belong on this list. Add yourself at the end of the Contributors list in
 that pull request or a later one, as `Name ([@handle](https://github.com/handle))`. If you don't, the maintainer who
-merges your pull request adds you. To be left off or listed differently, say so in your pull request.
+merges your pull request adds you. A maintainer can also add you before then, to credit work that is still in review.
+To be left off or listed differently, say so in your pull request.
