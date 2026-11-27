@@ -274,8 +274,8 @@ public class ReportScheduler(
             RetryIntervals = [30, 60, 300]   // seconds; the last value repeats
         }, ct);
 
-        if (!once.IsSucceeded)
-            throw once.Exception;
+        // Throws the stored exception, with its original stack trace, if the schedule failed.
+        once.EnsureSuccess();
 
         // Every Monday at 08:00:00, in the scheduler's time zone.
         await cronTickers.AddAsync(new CronTickerEntity
@@ -288,7 +288,7 @@ public class ReportScheduler(
 }</code></pre></div>
       <div class="prose">
         <ul>
-          <li><strong>Results, not exceptions.</strong> Manager methods return a <code>TickerResult&lt;T&gt;</code> with <code>IsSucceeded</code>, <code>Result</code>, <code>Exception</code> and <code>AffectedRows</code>. An unknown function name or a cron expression that doesn't parse comes back as a failed result.</li>
+          <li><strong>Results, not exceptions.</strong> Manager methods return a <code>TickerResult&lt;T&gt;</code> with <code>IsSucceeded</code>, <code>Result</code>, <code>Exception</code> and <code>AffectedRows</code>. An unknown function name or a cron expression that doesn't parse comes back as a failed result. Call <code>EnsureSuccess()</code> on a result to rethrow the stored exception, with its original stack trace, when the operation failed, instead of checking <code>IsSucceeded</code> by hand.</li>
           <li><strong>Execution time.</strong> No <code>ExecutionTime</code> means now. UTC and local times are converted to UTC; a time with <code>DateTimeKind.Unspecified</code> is read in <code>SchedulerTimeZone</code>. A job due within the next second is handed straight to the workers instead of waiting for the scheduler loop. It then runs with the host's lifetime, not the <code>CancellationToken</code> you passed, so the end of an HTTP request doesn't cancel it.</li>
           <li><strong>Retries.</strong> <code>Retries</code> is the number of extra attempts. <code>RetryIntervals</code> gives the wait before each one in seconds; without it each wait is 30 seconds.</li>
         </ul>
