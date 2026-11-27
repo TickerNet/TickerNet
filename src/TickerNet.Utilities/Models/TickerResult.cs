@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.ExceptionServices;
 
-
 namespace TickerNet.Utilities.Models
 {
     public class TickerResult<TEntity> where TEntity : class
@@ -15,12 +14,12 @@ namespace TickerNet.Utilities.Models
         private TickerResult(bool isSucceeded)
             => IsSucceeded = isSucceeded;
 
-
         internal TickerResult(TEntity result, int affectedRows) : this(true)
         {
             Result = result;
             AffectedRows = affectedRows;
         }
+
         /// <summary>
         /// Returns this result when the operation succeeded.
         /// </summary>
@@ -36,11 +35,9 @@ namespace TickerNet.Utilities.Models
             return this;
         }
 
-
-        public readonly bool IsSucceeded;
+    public readonly bool IsSucceeded;
         public readonly int AffectedRows;
         public readonly TEntity Result;
         public readonly Exception Exception;
     }
 }
-
