@@ -47,7 +47,6 @@
         <div><dt>Decided</dt><dd>2026-11-25</dd></div>
         <div><dt>Affects</dt><dd><code>src/TickerNet.Utilities/Models/TickerResult.cs</code>, <code>tests/TickerNet.Tests/TickerResultTests.cs</code>, <code>site/getting-started.html</code></dd></div>
       </dl>
-      <p class="adr-related">Related: <a href="0012-target-dotnet-10-and-11.html">ADR 0012</a> Target .NET 10 and .NET 11</p>
     </header>
     <section class="step" id="context">
       <div class="step-head"><span class="step-num">01</span><h2 class="step-title">Context</h2></div>
@@ -63,7 +62,7 @@
     </section>
     <section class="step" id="consequences">
       <div class="step-head"><span class="step-num">04</span><h2 class="step-title">Consequences</h2></div>
-      <div class="prose"><ul><li>Callers can replace the hand-written <code>IsSucceeded</code> check with one call; a forgotten check no longer silently swallows a failed schedule.</li><li>The method is public API on <code>TickerResult&lt;T&gt;</code>, so it stays supported under the project license like the rest of the type.</li><li>New public API on this type follows the same shape: return the result on success, rethrow the stored exception on failure.</li></ul></div>
+      <div class="prose"><ul><li>Callers can replace the hand-written <code>IsSucceeded</code> check with one call; a forgotten check no longer silently swallows a failed schedule.</li><li>The method is public API on <code>TickerResult&lt;T&gt;</code>, so it stays supported under the project license like the rest of the type.</li></ul></div>
     </section>
     <section class="step" id="where">
       <div class="step-head"><span class="step-num">05</span><h2 class="step-title">Where it lives</h2></div>
