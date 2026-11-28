@@ -294,6 +294,23 @@ public class TickerManagerTests : IDisposable
     }
 
     [Fact]
+    public async Task AddCronTickerAsync_DayOfWeekSeven_ReturnsFailure()
+    {
+        // NCrontab only accepts 0-6 for day-of-week, so an expression with 7 for
+        // Sunday cannot be saved; the dashboard maps 7 to 0 before sending.
+        var entity = new CronTickerEntity
+        {
+            Function = ValidFunctionName,
+            Expression = "0 0 12 * * 7"
+        };
+        
+        var result = await _cronTickerManager.AddAsync(entity, CancellationToken.None);
+        Assert.False(result.IsSucceeded);
+        Assert.IsType<TickerValidatorException>(result.Exception);
+        Assert.Contains("0 0 12 * * 7", result.Exception.Message);
+    }
+    
+    [Fact]
     public async Task AddCronTickerAsync_InvalidFunctionName_ReturnsFailure()
     {
         var entity = new CronTickerEntity
