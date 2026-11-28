@@ -6,8 +6,11 @@ import { tickerService } from '@/http/services/tickerService'
 import type { GetCronTickerResponse } from '@/http/services/types/cronTickerService.types'
 import { cronTickerService } from '@/http/services/cronTickerService'
 import { formatTime } from '@/utilities/dateTimeParser'
+import { normalizeCronExpression } from '@/utilities/cronExpression'
+import { useAlert } from '@/composables/useAlert'
 import cronstrue from 'cronstrue'
 const functionNamesStore = useFunctionNameStore()
+const { showError } = useAlert()
 const getTickerRequestData = tickerService.getRequestData()
 const updateCronTicker = cronTickerService.updateCronTicker()
 const addCronTicker = cronTickerService.addCronTicker()
@@ -162,35 +165,32 @@ const { resetForm, handleSubmit, bindField, setFieldValue, getFieldValue, values
   onSubmitForm: async (values, errors) => {
     if (!errors) {
       var originalRequestData = values.requestData
-      if (!props.dialogProps.isFromDuplicate) {
-        await updateCronTicker
-          .requestAsync(props.dialogProps.id, {
+      // cronstrue accepts 7 for Sunday, but the backend parser (NCrontab) only
+      // accepts 0-6, so map 7 to 0 before saving.
+      const expression = normalizeCronExpression(values.expression)
+      const response = (await (!props.dialogProps.isFromDuplicate
+        ? updateCronTicker.requestAsync(props.dialogProps.id, {
             function: values.functionName,
-            expression: values.expression,
+            expression,
             request: values.requestData,
             retries: parseInt(`${values.retries}`),
             description: values.description,
             intervals: comboBoxModel.value.map((item) => item.value),
           })
-          .then(() => {
-            emit('close')
-            emit('confirm')
-          })
-      } else {
-        await addCronTicker
-          .requestAsync({
+        : addCronTicker.requestAsync({
             function: values.functionName,
-            expression: values.expression,
+            expression,
             request: values.requestData,
             retries: parseInt(`${values.retries}`),
             description: values.description,
             intervals: comboBoxModel.value.map((item) => item.value),
-          })
-          .then(() => {
-            emit('close')
-            emit('confirm')
-          })
+          }))) as { success?: boolean; message?: string } | undefined
+      if (response && response.success === false) {
+        showError(response.message || 'Failed to save cron ticker')
+        return
       }
+      emit('close')
+      emit('confirm')
 
       getTickerRequestData.updateProperty('result', originalRequestData)
       resetForm()
