@@ -610,7 +610,7 @@ public static class DashboardEndpoints
         await WriteJson(context, new ActionResponseWithId
         {
             Success = result.IsSucceeded,
-            Message = result.IsSucceeded ? "Cron ticker added successfully" : "Failed to add cron ticker",
+            Message = result.IsSucceeded ? "Cron ticker added successfully" : (result.Exception?.Message ?? "Failed to add cron ticker"),
             TickerId = result.Result?.Id
         }, dashboardOptions.DashboardJsonOptions);
     }
@@ -639,7 +639,7 @@ public static class DashboardEndpoints
         await WriteJson(context, new ActionResponse
         {
             Success = result.IsSucceeded,
-            Message = result.IsSucceeded ? "Cron ticker updated successfully" : "Failed to update cron ticker"
+            Message = result.IsSucceeded ? "Cron ticker updated successfully" : (result.Exception?.Message ?? "Failed to update cron ticker")
         }, dashboardOptions.DashboardJsonOptions);
     }
 
